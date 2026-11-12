@@ -1,0 +1,20 @@
+# Go build cache
+.gocache/
+
+# Local tool settings
+.claude/
+
+# Plaintext account dumps from local setup; never commit
+CLI/archive.csv
+CLI/console_logs.txt
+
+# LaTeX build output (main.pdf is kept)
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc
+
+# Runtime photo uploads (written by backend/photo.go); only the defaults are tracked
+web/UI/static/icons/*
+!web/UI/static/icons/default_pict.png
+!web/UI/static/icons/favicon.png

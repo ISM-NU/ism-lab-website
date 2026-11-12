@@ -1,0 +1,583 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{seqsplit}
+
+\geometry{margin=2cm}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{TeX Gyre Cursor}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  urlcolor=blue!55!black,
+  pdftitle={ISM Lab Website Documentation},
+  pdfauthor={ISM Lab}
+}
+\setlist[itemize]{leftmargin=1.2em}
+\setlist[enumerate]{leftmargin=1.4em}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{3.5pt}
+\setlength{\headheight}{15pt}
+\emergencystretch=2em
+\sloppy
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{ISM Lab Website}
+\rhead{Project Documentation}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries\sffamily}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\sffamily}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\sffamily}{\thesubsubsection}{0.6em}{}
+
+\newcommand{\code}[1]{{\ttfamily\small\seqsplit{#1}}}
+\newcommand{\route}[1]{{\ttfamily\small\seqsplit{#1}}}
+\newcommand{\file}[1]{{\ttfamily\small\seqsplit{#1}}}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2.5cm}
+  {\Huge\bfseries ISM Lab Website Documentation\par}
+  \vspace{0.8cm}
+  {\Large Technical and Functional Reference\par}
+  \vspace{1.5cm}
+  {\large Generated from the project source tree\par}
+  \vfill
+  {\large Website stack: Go, PostgreSQL, HTML, CSS, Vanilla JavaScript\par}
+  \vspace{0.4cm}
+  {\large Main server port: \code{9992}\par}
+  \vspace{1cm}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Purpose}
+
+This document describes the ISM Lab website project as implemented in this folder. The website is designed for a research lab and provides public pages for visitors, protected control-panel pages for administrators and managers, and REST endpoints for managing website content.
+
+The website stores and displays lab members, managers, events, participants, announcements, projects, publications, datasets, photos, and authentication sessions. Public visitors can read public content. Signed-in managers can create and update most content. Administrators have elevated privileges, including manager administration and deletion operations.
+
+\section{Technology Stack}
+
+\begin{longtable}{P{0.24\textwidth} P{0.66\textwidth}}
+\toprule
+\textbf{Layer} & \textbf{Technology} \\
+\midrule
+Backend language & Go \code{1.24.0} \\
+HTTP server & Go standard library \code{net/http} with \code{http.ServeMux} \\
+Database & PostgreSQL \\
+Database driver & \code{github.com/jackc/pgx/v5} and \code{pgxpool} \\
+Frontend & Server-rendered HTML templates, CSS, and vanilla JavaScript \\
+API style & REST-like JSON endpoints \\
+Authentication & Cookie-based sessions using \code{session-id} and \code{user-login} cookies \\
+Default port & \code{localhost:9992} \\
+\bottomrule
+\end{longtable}
+
+\section{Source Tree}
+
+\begin{longtable}{P{0.34\textwidth} P{0.56\textwidth}}
+\toprule
+\textbf{Path} & \textbf{Responsibility} \\
+\midrule
+\file{application/} & Main application startup. Initializes the database connection, ensures the default profile photo exists, and starts the HTTP server. \\
+\file{server/} & Central HTTP route registration and server startup. \\
+\file{frontend/} & Page handlers that validate routes, optionally authorize users, parse templates, and serve HTML pages. \\
+\file{backend/} & API handlers and shared backend helpers. Includes authentication, photos, manager/admin operations, and content-specific subpackages. \\
+\file{backend/events/} & CRUD API handlers and helpers for events. \\
+\file{backend/participants/} & CRUD API handlers for event participant lists. \\
+\file{backend/members/} & CRUD API handlers for lab members. \\
+\file{backend/projects/} & CRUD API handlers for projects. \\
+\file{backend/announcements/} & CRUD API handlers for announcements. \\
+\file{backend/publications/} & CRUD API handlers for publications. \\
+\file{backend/datasets/} & CRUD API handlers for datasets. \\
+\file{database/} & PostgreSQL connection setup, session helpers, signup helpers, and migrations. \\
+\file{database/migrations/init.sql} & Initial database schema. This file should not be modified casually because it defines the deployed schema. \\
+\file{models/} & Go data structures used by handlers, JSON APIs, templates, and error pages. \\
+\file{errors/} & Shared HTML error page rendering. \\
+\file{web/UI/templates/} & HTML templates for public pages, control-panel pages, login, personal account, and error responses. \\
+\file{web/UI/static/css/} & Stylesheets for every public and control page. \\
+\file{web/UI/static/js/} & Client-side JavaScript for public data rendering and control-panel CRUD workflows. \\
+\file{web/UI/static/icons/} & Favicon, default profile image, and uploaded or bundled image assets. \\
+\file{CLI/} & Interactive command-line administration tool for creating admins/managers and listing users. \\
+\file{ARCHITECTURE.md} & High-level architecture notes and intended API behavior. \\
+\file{TODO.md} & Current frontend implementation notes and behavior requirements. \\
+\file{docs/main.tex} & This documentation source file. \\
+\bottomrule
+\end{longtable}
+
+\section{Runtime Flow}
+
+The executable entry point is \file{application/main.go}. Startup performs three operations:
+
+\begin{enumerate}
+  \item \code{database.InitConnection()} opens a PostgreSQL connection pool.
+  \item \code{ensureDefaultPhoto()} reads \file{web/UI/static/icons/default\_pict.png} and ensures that \route{/static/icons/default\_pict.png} exists in the \code{Photo} table.
+  \item \code{server.StartApplication()} registers all static, page, and API routes, then listens on \code{:9992}.
+\end{enumerate}
+
+The runtime architecture is:
+
+\begin{center}
+\begin{tabular}{c}
+Browser \\
+$\downarrow$ \\
+Go HTTP Server \\
+$\downarrow$ \\
+PostgreSQL
+\end{tabular}
+\end{center}
+
+Static files are served from \file{web/UI/static/} under the URL prefix \route{/static/}. For example, \file{web/UI/static/css/index.css} is requested as \route{/static/css/index.css}.
+
+\section{Configuration}
+
+The server reads the PostgreSQL connection string from the \code{DATABASE\_URL} environment variable (for example \code{postgres://user:password@127.0.0.1:5432/ism\_lab}) and exits if it is unset. The session duration constant \code{session\_duration\_hours} (6) stays in \file{database/connect.go}.
+
+\section{Building and Running}
+
+\subsection{Requirements}
+
+\begin{itemize}
+  \item Go \code{1.24.0}
+  \item PostgreSQL reachable at the configured host and port
+  \item Database named \code{ism\_lab}
+  \item Schema initialized from \file{database/migrations/init.sql}
+  \item XeLaTeX for compiling this documentation
+\end{itemize}
+
+\subsection{Run the Website}
+
+From the project root:
+
+\begin{verbatim}
+go run ./application
+\end{verbatim}
+
+The application logs:
+
+\begin{verbatim}
+Try to visit the page: http://localhost:9992/
+\end{verbatim}
+
+\subsection{Run the CLI Administration Tool}
+
+From the project root:
+
+\begin{verbatim}
+go run ./CLI
+\end{verbatim}
+
+The CLI supports the following commands:
+
+\begin{longtable}{P{0.16\textwidth} P{0.74\textwidth}}
+\toprule
+\textbf{Command} & \textbf{Behavior} \\
+\midrule
+\code{adm} & Prompts for login, password, first name, last name, and email, then creates an administrator. \\
+\code{mng} & Prompts for login, password, first name, last name, and email, then creates a manager. \\
+\code{list} & Lists existing administrator and manager logins, emails, and roles. \\
+\code{exit} & Exits the CLI. \\
+\bottomrule
+\end{longtable}
+
+The CLI also ensures the default profile photo is present in the database.
+
+\subsection{Compile This Documentation}
+
+From the project root:
+
+\begin{verbatim}
+xelatex docs/main.tex
+\end{verbatim}
+
+Running XeLaTeX twice is recommended so the table of contents is fully updated:
+
+\begin{verbatim}
+xelatex docs/main.tex
+xelatex docs/main.tex
+\end{verbatim}
+
+\section{Database Schema}
+
+The initial schema is defined in \file{database/migrations/init.sql}. Table names and column names in the schema use mixed case, so SQL statements reference names exactly as created.
+
+\subsection{Tables}
+
+\begin{longtable}{P{0.30\textwidth} P{0.60\textwidth}}
+\toprule
+\textbf{Table} & \textbf{Purpose} \\
+\midrule
+\code{Photo} & Stores photo bytes, descriptions, public static URLs, and generated numeric IDs. \\
+\code{Administrator} & Stores administrator credentials, profile information, email, and optional photo reference. \\
+\code{Manager} & Stores manager credentials, profile information, email, and optional photo reference. \\
+\code{Sessions} & Stores active and inactive login sessions for administrators and managers. \\
+\code{Events} & Stores event metadata, schedule information, descriptions, registration links, and registration deadlines. \\
+\code{ListsOfParticipants} & Stores participants linked to events. Deleted events cascade to their participants. \\
+\code{ISMLabMembers} & Stores public lab member profiles. \\
+\code{Projects} & Stores project names and rich-text descriptions. \\
+\code{Announcements} & Stores announcement titles, rich-text descriptions, dates, and times. \\
+\code{Publications} & Stores publication titles, keyword arrays, and DOI values. \\
+\code{Datasets} & Stores dataset metadata such as type, description, version, size, and format. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Important Relationships}
+
+\begin{itemize}
+  \item \code{Administrator.AdminIcon} references \code{Photo.PhotoURL}; deletion of a photo sets the icon field to \code{NULL}.
+  \item \code{Manager.MngIcon} references \code{Photo.PhotoURL}; deletion of a photo sets the icon field to \code{NULL}.
+  \item \code{ISMLabMembers.MemberIcon} references \code{Photo.PhotoURL}; deletion of a photo sets the icon field to \code{NULL}.
+  \item \code{ListsOfParticipants.AttendingEvent} references \code{Events.EventID}; deleting an event deletes its participants.
+  \item \code{Sessions.UserLogin} is intended to reference a login in either \code{Administrator} or \code{Manager}.
+\end{itemize}
+
+\section{Go Models and JSON Fields}
+
+The main API data structures are in \file{models/message.go} and \file{models/admins.go}.
+
+\begin{longtable}{P{0.28\textwidth} P{0.62\textwidth}}
+\toprule
+\textbf{Model} & \textbf{JSON/API fields} \\
+\midrule
+\code{Admins} & \code{admin\_login}, \code{admin\_firstname}, \code{admin\_lastname}, \code{admin\_email}, \code{admin\_iconurl}; password hash is present in Go but has no JSON tag. \\
+\code{Managers} & \code{manager\_login}, \code{manager\_firstname}, \code{manager\_lastname}, \code{manager\_email}, \code{manager\_iconurl}; password hash is present in Go but has no JSON tag. \\
+\code{Photo} & \code{photo\_url}, \code{photo\_id}, \code{photo\_description}, \code{photo}. \\
+\code{UploadPhotoData} & \code{photo\_description}, \code{photo}. \\
+\code{CurrentlyOnlineUsers} & \code{user\_login}, \code{user\_role}, \code{current\_session}. \\
+\code{EventsData} & \code{event\_id}, \code{event\_title}, \code{event\_place}, \code{event\_start\_date}, \code{event\_start\_time}, \code{event\_finish\_date}, \code{event\_finish\_time}, \code{event\_description}, \code{registration\_link}, \code{announcement\_date}, \code{announcement\_time}, \code{registration\_finish\_date}, \code{registration\_finish\_time}. \\
+\code{ParticipantData} & \code{participant\_id}, \code{first\_name}, \code{last\_name}, \code{middle\_name}, \code{organization}, \code{attending\_event}. \\
+\code{MemberData} & \code{member\_id}, \code{first\_name}, \code{last\_name}, \code{current\_year\_of\_study}, \code{currently\_studying}, \code{degree}, \code{join\_date}, \code{additional\_description}, \code{member\_icon}, \code{email}. \\
+\code{ProjectData} & \code{project\_id}, \code{project\_name}, \code{project\_description}. \\
+\code{Announcements} & \code{announcement\_id}, \code{announcement\_title}, \code{announcement\_description}, \code{announcement\_date}, \code{announcement\_time}. \\
+\code{Publications} & \code{publication\_id}, \code{publication\_title}, \code{publication\_keywords}, \code{doi}. \\
+\code{Datasets} & \code{data\_id}, \code{data\_name}, \code{data\_type}, \code{data\_description}, \code{data\_date}, \code{data\_version}, \code{data\_size}, \code{data\_format}. \\
+\bottomrule
+\end{longtable}
+
+\section{Authentication and Authorization}
+
+\subsection{Sessions}
+
+Login uses \route{/api/sessions/login/}. The frontend places the login and password in cookies named \code{user-login} and \code{password-hash}. The server hashes the password cookie value with SHA-512 and compares it to the stored hash. On success, the server creates a new session row and sets:
+
+\begin{itemize}
+  \item \code{session-id}: HTTP-only session token.
+  \item \code{user-login}: HTTP-only user login.
+\end{itemize}
+
+Both cookies are scoped to \route{/}, use \code{SameSite=Lax}, and expire after six hours.
+
+\subsection{Authorization Helpers}
+
+\begin{longtable}{P{0.34\textwidth} P{0.56\textwidth}}
+\toprule
+\textbf{Helper} & \textbf{Behavior} \\
+\midrule
+\code{RouteMethodValidation} & Checks exact route and required HTTP method. On mismatch, renders the HTML error page. \\
+\code{AuthorizeRequest} & Requires \code{session-id} and \code{user-login}, then verifies the session exists and has not timed out. \\
+\code{CheckAdministratorRole} & Verifies that the current \code{user-login} exists in the \code{Administrator} table. \\
+\code{HandleCommonError} & Builds a \code{models.ErrorPage}, renders \file{errors.html}, and logs the backend error. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Role Summary}
+
+\begin{longtable}{P{0.20\textwidth} P{0.70\textwidth}}
+\toprule
+\textbf{Role} & \textbf{Capabilities} \\
+\midrule
+Visitor & Reads public pages and public list/detail APIs. \\
+Manager & Accesses the control panel; creates and updates events, participants, members, projects, announcements, publications, datasets, and photos; updates own profile. \\
+Administrator & Has manager privileges plus administrator-only operations such as deleting most managed records and creating/deleting managers. \\
+\bottomrule
+\end{longtable}
+
+\section{Frontend Pages}
+
+All page handlers serve HTML templates with \code{text/html; charset=utf-8}. Static assets are referenced with absolute \code{http://localhost:9992/static/...} URLs throughout the templates.
+
+\subsection{Public Pages}
+
+\begin{longtable}{P{0.24\textwidth} P{0.25\textwidth} P{0.41\textwidth}}
+\toprule
+\textbf{Route} & \textbf{Template} & \textbf{Behavior} \\
+\midrule
+\route{/} & \file{index.html} & Home page. Receives the current year from Go and loads recent announcements through JavaScript. \\
+\route{/members/} & \file{members.html} & Public list of ISM Lab members. JavaScript fetches \route{/api/members/list/?target=all}. \\
+\route{/events/} & \file{events.html} & Public events page. JavaScript fetches all events and can load a single event detail. \\
+\route{/participants/} & \file{participants.html} & Public participant browser grouped by event. \\
+\route{/projects/} & \file{projects.html} & Public projects list using the shared collection-page renderer. \\
+\route{/announcements/} & \file{announcements.html} & Public announcements list using the shared collection-page renderer. \\
+\route{/publications/} & \file{publications.html} & Public publications list using the shared collection-page renderer. \\
+\route{/datasets/} & \file{datasets.html} & Public datasets list using the shared collection-page renderer. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Control Panel Pages}
+
+All control-panel pages require a valid signed-in session before the template is served.
+
+\begin{longtable}{P{0.35\textwidth} P{0.28\textwidth} P{0.27\textwidth}}
+\toprule
+\textbf{Route} & \textbf{Template} & \textbf{Behavior} \\
+\midrule
+\route{/control/panel/login/} & \file{login.html} & Login form. JavaScript calls \route{/api/sessions/login/}. \\
+\route{/control/panel/} & \file{panel.html} & Protected dashboard. Shows active sessions and recent announcements/events. \\
+\route{/control/panel/managers/} & \file{managers.html} & Administrator-only manager administration page. \\
+\route{/control/panel/events/} & \file{control\_events.html} & Create, update, delete, and view events. Includes rich-text description tools and photo insertion. \\
+\route{/control/panel/participants/} & \file{control\_participants.html} & Manage participants for events. \\
+\route{/control/panel/members/} & \file{control\_members.html} & Manage lab member profiles and icons. \\
+\route{/control/panel/projects/} & \file{control\_projects.html} & Manage projects through shared collection-page JavaScript. \\
+\route{/control/panel/announcements/} & \file{control\_announcements.html} & Manage announcements through shared collection-page JavaScript. \\
+\route{/control/panel/publications/} & \file{control\_publications.html} & Manage publications through shared collection-page JavaScript. \\
+\route{/control/panel/datasets/} & \file{control\_datasets.html} & Manage datasets through shared collection-page JavaScript. \\
+\route{/control/panel/personal/} & \file{personal.html} & View and update the signed-in user profile and password. \\
+\bottomrule
+\end{longtable}
+
+\section{Client-Side JavaScript}
+
+\subsection{Shared Collection Renderer}
+
+\file{web/UI/static/js/build\_collection\_page.js} is used by projects, announcements, publications, and datasets on both visitor and control pages. The page declares:
+
+\begin{itemize}
+  \item \code{data-section}: one of \code{projects}, \code{announcements}, \code{publications}, or \code{datasets}.
+  \item \code{data-mode}: \code{visitor} or \code{control}.
+\end{itemize}
+
+The script selects the correct list, create, update, and erase endpoints; renders cards; opens modal forms on control pages; handles submission; and sanitizes rich description HTML before inserting it into the page. Rich text supports heading, bold, italic, and image insertion for fields marked as rich descriptions.
+
+\subsection{Specialized Scripts}
+
+\begin{longtable}{P{0.40\textwidth} P{0.50\textwidth}}
+\toprule
+\textbf{Script} & \textbf{Behavior} \\
+\midrule
+\file{build\_index.js} & Loads announcements for the home page and formats/truncates announcement descriptions. \\
+\file{build\_login.js} & Handles control-panel sign-in, cookie setup, and redirect to the panel. \\
+\file{build\_panel.js} & Loads dashboard summaries, active sessions, and logout behavior. \\
+\file{build\_events.js} & Loads public event cards and single-event details; sanitizes rich event descriptions. \\
+\file{build\_control\_events.js} & Handles event creation, update, deletion, rich-text editing, and photo upload. \\
+\file{build\_participants.js} & Shows events first, then participants for a selected event. \\
+\file{build\_control\_participants.js} & Manages participant CRUD workflows and logout. \\
+\file{build\_members.js} & Loads public member cards. \\
+\file{build\_control\_members.js} & Manages member CRUD workflows and member icon upload. \\
+\file{build\_managers.js} & Administrator page for listing, creating, updating, deleting, and changing manager profile photos. \\
+\file{build\_personal.js} & Detects the current user from active sessions, loads administrator or manager data, updates profile data, and updates passwords. \\
+\bottomrule
+\end{longtable}
+
+\section{API Reference}
+
+Unless otherwise stated, successful list endpoints return JSON, successful create/update/delete endpoints return HTTP success status, and failed handlers render the HTML error page from \file{web/UI/templates/errors.html}.
+
+\subsection{Authentication and Sessions}
+
+\begin{longtable}{P{0.10\textwidth} P{0.34\textwidth} P{0.32\textwidth} P{0.14\textwidth}}
+\toprule
+\textbf{Method} & \textbf{Route} & \textbf{Input} & \textbf{Access} \\
+\midrule
+GET & \route{/api/sessions/active/} & Cookies: \code{session-id}, \code{user-login} & Signed-in users \\
+POST & \route{/api/sessions/login/} & Cookies: \code{user-login}, \code{password-hash} & Login attempt \\
+PUT & \route{/api/sessions/refresh/} & Cookies: \code{session-id}, \code{user-login} & Signed-in users \\
+DELETE & \route{/api/sessions/logout/} & Cookies: \code{session-id}, \code{user-login} & Signed-in users \\
+\bottomrule
+\end{longtable}
+
+\subsection{Photos}
+
+\begin{longtable}{P{0.10\textwidth} P{0.31\textwidth} P{0.35\textwidth} P{0.14\textwidth}}
+\toprule
+\textbf{Method} & \textbf{Route} & \textbf{Input} & \textbf{Access} \\
+\midrule
+GET & \route{/api/photo/list/} & Query: exactly one of \code{photo\_id} or \code{photo\_url} & Public \\
+POST & \route{/api/photo/create/} & JSON: \code{photo\_description}, \code{photo} & Signed-in users \\
+PUT & \route{/api/photo/update/} & Query: \code{photo\_id} or \code{photo\_url}; JSON upload body & Signed-in users \\
+DELETE & \route{/api/photo/erase/} & Query: \code{photo\_id} or \code{photo\_url} & Signed-in users \\
+\bottomrule
+\end{longtable}
+
+Photo creation stores the bytes in PostgreSQL and writes the file into \file{web/UI/static/icons/}. The generated URL has the form \route{/static/icons/<login>\_<timestamp>\_<count>\_<description>}.
+
+\subsection{Administrator and Manager Accounts}
+
+\begin{longtable}{P{0.10\textwidth} P{0.33\textwidth} P{0.33\textwidth} P{0.14\textwidth}}
+\toprule
+\textbf{Method} & \textbf{Route} & \textbf{Input} & \textbf{Access} \\
+\midrule
+GET & \route{/api/manager/list/} & Query: \code{target=all}, \code{mng\_login}, or \code{mng\_email} & Signed-in users \\
+POST & \route{/api/manager/create/} & JSON manager body plus \code{password-hash} cookie & Admin \\
+PUT & \route{/api/manager/update/} & Query: \code{mng\_login} or \code{mng\_email}; JSON manager body & Signed-in users \\
+DELETE & \route{/api/manager/erase/} & Query: \code{mng\_login} or \code{mng\_email} & Admin \\
+GET & \route{/api/admin/list/} & Query: \code{user\_login} & Signed-in users \\
+PUT & \route{/api/admin/update/} & JSON admin body & Admin \\
+PUT & \route{/api/password/update/} & Cookie: \code{password-hash} & Signed-in users \\
+\bottomrule
+\end{longtable}
+
+\subsection{Events}
+
+\begin{longtable}{P{0.10\textwidth} P{0.31\textwidth} P{0.35\textwidth} P{0.14\textwidth}}
+\toprule
+\textbf{Method} & \textbf{Route} & \textbf{Input} & \textbf{Access} \\
+\midrule
+GET & \route{/api/events/list/} & Query: \code{target=all} or \code{event\_id} & Public \\
+POST & \route{/api/events/create/} & JSON \code{EventsData}; \code{event\_id} may be generated from title & Signed-in users \\
+PUT & \route{/api/events/update/} & Query: \code{event\_id}; JSON \code{EventsData} & Signed-in users \\
+DELETE & \route{/api/events/erase/} & Query: \code{event\_id} & Admin \\
+\bottomrule
+\end{longtable}
+
+Event descriptions are rich text on the control page and are sanitized before rendering on the visitor side.
+
+\subsection{Participants}
+
+\begin{longtable}{P{0.10\textwidth} P{0.34\textwidth} P{0.32\textwidth} P{0.14\textwidth}}
+\toprule
+\textbf{Method} & \textbf{Route} & \textbf{Input} & \textbf{Access} \\
+\midrule
+GET & \route{/api/participants/list/} & Query: \code{target=all}, \code{participant\_id}, or \code{attending\_event} & Public \\
+POST & \route{/api/participants/create/} & JSON \code{ParticipantData}; referenced event must exist & Signed-in users \\
+PUT & \route{/api/participants/update/} & Query: \code{participant\_id}; JSON \code{ParticipantData} & Signed-in users \\
+DELETE & \route{/api/participants/erase/} & Query: \code{participant\_id} & Admin \\
+\bottomrule
+\end{longtable}
+
+\subsection{Members}
+
+\begin{longtable}{P{0.10\textwidth} P{0.31\textwidth} P{0.35\textwidth} P{0.14\textwidth}}
+\toprule
+\textbf{Method} & \textbf{Route} & \textbf{Input} & \textbf{Access} \\
+\midrule
+GET & \route{/api/members/list/} & Query: \code{target=all}, \code{member\_id}, or \code{member\_email} & Public \\
+POST & \route{/api/members/create/} & JSON \code{MemberData}; email must be unique & Signed-in users \\
+PUT & \route{/api/members/update/} & Query: \code{member\_id} or \code{member\_email}; JSON \code{MemberData} & Signed-in users \\
+DELETE & \route{/api/members/erase/} & Query: \code{member\_id} or \code{member\_email} & Admin \\
+\bottomrule
+\end{longtable}
+
+\subsection{Projects, Announcements, Publications, and Datasets}
+
+These four content types use nearly identical CRUD conventions and are largely driven by the shared JavaScript collection renderer.
+
+\begin{longtable}{P{0.18\textwidth} P{0.15\textwidth} P{0.42\textwidth} P{0.15\textwidth}}
+\toprule
+\textbf{Entity} & \textbf{Operation} & \textbf{Route and query} & \textbf{Access} \\
+\midrule
+Projects & List & GET \route{/api/projects/list/?target=all} or \route{?project\_id=} & Public \\
+Projects & Create & POST \route{/api/projects/create/} & Signed-in users \\
+Projects & Update & PUT \route{/api/projects/update/?project\_id=} & Signed-in users \\
+Projects & Delete & DELETE \route{/api/projects/erase/?project\_id=} & Admin \\
+\midrule
+Announcements & List & GET \route{/api/announcements/list/?target=all} or \route{?announce\_id=} & Public \\
+Announcements & Create & POST \route{/api/announcements/create/} & Signed-in users \\
+Announcements & Update & PUT \route{/api/announcements/update/?announce\_id=} & Signed-in users \\
+Announcements & Delete & DELETE \route{/api/announcements/erase/?announce\_id=} & Admin \\
+\midrule
+Publications & List & GET \route{/api/publications/list/?target=all} or \route{?pub\_id=} & Public \\
+Publications & Create & POST \route{/api/publications/create/} & Signed-in users \\
+Publications & Update & PUT \route{/api/publications/update/?pub\_id=} & Signed-in users \\
+Publications & Delete & DELETE \route{/api/publications/erase/?pub\_id=} & Admin \\
+\midrule
+Datasets & List & GET \route{/api/datasets/list/?target=all} or \route{?data\_id=} & Public \\
+Datasets & Create & POST \route{/api/datasets/create/} & Signed-in users \\
+Datasets & Update & PUT \route{/api/datasets/update/?data\_id=} & Signed-in users \\
+Datasets & Delete & DELETE \route{/api/datasets/erase/?data\_id=} & Admin \\
+\bottomrule
+\end{longtable}
+
+\section{Error Handling}
+
+Most handlers validate both the exact URL path and HTTP method. On failure, they render \file{web/UI/templates/errors.html} with:
+
+\begin{itemize}
+  \item numeric HTTP status code,
+  \item official HTTP status text,
+  \item project-specific explanation.
+\end{itemize}
+
+The same error page is also used for authorization failures, incorrect query formats, malformed JSON request bodies, missing records, and internal database errors.
+
+\section{Security Notes}
+
+\begin{itemize}
+  \item The code uses parameterized SQL values in most queries, which is the right baseline for PostgreSQL safety.
+  \item Some member handlers construct a SQL column name with \code{fmt.Sprintf}; the selected column is derived from validated query-key choices, which limits injection risk.
+  \item Sessions are stored server-side and checked before protected operations.
+  \item Session cookies are HTTP-only and use \code{SameSite=Lax}.
+  \item Rich HTML descriptions are sanitized in frontend JavaScript before rendering.
+  \item Database credentials are hard-coded in source and should be moved out of the repository for production.
+  \item Password hashing is currently inconsistent: the CLI hashes entered passwords with SHA-256 before calling insertion helpers, and insertion/login logic applies SHA-512. A future cleanup should standardize this into one server-side password hashing path with a password-specific algorithm such as bcrypt, scrypt, or Argon2.
+\end{itemize}
+
+\section{Content Management Workflows}
+
+\subsection{Visitor Workflow}
+
+Visitors navigate from the home page to public content pages. Public pages fetch records through list endpoints with \code{target=all} or a specific identifier query. Visitors do not see create, update, or delete controls.
+
+\subsection{Manager Workflow}
+
+Managers sign in at \route{/control/panel/login/}. After authentication they can access the control panel and content management pages. They can generally create and update content, upload photos, and update their own account information. They cannot perform administrator-only deletion and manager-account operations.
+
+\subsection{Administrator Workflow}
+
+Administrators use the same login and control panel but have elevated privileges. They can create/delete managers, delete managed records, update administrator data, and perform all manager-level content operations.
+
+\section{Static Assets and Uploaded Photos}
+
+The folder \file{web/UI/static/icons/} contains the favicon, default profile image, and existing content images. The photo API writes uploaded files into this folder and stores matching metadata in the \code{Photo} database table. The application expects photo URLs to use the \route{/static/icons/...} route.
+
+\section{Testing}
+
+The project instructions specify:
+
+\begin{verbatim}
+go test ./...
+\end{verbatim}
+
+This should be run before code changes are considered complete. At the time this documentation was written, no test files were visible in the project tree, so this command primarily verifies that all packages compile.
+
+\section{Maintenance Guidelines}
+
+\begin{itemize}
+  \item Keep database access in \file{database/} or backend API handlers that are already responsible for database transactions.
+  \item Keep public and control-panel page serving in \file{frontend/}.
+  \item Keep API request handling in \file{backend/} and its content subpackages.
+  \item Do not change public API routes without coordinating frontend JavaScript changes.
+  \item Do not modify database migrations unless intentionally changing schema for a new deployment.
+  \item Preserve the existing vanilla JavaScript approach; the frontend does not use React, Vue, Angular, or similar frameworks.
+  \item Use \code{context.Context} for database calls.
+  \item Avoid \code{SELECT *}; all current queries select explicit columns.
+  \item Escape or sanitize data before inserting it into HTML. Server templates use Go \code{html/template}; rich client-rendered HTML is sanitized in JavaScript.
+\end{itemize}
+
+\section{Known Improvement Areas}
+
+\begin{itemize}
+  \item Move database configuration and credentials to environment variables.
+  \item Standardize password hashing and avoid passing password data through client-set cookies.
+  \item Add automated tests for route validation, authorization, CRUD handlers, and JavaScript API contracts.
+  \item Add migration tooling and versioned schema changes instead of a single initial SQL file.
+  \item Consider serving relative asset URLs so deployment is not tied to \code{localhost:9992}.
+  \item Add structured logging and consistent response bodies for API errors.
+  \item Review the \code{Sessions} foreign-key design, because a single \code{UserLogin} column attempts to relate to both administrator and manager tables.
+\end{itemize}
+
+\end{document}

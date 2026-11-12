@@ -1,0 +1,5 @@
+@import url("http://localhost:9992/static/css/control_events.css");
+
+.modal-card + .modal-card,
+.account-form { margin-top: 14px; }
+.data-card .description-block { grid-column: 1 / -1; }
