@@ -1,0 +1,173 @@
+---
+import "../styles/global.css";
+import "lenis/dist/lenis.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const nav = [
+  ["/research", "Research"],
+  ["/people", "People"],
+  ["/publications", "Publications"],
+  ["/data", "Data"],
+  ["/news", "News"],
+  ["/contact", "Contact"],
+];
+const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title} · ISM group`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/webb/tarantula-1920.webp" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="console" aria-hidden="true">
+      <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
+      <div class="scrollrule"><i id="srule"></i></div>
+      <div class="bar bottom"><span id="lst">LST Astana --:--</span><span class="hide-sm" id="lmcalt">LMC alt --</span><span id="zread">Z 0.000</span></div>
+    </div>
+    <header class="topbar">
+      <a href="/" class="logo dot" aria-label="ISM group home">ISM/NU</a>
+      <nav aria-label="Main">
+        <ul>
+          {nav.map(([href, label]) => (
+            <li><a href={href} aria-current={path.startsWith(href) ? "page" : undefined}>{label}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <span class="clock" id="clock" aria-hidden="true">UTC --:--:--</span>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+    </header>
+    <div class="menu" id="menu" hidden>
+      <ul>
+        <li><a href="/" class="brut">Home</a></li>
+        {nav.map(([href, label]) => <li><a href={href} class="brut">{label}</a></li>)}
+      </ul>
+      <p class="label">Interstellar medium group · Nazarbayev University · Astana</p>
+    </div>
+
+    <main id="main"><slot /></main>
+
+    <footer class="foot gut">
+      <div class="max foot-grid">
+        <div>
+          <span class="dot foot-logo">ISM/NU</span>
+          <p>Interstellar medium group, Department of Physics, Nazarbayev University, Astana.</p>
+        </div>
+        <div>
+          <span class="label">Pages</span>
+          <ul>{nav.map(([href, label]) => <li><a href={href}>{label}</a></li>)}</ul>
+        </div>
+        <div>
+          <span class="label">Credits</span>
+          <p>Webb images: NASA, ESA, CSA, STScI, via ESA/Webb (CC BY 4.0). Planck HFI 353 GHz: ESA. GASS H I: Parkes, CSIRO (Kalberla and Haud 2015). MAGMA CO: Wong et al. 2011.</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) var(--gut-r) 0 var(--gut); display: flex; align-items: center; gap: 20px; font: 600 10.5px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); mix-blend-mode: difference; }
+  .topbar .logo { font-size: 16px; letter-spacing: 0.06em; text-decoration: none; }
+  .topbar nav { flex: 1; display: flex; justify-content: center; }
+  .topbar ul { list-style: none; margin: 0; padding: 0; display: flex; gap: clamp(12px, 2vw, 28px); }
+  .topbar nav a { text-decoration: none; padding: 8px 0; display: inline-block; }
+  .topbar nav a:hover, .topbar nav a[aria-current="page"] { text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: 5px; }
+  .topbar .clock { font-variant-numeric: tabular-nums; min-width: 13ch; text-align: right; }
+  .menu-btn { display: none; background: none; border: 1px solid currentColor; padding: 6px 10px; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+  @media (max-width: 860px) {
+    .topbar nav, .topbar .clock { display: none; }
+    .topbar { justify-content: space-between; }
+    .menu-btn { display: inline-block; }
+  }
+  .menu { position: fixed; inset: 0; z-index: 35; background: var(--void); padding: calc(var(--bar-h) + 40px) var(--gut-r) 40px var(--gut); display: grid; align-content: space-between; }
+  .menu[hidden] { display: none; }
+  .menu ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .menu a { font-size: clamp(3rem, 14vw, 6rem); text-decoration: none; display: block; }
+  .menu a:hover { color: var(--signal); }
+
+  .console { position: fixed; inset: 0; pointer-events: none; z-index: 30; }
+  .console .bar { position: absolute; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px var(--gut-r) 10px var(--gut); font: 600 10.5px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); mix-blend-mode: difference; font-variant-numeric: tabular-nums; }
+  .console .bottom { bottom: env(safe-area-inset-bottom, 0px); }
+  .corner { position: absolute; width: 14px; height: 14px; border-color: var(--ink); border-style: solid; opacity: 0.6; mix-blend-mode: difference; }
+  .c1 { top: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); left: var(--gut); border-width: 1px 0 0 1px; }
+  .c2 { top: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); right: var(--gut-r); border-width: 1px 1px 0 0; }
+  .c3 { bottom: calc(34px + env(safe-area-inset-bottom, 0px)); left: var(--gut); border-width: 0 0 1px 1px; }
+  .c4 { bottom: calc(34px + env(safe-area-inset-bottom, 0px)); right: var(--gut-r); border-width: 0 1px 1px 0; }
+  .scrollrule { position: absolute; right: max(4px, env(safe-area-inset-right, 0px)); top: 20%; bottom: 20%; width: 8px; background: repeating-linear-gradient(to bottom, var(--hair) 0 1px, transparent 1px 10px); mix-blend-mode: difference; }
+  .scrollrule i { position: absolute; left: -3px; width: 14px; height: 2px; background: var(--signal); top: 0; box-shadow: 0 0 8px var(--signal); }
+  @media (max-width: 640px) { .console .hide-sm { display: none; } }
+
+  .foot { border-top: 1px solid var(--hair); padding-block: 56px calc(90px + env(safe-area-inset-bottom, 0px)); font-size: 12px; color: var(--grey); }
+  .foot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 32px; }
+  .foot-grid > div { display: grid; gap: 10px; align-content: start; }
+  .foot-logo { font-size: 28px; color: var(--ink); }
+  .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .foot a { color: var(--ink); }
+</style>
+
+<script>
+  import { onFrame, scramble } from "../scripts/motion";
+
+  // Headings marked data-scramble resolve from glyphs once, when first seen.
+  const so = new IntersectionObserver((es) => {
+    for (const e of es) if (e.isIntersecting) { scramble(e.target as HTMLElement); so.unobserve(e.target); }
+  }, { threshold: 0.6 });
+  document.querySelectorAll("[data-scramble]").forEach((el) => so.observe(el));
+
+  const LON = 71.4306, LAT = 51.1694, RA_LMC = 80.894, DEC_LMC = -69.756;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const $ = (id: string) => document.getElementById(id)!;
+  function tick() {
+    const now = new Date();
+    $("clock").textContent = `UTC ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
+    const d = now.getTime() / 86400000 + 2440587.5 - 2451545.0;
+    let gmst = (18.697374558 + 24.06570982441908 * d) % 24;
+    if (gmst < 0) gmst += 24;
+    const lst = (gmst + LON / 15) % 24;
+    $("lst").textContent = `LST Astana ${pad(Math.floor(lst))}:${pad(Math.floor((lst % 1) * 60))}`;
+    const r = Math.PI / 180;
+    const H = (lst * 15 - RA_LMC) * r;
+    const alt = Math.asin(Math.sin(LAT * r) * Math.sin(DEC_LMC * r) + Math.cos(LAT * r) * Math.cos(DEC_LMC * r) * Math.cos(H)) / r;
+    // The LMC never rises at Astana's latitude, so this is always negative.
+    $("lmcalt").textContent = `LMC alt ${alt.toFixed(1)}° · below horizon`;
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  const srule = $("srule"), zread = $("zread");
+  let lastY = -1;
+  onFrame(() => {
+    if (scrollY === lastY) return;
+    lastY = scrollY;
+    const h = document.documentElement.scrollHeight - innerHeight;
+    const z = h > 0 ? scrollY / h : 0;
+    srule.style.top = (z * 100).toFixed(2) + "%";
+    zread.textContent = "Z " + z.toFixed(3);
+  });
+
+  const btn = document.querySelector<HTMLButtonElement>(".menu-btn")!;
+  const menu = $("menu");
+  const setMenu = (open: boolean) => {
+    menu.hidden = !open;
+    btn.setAttribute("aria-expanded", String(open));
+    btn.textContent = open ? "Close" : "Menu";
+    document.documentElement.style.overflow = open ? "hidden" : "";
+  };
+  btn.addEventListener("click", () => setMenu(menu.hidden));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !menu.hidden) { setMenu(false); btn.focus(); } });
+</script>

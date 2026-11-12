@@ -1,0 +1,75 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import PaperList from "../components/PaperList.astro";
+import { papers, groups } from "../lib/pubs";
+
+const sections = groups.map((g) => ({ g, items: papers.filter((p) => p.group === g) })).filter((s) => s.items.length);
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z]+/g, "-");
+const cites = papers.reduce((a, p) => a + p.citations, 0);
+const years = papers.map((p) => p.year);
+const span = `${Math.min(...years)}–${Math.max(...years)}`;
+// Papers per year, for the bar strip.
+const perYear = Array.from({ length: Math.max(...years) - Math.min(...years) + 1 }, (_, i) => {
+  const y = Math.min(...years) + i;
+  return { y, n: papers.filter((p) => p.year === y).length };
+});
+const maxN = Math.max(...perYear.map((d) => d.n));
+---
+
+<Base title="Publications" description="Publications of the ISM group from NASA ADS.">
+  <PageHead label="Publications" title="Papers" intro="Everything published, from NASA ADS. Titles link to the journal version or arXiv.">
+    <dl class="stats">
+      <div><dt class="label">Entries</dt><dd class="dot">{papers.length}</dd></div>
+      <div><dt class="label">Citations</dt><dd class="dot">{cites}</dd></div>
+      <div><dt class="label">Years</dt><dd class="dot">{span}</dd></div>
+    </dl>
+  </PageHead>
+
+  <section class="sec" style="padding-top:clamp(32px,5vw,64px)">
+    <div class="gut max">
+      <figure class="years" aria-label="Entries per year">
+        {perYear.map((d) => (
+          <div class="yb" title={`${d.y}: ${d.n}`}>
+            <i style={`height:${(d.n / maxN) * 100}%`}></i>
+            <span>{d.y % 5 === 0 || d.y === perYear.at(-1)!.y ? d.y : ""}</span>
+          </div>
+        ))}
+      </figure>
+      <nav class="jump" aria-label="Sections">
+        {sections.map((s) => <a href={`#${slug(s.g)}`} class="tag">{s.g} &middot; {s.items.length}</a>)}
+      </nav>
+    </div>
+  </section>
+
+  {sections.map((s, i) => (
+    <section class:list={["sec", { slab: i === 0 }]} id={slug(s.g)} aria-labelledby={`${slug(s.g)}-h`} style="padding-block:clamp(48px,7vw,96px)">
+      <div class="gut max">
+        <div class="head">
+          <span class="label">{String(i + 1).padStart(2, "0")}</span>
+          <h2 class="brut" id={`${slug(s.g)}-h`}>{s.g}</h2>
+          <p>{s.items.length} entries</p>
+        </div>
+        <div style="margin-top:24px"><PaperList items={s.items} /></div>
+      </div>
+    </section>
+  ))}
+
+  <section class="sec tight">
+    <div class="gut max"><p class="label">Source: NASA ADS, query <code>{`author:"Alina, D"`}</code>, refreshed with scripts/fetch_publications.py.</p></div>
+  </section>
+</Base>
+
+<style>
+  .stats { display: flex; flex-wrap: wrap; gap: 28px 48px; margin: 8px 0 0; }
+  .stats div { display: grid; gap: 6px; }
+  .stats dd { margin: 0; font-size: clamp(2rem, 1rem + 3vw, 3.6rem); line-height: 0.9; }
+  .years { margin: 0; display: flex; align-items: end; gap: 3px; height: 120px; border-bottom: 1px solid var(--hair); }
+  .yb { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: end; position: relative; }
+  .yb i { display: block; background: var(--ink); min-height: 1px; }
+  .yb:hover i { background: var(--signal); }
+  .yb span { position: absolute; top: 100%; left: 0; margin-top: 6px; font-size: 10px; color: var(--grey); }
+  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 40px; }
+  .jump a { text-decoration: none; }
+  .jump a:hover { background: var(--ink); color: var(--void); }
+</style>

@@ -1,0 +1,120 @@
+---
+// Regions the group has published on, joined to the instruments and methods
+// used. Every solid edge cites a paper; dashed edges are work in progress.
+// On narrow screens the layout is transposed (x <-> y) into a tall graph.
+type Kind = "region" | "inst" | "method";
+const nodes: { id: string; l: string; k: Kind; x: number; y: number; href?: string }[] = [
+  { id: "lmc", l: "LMC", k: "region", x: 50, y: 50, href: "/research/lmc" },
+  { id: "orion", l: "Orion", k: "region", x: 18, y: 22, href: "/research/star-formation" },
+  { id: "mon", l: "Mon OB1", k: "region", x: 16, y: 80, href: "/research/star-formation" },
+  { id: "gc", l: "Galactic Centre", k: "region", x: 80, y: 16, href: "/research/dust-polarization" },
+  { id: "mbm", l: "MBM 12", k: "region", x: 86, y: 80, href: "/research/star-formation" },
+  { id: "ngc253", l: "NGC 253", k: "region", x: 50, y: 92, href: "/research/star-formation" },
+  { id: "g34", l: "G34.43", k: "region", x: 42, y: 8, href: "/research/star-formation" },
+  { id: "g286", l: "G286.21", k: "region", x: 30, y: 92, href: "/research/star-formation" },
+  { id: "planck", l: "Planck", k: "inst", x: 34, y: 46 },
+  { id: "pilot", l: "PILOT", k: "inst", x: 68, y: 28 },
+  { id: "alma", l: "ALMA", k: "inst", x: 36, y: 74 },
+  { id: "jwst", l: "JWST", k: "inst", x: 8, y: 46 },
+  { id: "jcmt", l: "JCMT POL-2", k: "inst", x: 62, y: 6 },
+  { id: "askap", l: "ASKAP H I", k: "inst", x: 70, y: 56 },
+  { id: "trao", l: "TRAO", k: "inst", x: 74, y: 88 },
+  { id: "herschel", l: "Herschel", k: "inst", x: 12, y: 62 },
+  { id: "vgt", l: "VGT", k: "method", x: 90, y: 46 },
+  { id: "rohsa", l: "Gauss decomp.", k: "method", x: 58, y: 72 },
+  { id: "ml", l: "Filament ML", k: "method", x: 24, y: 60 },
+];
+const edges: { a: string; b: string; note: string; soon?: boolean }[] = [
+  { a: "lmc", b: "planck", note: "Polarized dust emission of the LMC with Planck (Alina et al. 2023, MNRAS 518)." },
+  { a: "lmc", b: "askap", note: "LMC field from atomic gas and foreground separation (Alina et al. 2026, IAU Symp. 392)." },
+  { a: "askap", b: "vgt", note: "Field from velocity gradients in GASKAP-HI data. Coming soon.", soon: true },
+  { a: "askap", b: "rohsa", note: "Cold and warm H I separated by Gaussian decomposition. Coming soon.", soon: true },
+  { a: "orion", b: "alma", note: "Prestellar cores in Orion cold clumps (ALMASOP, Sahu et al. 2021, ApJL 907)." },
+  { a: "orion", b: "jwst", note: "Mass inflow in OMC-3 (JWST Cycle 4 proposal 7433, 2025)." },
+  { a: "mon", b: "planck", note: "Large-scale field in Monoceros OB1 east (Alina et al. 2022, A&A 658)." },
+  { a: "gc", b: "pilot", note: "Field geometry in the central molecular zone from PILOT (Mangilli et al. 2019, A&A 630)." },
+  { a: "ngc253", b: "alma", note: "Dust polarization in the centre of NGC 253 with ALMA (2025, A&A 697)." },
+  { a: "g34", b: "jcmt", note: "Magnetic fields in IRDC G34.43+0.24 (Soam et al. 2019, ApJ 883)." },
+  { a: "g286", b: "jwst", note: "A compact hub-filament system in G286.21+0.17 (2026, MNRAS 552)." },
+  { a: "g286", b: "alma", note: "A compact hub-filament system in G286.21+0.17 (2026, MNRAS 552)." },
+  { a: "mbm", b: "trao", note: "B-FROST: CO and field orientation in MBM 12 (Vorster et al. 2026, A&A 711)." },
+  { a: "planck", b: "ml", note: "Filaments hosting Planck cold clumps against the field (Alina et al. 2019, MNRAS 485)." },
+  { a: "herschel", b: "ml", note: "Filament and field orientations from Herschel and Planck (2026, A&A 711)." },
+];
+const by = Object.fromEntries(nodes.map((n) => [n.id, n]));
+---
+
+<div class="graph" id="graph">
+  {[false, true].map((swap) => (
+    <svg class={swap ? "lines tall" : "lines wide"} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      {edges.map((e, i) => {
+        const a = by[e.a], b = by[e.b];
+        return swap
+          ? <line data-e={i} class={e.soon ? "soon" : ""} x1={a.y} y1={a.x} x2={b.y} y2={b.x} vector-effect="non-scaling-stroke" />
+          : <line data-e={i} class={e.soon ? "soon" : ""} x1={a.x} y1={a.y} x2={b.x} y2={b.y} vector-effect="non-scaling-stroke" />;
+      })}
+    </svg>
+  ))}
+  {nodes.map((n) => (
+    <button type="button" class={`node ${n.k}${n.x > 72 ? " flip" : ""}${n.y > 72 ? " flip-m" : ""}`} data-id={n.id} data-href={n.href ?? ""} style={`--x:${n.x};--y:${n.y}`}>
+      <i></i><span>{n.l}</span>
+    </button>
+  ))}
+</div>
+<p class="note" id="graphNote" aria-live="polite">Select a region, telescope or method to see the papers that connect them.</p>
+<script type="application/json" id="graphData" set:html={JSON.stringify(edges)}></script>
+
+<style>
+  .graph { position: relative; margin-top: 40px; aspect-ratio: 16 / 9; width: 100%; }
+  .lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .lines.tall { display: none; }
+  line { stroke: rgba(10, 10, 11, 0.3); stroke-width: 1; }
+  line.soon { stroke-dasharray: 4 4; }
+  line.hot { stroke: var(--signal); stroke-width: 1.8; }
+  .node { position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); translate: -4px -50%; display: flex; align-items: center; gap: 7px; background: none; border: 0; padding: 4px; cursor: pointer; color: var(--on-paper); }
+  .node i { width: 7px; height: 7px; background: currentColor; flex: none; }
+  .node span { font: 600 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; background: var(--paper); padding: 2px; }
+  .node.region i { width: 11px; height: 11px; }
+  .node.region span { font-family: var(--brut); font-stretch: 62%; font-weight: 800; font-size: clamp(15px, 0.8rem + 0.6vw, 22px); letter-spacing: 0; }
+  .node.method i { border-radius: 50%; background: none; border: 1.5px solid currentColor; }
+  .node.flip { flex-direction: row-reverse; translate: calc(-100% + 4px) -50%; }
+  .node.hot { color: #d42a12; }
+  .node.dim { opacity: 0.35; }
+  .note { margin-top: 16px; min-height: 4.8em; font-size: 13px; max-width: 72ch; }
+  .note :global(a) { margin-left: 4px; }
+  @media (max-width: 700px) {
+    .graph { aspect-ratio: 9 / 15; }
+    .lines.wide { display: none; }
+    .lines.tall { display: block; }
+    .node { left: calc(var(--y) * 1%); top: calc(var(--x) * 1%); }
+    .node span { font-size: 10px; }
+    .node.flip { flex-direction: row; translate: -4px -50%; }
+    .node.flip-m { flex-direction: row-reverse; translate: calc(-100% + 4px) -50%; }
+  }
+</style>
+
+<script>
+  const edges: { a: string; b: string; note: string }[] = JSON.parse(document.getElementById("graphData")!.textContent!);
+  const graph = document.getElementById("graph")!;
+  const note = document.getElementById("graphNote")!;
+  const nodes = [...graph.querySelectorAll<HTMLButtonElement>(".node")];
+  const lines = [...graph.querySelectorAll<SVGLineElement>("line")];
+  function hot(id: string) {
+    const linked = new Set([id]);
+    const notes: string[] = [];
+    edges.forEach((e, i) => {
+      const on = e.a === id || e.b === id;
+      lines.filter((l) => l.dataset.e === String(i)).forEach((l) => l.classList.toggle("hot", on));
+      if (on) { linked.add(e.a); linked.add(e.b); notes.push(e.note); }
+    });
+    nodes.forEach((n) => { n.classList.toggle("hot", linked.has(n.dataset.id!)); n.classList.toggle("dim", !linked.has(n.dataset.id!)); });
+    note.textContent = [...new Set(notes)].join(" ") || "No published link yet.";
+    const href = nodes.find((n) => n.dataset.id === id)?.dataset.href;
+    if (href) { const a = document.createElement("a"); a.href = href; a.textContent = "Open research →"; note.append(" ", a); }
+  }
+  nodes.forEach((n) => {
+    n.addEventListener("mouseenter", () => hot(n.dataset.id!));
+    n.addEventListener("focus", () => hot(n.dataset.id!));
+    n.addEventListener("click", () => hot(n.dataset.id!));
+  });
+</script>

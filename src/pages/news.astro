@@ -1,0 +1,50 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+
+const items = (await getCollection("news")).sort((a, b) => +b.data.date - +a.data.date);
+const rendered = await Promise.all(items.map(async (n) => ({ n, Content: (await render(n)).Content })));
+const today = new Date();
+const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
+---
+
+<Base title="News and events" description="News, seminars and events of the ISM group.">
+  <PageHead label="Log" title="News and events" intro="Seminars, schools, papers and people. Upcoming events carry a registration link." />
+  <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
+    <div class="gut max">
+      <ol class="feed">
+        {rendered.map(({ n, Content }) => {
+          const upcoming = n.data.kind === "event" && n.data.date >= today;
+          return (
+            <li id={n.id}>
+              <div class="when">
+                <span class="dot">{fmt(n.data.date)}</span>
+                <span class={n.data.kind === "event" ? "tag fill" : "tag"}>{n.data.kind}</span>
+                {upcoming && <span class="label red rec">Upcoming</span>}
+              </div>
+              <div class="what">
+                <h2 class="brut">{n.data.title}</h2>
+                {n.data.where && <span class="label">{n.data.where}</span>}
+                <div class="prose"><Content /></div>
+                {n.data.registration && upcoming && <a class="tag fill reg" href={n.data.registration}>Register &rarr;</a>}
+                {n.data.mock && <span class="tag soon">Placeholder</span>}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .feed { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--hair); }
+  .feed li { display: grid; grid-template-columns: minmax(180px, 260px) minmax(0, 1fr); gap: 18px 40px; padding: 32px 0; border-bottom: 1px solid var(--hair); scroll-margin-top: 80px; }
+  .when { display: grid; gap: 10px; align-content: start; justify-items: start; }
+  .when .dot { font-size: 28px; line-height: 1; }
+  .what { display: grid; gap: 12px; justify-items: start; }
+  h2 { font-size: clamp(2rem, 1.2rem + 2vw, 3.2rem); }
+  .reg { text-decoration: none; padding: 8px 12px; }
+  @media (max-width: 700px) { .feed li { grid-template-columns: minmax(0, 1fr); } }
+</style>

@@ -1,0 +1,36 @@
+---
+import { authorLine, link, titleHtml, venue, type Paper } from "../lib/pubs";
+interface Props { items: Paper[]; dense?: boolean }
+const { items, dense = false } = Astro.props;
+---
+
+<ol class:list={["papers", { dense }]}>
+  {items.map((p) => (
+    <li>
+      <span class="yr dot">{p.year}</span>
+      <div class="body">
+        <a class="ttl" href={link(p)} rel="noopener" set:html={titleHtml(p.title)} />
+        <span class="by">{authorLine(p)}</span>
+        <span class="ven">{venue(p)}{p.arxiv && <> · <a href={`https://arxiv.org/abs/${p.arxiv}`} rel="noopener">arXiv:{p.arxiv}</a></>}</span>
+      </div>
+      <span class="cit" title="Citations in ADS">{p.citations > 0 ? `${p.citations} cit.` : ""}</span>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .papers { list-style: none; margin: 0; padding: 0; border-top: 1px solid currentColor; }
+  li { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto; gap: 8px 20px; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); align-items: baseline; }
+  .yr { font-size: 22px; line-height: 1; }
+  .body { display: grid; gap: 4px; }
+  .ttl { font-weight: 600; font-size: 15px; line-height: 1.35; text-decoration: none; }
+  .ttl:hover { text-decoration: underline; text-decoration-color: var(--signal); }
+  .by, .ven { font-size: 12px; opacity: 0.72; }
+  .cit { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; white-space: nowrap; }
+  .dense li { padding: 12px 0; }
+  .dense .ttl { font-size: 14px; }
+  @media (max-width: 640px) {
+    li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .cit { display: none; }
+  }
+</style>

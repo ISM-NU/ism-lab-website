@@ -1,0 +1,25 @@
+---
+import Base from "../../layouts/Base.astro";
+import PageHead from "../../components/PageHead.astro";
+import ProjectCards from "../../components/ProjectCards.astro";
+import ResearchGraph from "../../components/ResearchGraph.astro";
+---
+
+<Base title="Research" description="Research lines of the ISM group: the LMC magnetic field, filaments, star-forming clouds and dust polarization methods.">
+  <PageHead label="Research" title="Magnetic fields between the stars"
+    intro="The group measures the magnetic field of interstellar gas and dust and asks what it does: whether it guides gas into filaments and cores, and how it is organised across a whole galaxy."
+    image="/sky/region-taurus.webp" caption="Taurus · Planck 353 GHz · field lines on dust" />
+  <section class="sec tight" style="padding-top:clamp(40px,6vw,80px)">
+    <div class="gut max"><ProjectCards /></div>
+  </section>
+  <section class="slab sec" aria-labelledby="graph-h">
+    <div class="gut max">
+      <div class="head">
+        <span class="label">Map of the work</span>
+        <h2 class="brut" id="graph-h">Regions, instruments, methods</h2>
+        <p>Solid lines are published papers. Dashed lines are work in progress.</p>
+      </div>
+      <ResearchGraph />
+    </div>
+  </section>
+</Base>

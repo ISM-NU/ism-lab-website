@@ -1,15 +1,18 @@
 """Render web-ready sky and LMC images from public survey data.
 
 Inputs (from the LMC workspace's shared data folder, LMC_DATA):
-  - H I: GASKAP-HI + Parkes combined cube on the GASS velocity range (K, 1 km/s)
+  - H I: any LMC cube in K (HI_CUBE). The default is the public GASS survey
+    (Parkes, 16'). The GASKAP-HI + Parkes cube we hold is collaboration-internal
+    and must not feed the public site until it is released.
   - CO: MAGMA CO(1-0) cube and its rms cube
   - Dust and magnetic field: Planck HFI 353 GHz I, Q, U (PR3, HEALPix, Galactic)
 
-Everything is put on one equatorial TAN grid (the H I grid binned by BIN), so
-the layers line up pixel for pixel and can be stacked or cross-faded in the
-browser. Outputs go to OUT as 8-bit images plus a small JSON with the grid.
+Everything is put on one fixed equatorial TAN grid (GRID below: 12 deg, 40"
+pixels), so the layers line up pixel for pixel and can be stacked or
+cross-faded in the browser. Outputs go to OUT as 8-bit images plus a small JSON
+with the grid. scripts/web_assets.py turns them into the site's files.
 
-Run: LMC_DATA=~/Projects/LMC/lmc-data python3 -I scripts/render_lmc.py
+Run: LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/render_lmc.py
 """
 
 import json
@@ -29,18 +32,25 @@ from scipy.ndimage import gaussian_filter, map_coordinates
 
 DATA = Path(os.environ.get("LMC_DATA", "~/Projects/LMC/lmc-data")).expanduser()
 OUT = Path(os.environ.get("OUT", Path(__file__).resolve().parent.parent / "assets" / "lmc"))
-BIN = 2  # 2174 px -> 1087 px, 40" pixels over the 12 deg field
 N_CHANNEL_FRAMES = 48
 
-HI_CUBE = DATA / "exp_raw/Tb_combined_LMC_182_339_res1_3pperb_reprojected_on_gass_masked.fits"
+# Fixed output grid. Do not change it without re-running web_assets.py: the
+# site's target positions and field grid are computed on it.
+GRID = {"NAXIS": 2, "NAXIS1": 1087, "NAXIS2": 1087, "CTYPE1": "RA---TAN", "CTYPE2": "DEC--TAN",
+        "CRVAL1": 81.1893661273, "CRVAL2": -68.5259351087, "CRPIX1": 543.75, "CRPIX2": 543.75,
+        "CDELT1": -0.0111111, "CDELT2": 0.0111111, "RADESYS": "FK5", "EQUINOX": 2000.0}
+SHAPE = (GRID["NAXIS2"], GRID["NAXIS1"])
+
+HI_CUBE = Path(os.environ.get("HI_CUBE", DATA / "exp_raw/eq_subcube_182to339_gass_279_-33_1444812272.fits"))
 CO_CUBE = DATA / "exp_raw/lmc_v11.co.vradlsr.base.fits"
 CO_RMS = DATA / "exp_raw/lmc_v11.co.vradlsr.rms.fits"
 PLANCK = DATA / "external/HFI_SkyMap_353-BPassCorrected_2048_R4.00_full.fits"
 
 
-def binned(a, b=BIN):
-    ny, nx = (a.shape[0] // b) * b, (a.shape[1] // b) * b
-    return np.nanmean(a[:ny, :nx].reshape(ny // b, b, nx // b, b), axis=(1, 3))
+def grid_wcs():
+    h = fits.Header()
+    h.update(GRID)
+    return WCS(h)
 
 
 def stretch(a, lo_pct=1.0, hi_pct=99.7, asinh=None):
@@ -64,32 +74,37 @@ def save_rgba(rgba, name, quality=88):
     img.save(OUT / name, quality=quality) if name.endswith(".png") else img.convert("RGB").save(OUT / name, quality=quality)
 
 
-def hi_products():
-    """Moment 0, moment 1 and a strip of channel maps from the H I cube."""
+def hi_products(target_wcs):
+    """Moment 0, moment 1, channel planes and the integrated spectrum of the
+    H I cube, all reprojected onto the output grid."""
     with fits.open(HI_CUBE, memmap=True) as h:
         cube = h[0].data
         hdr = h[0].header
         nchan = cube.shape[0]
-        v = (hdr["CRVAL3"] + (np.arange(nchan) + 1 - hdr["CRPIX3"]) * hdr["CDELT3"]) / 1e3
-        dv = abs(hdr["CDELT3"]) / 1e3
-        ny, nx = cube.shape[1] // BIN, cube.shape[2] // BIN
-        m0 = np.zeros((ny, nx))
-        m1 = np.zeros((ny, nx))
+        scale = 1.0 if hdr.get("CUNIT3", "m/s").strip().lower().startswith("km") else 1e-3
+        v = (hdr["CRVAL3"] + (np.arange(nchan) + 1 - hdr["CRPIX3"]) * hdr["CDELT3"]) * scale
+        dv = abs(hdr["CDELT3"]) * scale
+        src = WCS(hdr).celestial
+        m0 = np.zeros(cube.shape[1:])
+        m1 = np.zeros(cube.shape[1:])
+        spectrum = np.zeros(nchan)
         chans = []
         for k in range(nchan):
-            plane = binned(np.nan_to_num(np.asarray(cube[k], dtype=np.float32)))
+            plane = np.nan_to_num(np.asarray(cube[k], dtype=np.float32))
             m0 += plane * dv
             m1 += plane * v[k] * dv
-            chans.append(plane.astype(np.float32))
-        wcs = WCS(hdr).celestial
-    wcs = wcs[::BIN, ::BIN]
+            spectrum[k] = plane.sum()
+            chans.append(plane)
     with np.errstate(invalid="ignore", divide="ignore"):
-        m1 = np.where(m0 > np.percentile(m0, 35), m1 / m0, np.nan)
-    chans = np.stack(chans)
-    return m0, m1, chans, v, wcs
+        m1 = np.where(m0 > 0, m1 / m0, np.median(v))
+    # Reproject before masking: NaNs would spread through the bicubic kernel.
+    to_grid = lambda a: reproject_interp((a, src), target_wcs, shape_out=SHAPE, order="bicubic")[0]
+    m0g, m1g = to_grid(m0), to_grid(m1)
+    m1g = np.where(np.nan_to_num(m0g) > np.nanpercentile(m0g, 35), m1g, np.nan)
+    return m0g, m1g, np.stack(chans), v, spectrum, to_grid
 
 
-def write_channels(chans, v):
+def write_channels(chans, v, to_grid):
     """Velocity sweep: N frames, each the mean of a block of channels."""
     edges = np.linspace(0, len(v), N_CHANNEL_FRAMES + 1).astype(int)
     hi = np.percentile(chans[chans > 0], 99.8)
@@ -98,7 +113,7 @@ def write_channels(chans, v):
     (OUT / "channels").mkdir(exist_ok=True)
     for i in range(N_CHANNEL_FRAMES):
         a, b = edges[i], edges[i + 1]
-        plane = chans[a:b].mean(axis=0)
+        plane = np.nan_to_num(to_grid(chans[a:b].mean(axis=0)))
         x = np.arcsinh(np.clip(plane / hi, 0, 1) / 0.08) / np.arcsinh(1 / 0.08)
         save_rgba(cmap(x)[..., :3], f"channels/{i:02d}.jpg", quality=80)
         frames.append(round(float(v[a:b].mean()), 1))
@@ -229,9 +244,11 @@ def regions(planck, size=900):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    print("H I cube ...", flush=True)
-    m0, m1, chans, v, wcs = hi_products()
-    shape = m0.shape
+    print("H I cube", HI_CUBE.name, "...", flush=True)
+    wcs = grid_wcs()
+    shape = SHAPE
+    m0, m1, chans, v, spectrum, to_grid = hi_products(wcs)
+    m0 = np.nan_to_num(m0)
 
     hi = stretch(m0, 2, 99.9, asinh=0.15)
     save_gray(hi, "hi_column.jpg")
@@ -241,7 +258,7 @@ def main():
     rgb = colormaps["RdBu_r"](np.clip(vel, 0, 1))[..., :3] * hi[..., None] ** 0.8
     save_rgba(rgb, "hi_velocity.jpg")
 
-    frames = write_channels(chans, v)
+    frames = write_channels(chans, v, to_grid)
     del chans
 
     print("CO ...", flush=True)
@@ -266,8 +283,9 @@ def main():
     meta = {
         "grid": {"nx": shape[1], "ny": shape[0], "wcs": dict(wcs.to_header())},
         "channels_kms": frames,
+        "hi_spectrum": {"v_kms": [round(float(x), 2) for x in v], "sum_K": [float(x) for x in spectrum]},
         "sources": {
-            "hi": "GASKAP-HI + Parkes (GASS) combined LMC cube",
+            "hi": HI_CUBE.name,
             "co": "MAGMA CO(1-0), Wong et al. 2011",
             "dust_bfield": "Planck HFI 353 GHz PR3, I/Q/U, smoothed",
         },

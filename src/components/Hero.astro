@@ -1,0 +1,136 @@
+---
+// Home hero: the Webb Tarantula image assembles tile by tile while the source
+// finder's boxes snap on, then a lock settles on R136.
+import sky from "../data/sky.json";
+const bars = sky.hi_spectrum;
+const [v0, v1] = sky.hi_range_kms;
+---
+
+<header class="hero" id="hero">
+  <canvas id="heroCanvas" role="img" aria-label="James Webb Space Telescope image of the Tarantula Nebula in the Large Magellanic Cloud, with detected sources marked"></canvas>
+  <noscript><img src="/webb/tarantula-1920.webp" alt="" class="hero-fallback" /></noscript>
+  <div class="dets" id="heroDets"></div>
+  <div class="hero-copy gut">
+    <h1 class="brut">Fields between<br />the stars</h1>
+    <div class="hero-meta">
+      <p class="log" id="log">&gt; target NGC 2070 / 30 Doradus / LMC<br />&gt; NIRCam &middot; 161 000 ly<br />&gt; sources found <b>70</b><br />&gt; lock R136</p>
+      <div class="barcode-wrap">
+        <div class="barcode" aria-hidden="true">{bars.map((v) => <i style={`height:${Math.max(2, v * 100)}%;opacity:${0.35 + v * 0.65}`}></i>)}</div>
+        <span class="label">LMC &middot; H I spectrum &middot; {v0}&ndash;{v1} km/s</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+  .hero { position: relative; height: 100svh; min-height: 560px; overflow: hidden; background: var(--void); }
+  .hero canvas, .hero-fallback { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* Darken the strip under the fixed nav so its difference-blended text stays legible over bright nebula. */
+  .hero::after { content: ""; position: absolute; inset: 0 0 auto; height: 110px; background: linear-gradient(rgba(0, 0, 0, 0.6), transparent); pointer-events: none; }
+  .dets { position: absolute; inset: 0; pointer-events: none; }
+  .hero-copy { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 18px; pointer-events: none; }
+  h1 { font-size: clamp(3.2rem, 1rem + 11.5vw, 13rem); text-shadow: 0 0 40px rgba(0, 0, 0, 0.55); }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: end; justify-content: space-between; }
+  .log { font: 400 11px/1.6 var(--mono); text-shadow: 0 0 8px #000; min-height: 6.4em; }
+  .log :global(b) { color: var(--signal); font-weight: 600; }
+  .barcode-wrap { display: grid; gap: 6px; justify-items: end; }
+  .barcode-wrap .label { color: var(--ink); text-shadow: 0 0 8px #000; }
+  .barcode { display: flex; align-items: end; gap: 2px; height: 34px; }
+  .barcode i { display: block; width: 3px; background: var(--ink); }
+</style>
+
+<script>
+  import det from "../data/detections.json";
+  import { reduce, canvasFit, loadImage, clamp, scramble } from "../scripts/motion";
+
+  const hero = document.getElementById("hero")!;
+  const canvas = document.getElementById("heroCanvas") as HTMLCanvasElement;
+  const box = document.getElementById("heroDets")!;
+  const log = document.getElementById("log")!;
+  const T = det.tarantula;
+  type Rect = { x: number; y: number; w: number; h: number };
+  let img: HTMLImageElement, rect: Rect, ctx: CanvasRenderingContext2D;
+  let tiles: [number, number, number][] = [];
+  let revealed = 0;
+
+  function cover(iw: number, ih: number, w: number, h: number): Rect {
+    const s = Math.max(w / iw, h / ih);
+    return { x: (w - iw * s) / 2, y: (h - ih * s) / 2, w: iw * s, h: ih * s };
+  }
+  function place(el: HTMLElement, n: number[]) {
+    el.style.left = rect.x + n[0] * rect.w + "px";
+    el.style.top = rect.y + n[1] * rect.h + "px";
+    const s = Math.max(10, n[2] * rect.w * 2.2);
+    el.style.width = el.style.height = s + "px";
+  }
+  function size() {
+    const w = hero.clientWidth, h = hero.clientHeight;
+    ctx = canvasFit(canvas, w, h);
+    rect = cover(img.naturalWidth, img.naturalHeight, w, h);
+    const t = w < 640 ? 28 : 40;
+    tiles = [];
+    for (let y = 0; y < h; y += t) for (let x = 0; x < w; x += t) tiles.push([x, y, t]);
+    for (let i = tiles.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [tiles[i], tiles[j]] = [tiles[j], tiles[i]]; }
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, w, h);
+    if (revealed >= 1) ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
+    const kids = box.children;
+    T.src.forEach((n, i) => kids[i] && place(kids[i] as HTMLElement, n));
+    const lock = document.getElementById("lock");
+    if (lock) place(lock, [T.core[0], T.core[1], 0.035]);
+  }
+  function tile([x, y, t]: [number, number, number]) {
+    const k = img.naturalWidth / rect.w;
+    ctx.drawImage(img, (x - rect.x) * k, (y - rect.y) * k, t * k, t * k, x, y, t, t);
+  }
+
+  function detections(instant: boolean) {
+    box.textContent = "";
+    T.src.forEach((n, i) => {
+      const b = document.createElement("div");
+      b.className = "det";
+      if (i < (hero.clientWidth < 700 ? 7 : 16)) {
+        const s = document.createElement("span");
+        s.textContent = `OBJ.${(i + 1).toString(16).toUpperCase().padStart(3, "0")} ${n[3].toFixed(2)}`;
+        b.appendChild(s);
+      }
+      place(b, n);
+      if (!instant) { b.style.opacity = "0"; setTimeout(() => { b.style.opacity = ""; b.classList.add("pop"); }, 700 + i * 16); }
+      box.appendChild(b);
+    });
+    const L = document.createElement("div");
+    L.className = "det lock";
+    L.id = "lock";
+    const s = document.createElement("span");
+    s.textContent = "R136 · locked · 161 000 ly";
+    L.appendChild(s);
+    place(L, [T.core[0], T.core[1], 0.035]);
+    // Keep the tag on screen: hang it to the left when the core sits near the right edge.
+    if (rect.x + T.core[0] * rect.w > hero.clientWidth - 260) L.classList.add("flip");
+    if (!instant) { L.style.opacity = "0"; setTimeout(() => { L.style.opacity = ""; L.classList.add("pop"); }, 700 + T.src.length * 16 + 150); }
+    box.appendChild(L);
+  }
+
+  (async () => {
+    img = await loadImage(innerWidth > 1100 ? "/webb/tarantula-1920.webp" : "/webb/tarantula-960.webp");
+    if (!img.naturalWidth) return;
+    size();
+    addEventListener("resize", size);
+    if (reduce) { revealed = 1; size(); detections(true); return; }
+    const lines = log.innerHTML.split("<br>");
+    log.innerHTML = "";
+    lines.forEach((l, i) => setTimeout(() => { log.innerHTML += (i ? "<br>" : "") + l; }, 120 + i * (i === 3 ? 520 : 260)));
+    const t0 = performance.now();
+    const step = (t: number) => {
+      const k = clamp((t - t0) / 900, 0, 1);
+      const upto = Math.floor(tiles.length * k * k);
+      for (let i = Math.floor(tiles.length * revealed); i < upto; i++) tile(tiles[i]);
+      revealed = upto / tiles.length;
+      if (k < 1) requestAnimationFrame(step);
+      else { revealed = 1; ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h); }
+    };
+    requestAnimationFrame(step);
+    detections(false);
+    scramble(hero.querySelector("h1")!);
+  })();
+</script>

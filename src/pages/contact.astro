@@ -1,0 +1,35 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+// Coordinates of Nazarbayev University, Astana.
+const LAT = 51.0906, LON = 71.3982;
+---
+
+<Base title="Contact" description="How to reach the ISM group at Nazarbayev University, Astana.">
+  <PageHead label="Contact" title="Find us" intro="Students who want to work on the interstellar medium, collaborators and visitors are welcome. Write first; we answer.">
+  </PageHead>
+  <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
+    <div class="gut max grid">
+      <div class="cell">
+        <span class="label">Where</span>
+        <p class="big brut">Nazarbayev University</p>
+        <p>Department of Physics, School of Sciences and Humanities<br />53 Kabanbay Batyr Ave, Astana 010000, Kazakhstan</p>
+        <p class="coord dot">{LAT.toFixed(4)}° N &nbsp; {LON.toFixed(4)}° E</p>
+      </div>
+      <div class="cell">
+        <span class="label">Write</span>
+        <p class="big brut">Email</p>
+        <p>Group address to be confirmed. <span class="tag soon">Coming soon</span></p>
+        <span class="label" style="margin-top:20px">Sky from here</span>
+        <p>The LMC never rises over Astana: at latitude 51° N the whole cloud stays below the horizon. The group observes it through Planck, Parkes and ASKAP in the south.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 1px; background: var(--hair); border: 1px solid var(--hair); }
+  .cell { background: var(--void); padding: clamp(20px, 3vw, 36px); display: grid; gap: 12px; align-content: start; }
+  .big { font-size: clamp(2.2rem, 1.2rem + 2.6vw, 3.6rem); }
+  .coord { font-size: 22px; margin-top: 10px; color: var(--signal); }
+</style>

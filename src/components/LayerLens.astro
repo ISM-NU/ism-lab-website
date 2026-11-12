@@ -1,0 +1,100 @@
+---
+// "Instrument" view of the LMC: one map as the base, a second seen through a
+// lens that follows the pointer, and an H I velocity scrubber. All layers sit
+// on the same 12 deg grid, so they line up pixel for pixel.
+import sky from "../data/sky.json";
+const layers = [
+  { id: "bfield", l: "B field", src: "/sky/lmc-bfield.webp", note: "Planck 353 GHz dust, textured along the field" },
+  { id: "dust", l: "Dust", src: "/sky/lmc-dust.webp", note: "Planck 353 GHz total intensity" },
+  { id: "hi", l: "H I", src: "/sky/lmc-hi.webp", note: "GASS H I column density, 16' beam" },
+  { id: "vel", l: "Rotation", src: "/sky/lmc-vel.webp", note: "GASS H I mean velocity, blue approaching" },
+  { id: "co", l: "CO", src: "/sky/lmc-co.webp", note: "MAGMA CO(1-0), molecular clouds" },
+];
+const ch = sky.channels_kms;
+---
+
+<div class="lens-wrap">
+  <div class="stage" id="lensStage" style="--x:50%;--y:50%">
+    <img class="base" id="lensBase" src={layers[1].src} alt="LMC map, base layer" />
+    <img class="top" id="lensTop" src={layers[0].src} alt="" />
+    <img class="vel" id="lensVel" src="/sky/channels/24.webp" alt="" hidden />
+    <span class="ring" aria-hidden="true"></span>
+    <span class="readout label" id="lensRead" aria-live="polite">Lens: {layers[0].l}</span>
+  </div>
+  <div class="ctl">
+    <fieldset>
+      <legend class="label">Base</legend>
+      {layers.map((l, i) => <label><input type="radio" name="base" value={l.id} data-src={l.src} data-note={l.note} checked={i === 1} /><span>{l.l}</span></label>)}
+    </fieldset>
+    <fieldset>
+      <legend class="label">Lens</legend>
+      {layers.map((l, i) => <label><input type="radio" name="top" value={l.id} data-src={l.src} data-note={l.note} checked={i === 0} /><span>{l.l}</span></label>)}
+    </fieldset>
+    <div class="vctl">
+      <label class="label" for="vel">H I velocity <b class="dot" id="velOut">off</b></label>
+      <input type="range" id="vel" min="-1" max={ch.length - 1} value="-1" step="1" aria-valuetext="off" />
+      <p class="note" id="lensNote">{layers[0].note}. Move over the map; the lens shows a second layer.</p>
+    </div>
+  </div>
+</div>
+<script type="application/json" id="chData" set:html={JSON.stringify(ch)}></script>
+
+<style>
+  .lens-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 320px); gap: 28px; margin-top: 40px; }
+  .stage { position: relative; aspect-ratio: 1; background: var(--void); overflow: hidden; touch-action: pan-y; cursor: crosshair; border: 1px solid var(--hair); }
+  .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .top { mask: radial-gradient(circle at var(--x) var(--y), #000 0 var(--r, 22%), transparent calc(var(--r, 22%) + 1px)); }
+  .vel { mix-blend-mode: screen; }
+  .ring { position: absolute; left: var(--x); top: var(--y); width: calc(var(--r, 22%) * 2); aspect-ratio: 1; translate: -50% -50%; border: 1px solid var(--signal); border-radius: 50%; pointer-events: none; }
+  .readout { position: absolute; left: 12px; top: 12px; color: var(--ink); background: rgba(0, 0, 0, 0.6); padding: 4px 6px; }
+  .ctl { display: grid; gap: 22px; align-content: start; }
+  fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  legend { margin-bottom: 8px; padding: 0; }
+  fieldset label { cursor: pointer; }
+  fieldset input { position: absolute; opacity: 0; pointer-events: none; }
+  fieldset span { display: inline-block; padding: 6px 9px; border: 1px solid var(--hair); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+  fieldset input:checked + span { background: var(--ink); color: var(--void); border-color: var(--ink); }
+  fieldset input:focus-visible + span { outline: 1px solid var(--signal); outline-offset: 2px; }
+  .vctl { display: grid; gap: 10px; }
+  .vctl b { color: var(--ink); font-size: 18px; margin-left: 8px; }
+  input[type="range"] { width: 100%; accent-color: var(--signal); }
+  .note { font-size: 12px; color: var(--grey); }
+  @media (max-width: 800px) { .lens-wrap { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<script>
+  const stage = document.getElementById("lensStage")!;
+  const base = document.getElementById("lensBase") as HTMLImageElement;
+  const top = document.getElementById("lensTop") as HTMLImageElement;
+  const vel = document.getElementById("lensVel") as HTMLImageElement;
+  const read = document.getElementById("lensRead")!;
+  const note = document.getElementById("lensNote")!;
+  const slider = document.getElementById("vel") as HTMLInputElement;
+  const out = document.getElementById("velOut")!;
+  const ch: number[] = JSON.parse(document.getElementById("chData")!.textContent!);
+
+  stage.addEventListener("pointermove", (e) => {
+    const r = stage.getBoundingClientRect();
+    stage.style.setProperty("--x", ((e.clientX - r.left) / r.width) * 100 + "%");
+    stage.style.setProperty("--y", ((e.clientY - r.top) / r.height) * 100 + "%");
+  });
+  document.querySelectorAll<HTMLInputElement>('.ctl input[type="radio"]').forEach((inp) =>
+    inp.addEventListener("change", () => {
+      const img = inp.name === "base" ? base : top;
+      img.src = inp.dataset.src!;
+      note.textContent = inp.dataset.note! + ".";
+      if (inp.name === "top") read.textContent = "Lens: " + inp.parentElement!.textContent!.trim();
+    }),
+  );
+  // Preload the velocity frames once the slider is first touched.
+  let warmed = false;
+  slider.addEventListener("input", () => {
+    if (!warmed) { warmed = true; ch.forEach((_, i) => { const im = new Image(); im.src = `/sky/channels/${String(i).padStart(2, "0")}.webp`; }); }
+    const i = +slider.value;
+    vel.hidden = i < 0;
+    const txt = i < 0 ? "off" : `${ch[i].toFixed(0)} km/s`;
+    out.textContent = txt;
+    slider.setAttribute("aria-valuetext", txt);
+    if (i >= 0) vel.src = `/sky/channels/${String(i).padStart(2, "0")}.webp`;
+  });
+</script>

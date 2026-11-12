@@ -1,0 +1,96 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Hero from "../components/Hero.astro";
+import PullBack from "../components/PullBack.astro";
+import LightRuler from "../components/LightRuler.astro";
+import FieldDots from "../components/FieldDots.astro";
+import Archive from "../components/Archive.astro";
+import ResearchGraph from "../components/ResearchGraph.astro";
+import ProjectCards from "../components/ProjectCards.astro";
+import PaperList from "../components/PaperList.astro";
+import { papers } from "../lib/pubs";
+
+const latest = papers.filter((p) => p.group === "Papers").slice(0, 5);
+const news = (await getCollection("news")).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
+const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
+---
+
+<Base title="Home" description="The interstellar medium group at Nazarbayev University studies magnetic fields, dust and gas between the stars, from Galactic clouds to the Large Magellanic Cloud.">
+  <Hero />
+  <PullBack />
+  <LightRuler />
+  <FieldDots />
+
+  <section class="sec tight" aria-labelledby="work-h">
+    <div class="gut max">
+      <div class="head">
+        <span class="label">Relation 04 &middot; Work</span>
+        <h2 class="brut" id="work-h" data-scramble>What the group measures</h2>
+        <p>Four lines of work, from the methods under the maps to one whole galaxy.</p>
+      </div>
+      <ProjectCards />
+    </div>
+  </section>
+
+  <section class="slab sec" aria-labelledby="graph-h">
+    <div class="gut max">
+      <div class="head">
+        <span class="label">Relation 05 &middot; Instruments</span>
+        <h2 class="brut" id="graph-h" data-scramble>One sky, many instruments</h2>
+        <p>Regions the group has published on, joined to the telescopes and methods behind each paper.</p>
+      </div>
+      <ResearchGraph />
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="arch-h">
+    <div class="gut max">
+      <div class="head">
+        <span class="label">Archive</span>
+        <h2 class="brut" id="arch-h" data-scramble>Look closer</h2>
+        <p>Webb images next to the group's own maps. Hover or tap a frame to run the source finder on it.</p>
+      </div>
+      <Archive />
+    </div>
+  </section>
+
+  <section class="slab sec" aria-labelledby="pub-h">
+    <div class="gut max split">
+      <div class="head">
+        <span class="label">Output</span>
+        <h2 class="brut" id="pub-h">Latest papers</h2>
+        <p><a href="/publications">All {papers.length} publications &rarr;</a></p>
+      </div>
+      <PaperList items={latest} dense />
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="news-h">
+    <div class="gut max">
+      <div class="head">
+        <span class="label">Log</span>
+        <h2 class="brut" id="news-h">News and events</h2>
+        <p><a href="/news">Everything &rarr;</a></p>
+      </div>
+      <ul class="log-list">
+        {news.map((n) => (
+          <li>
+            <span class="dot">{fmtDate(n.data.date)}</span>
+            <span class={n.data.kind === "event" ? "tag fill" : "tag"}>{n.data.kind}</span>
+            <a href={`/news#${n.id}`}>{n.data.title}</a>
+            {n.data.mock && <span class="tag soon">Placeholder</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .split { display: grid; gap: 32px; }
+  .log-list { list-style: none; margin: 32px 0 0; padding: 0; }
+  .log-list li { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--hair); }
+  .log-list .dot { font-size: 20px; min-width: 9ch; }
+  .log-list a { font-weight: 600; }
+</style>

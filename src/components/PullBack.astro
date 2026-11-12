@@ -1,0 +1,170 @@
+---
+// Scroll-driven zoom out: the Tarantula (340 ly) -> the whole LMC -> the whole
+// sky. World units are LMC widths; sizes and positions are real.
+---
+
+<section class="pull" id="pull" aria-labelledby="pull-cap">
+  <div class="stage" id="pullStage">
+    <canvas id="pullCanvas" aria-hidden="true"></canvas>
+    <div class="frame red" id="fT"><span>NGC 2070 &middot; Tarantula &middot; 340 ly</span></div>
+    <div class="frame" id="fL"><span>Large Magellanic Cloud &middot; 34 000 ly</span></div>
+    <div id="tgts" aria-hidden="true"></div>
+    <div class="hud">
+      <div class="readout" aria-hidden="true"><span class="label red" id="rLabel">Field width</span><span class="dot" id="rVal">340 LY</span><span class="label" id="rSub">across the screen</span></div>
+      <p class="cap" id="pull-cap" aria-live="polite">This is one cluster in another galaxy. Keep scrolling to see where it sits.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .pull { position: relative; height: 560svh; }
+  .stage { position: sticky; top: 0; height: 100svh; overflow: hidden; background: var(--void); }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .frame { position: absolute; border: 1px solid var(--ink); pointer-events: none; transform-origin: 50% 50%; display: none; }
+  .frame.red { border-color: var(--signal); box-shadow: 0 0 0 1px rgba(255, 61, 36, 0.25), 0 0 18px rgba(255, 61, 36, 0.35); }
+  .frame span { position: absolute; left: -1px; bottom: 100%; padding: 3px 6px; font: 600 10px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; background: var(--ink); color: var(--void); white-space: nowrap; }
+  .frame.red span { background: var(--signal); }
+  .frame.mini span { display: none; }
+  #tgts :global(.tgt) { position: absolute; width: 22px; height: 22px; translate: -50% -50%; border: 1px solid var(--ink); border-radius: 50%; pointer-events: none; display: none; }
+  #tgts :global(.tgt)::before, #tgts :global(.tgt)::after { content: ""; position: absolute; background: var(--ink); }
+  #tgts :global(.tgt)::before { left: 50%; top: -6px; bottom: -6px; width: 1px; }
+  #tgts :global(.tgt)::after { top: 50%; left: -6px; right: -6px; height: 1px; }
+  #tgts :global(.tgt span) { position: absolute; left: 18px; top: -16px; font: 600 10px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; text-shadow: 0 0 6px #000; }
+  .hud { position: absolute; inset: 0; pointer-events: none; display: grid; grid-template-rows: 1fr auto; padding: calc(var(--bar-h) + 24px + env(safe-area-inset-top, 0px)) var(--gut-r) calc(52px + env(safe-area-inset-bottom, 0px)) var(--gut); }
+  .readout { justify-self: end; text-align: right; display: grid; gap: 4px; align-content: start; }
+  .readout .dot { font-size: clamp(2.2rem, 1rem + 5vw, 5.4rem); line-height: 0.9; text-shadow: 0 0 18px rgba(243, 243, 239, 0.35); }
+  .cap { max-width: 36ch; font: 600 clamp(15px, 0.8rem + 0.5vw, 19px)/1.35 var(--mono); text-shadow: 0 0 12px #000; }
+</style>
+
+<script>
+  import sky from "../data/sky.json";
+  import { onFrame, canvasFit, loadImage, clamp, seg, ease, fmt, reduce } from "../scripts/motion";
+
+  const pull = document.getElementById("pull")!;
+  const stage = document.getElementById("pullStage")!;
+  const canvas = document.getElementById("pullCanvas") as HTMLCanvasElement;
+  const fT = document.getElementById("fT")!, fL = document.getElementById("fL")!;
+  const rVal = document.getElementById("rVal")!, rLabel = document.getElementById("rLabel")!, rSub = document.getElementById("rSub")!;
+  const cap = document.getElementById("pull-cap")!;
+
+  const LY_PER_L = 34200; // LMC width used as the world unit
+  const TW = 340 / LY_PER_L, TH = TW * 0.75; // Tarantula frame, 4:3
+  const FL = 0.0373; // LMC width as a fraction of the all-sky map width
+  const T_C = sky.lmc_targets["30 Doradus"];
+  const SKY_LMC = sky.lmc_in_allsky;
+  const ROT = sky.lmc_rot_deg;
+  const caps = [
+    "This is one cluster in another galaxy. Keep scrolling to see where it sits.",
+    "The Tarantula is a bright knot in the Large Magellanic Cloud's dust.",
+    "The galaxy the group maps. The streaks follow its magnetic field, measured by Planck.",
+    "And the LMC is a small patch below the Milky Way's plane.",
+  ];
+
+  let ctx: CanvasRenderingContext2D, W = 0, H = 0, lastP = -1, capI = -1;
+  const imgs: Record<string, HTMLImageElement> = {};
+  const tg = document.getElementById("tgts")!;
+  const targets = Object.entries(sky.lmc_targets).map(([name, pos]) => {
+    const e = document.createElement("div");
+    e.className = "tgt";
+    const s = document.createElement("span");
+    s.textContent = name;
+    e.appendChild(s);
+    tg.appendChild(e);
+    return { e, pos };
+  });
+
+  function size() {
+    W = stage.clientWidth;
+    H = stage.clientHeight;
+    ctx = canvasFit(canvas, W, H);
+    lastP = -1;
+  }
+
+  function draw() {
+    const r = pull.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight) return;
+    const p = clamp(-r.top / (r.height - H), 0, 1);
+    if (p === lastP) return;
+    lastP = p;
+    const wide = W > H * 1.25;
+    const skyW = 1 / FL, skyH = skyW / 2;
+    const skyX = 0.5 - SKY_LMC[0] * skyW, skyY = 0.5 - SKY_LMC[1] * skyH;
+    const k0 = Math.max(W / TW, H / TH);
+    const k1 = wide ? Math.min(W * 0.62, H * 0.98) : Math.min(W, H) * 1.02;
+    const k2 = Math.min(W / skyW, H / skyH) * 0.96;
+    const c0 = T_C, c1 = [0.5, 0.5], c2 = [skyX + skyW / 2, skyY + skyH / 2];
+    // Screen anchor of the view centre: the LMC sits left of the readout on
+    // wide screens and below it on tall ones.
+    const a0 = [W / 2, H / 2], a1 = wide ? [W * 0.42, H / 2] : [W / 2, H * 0.56];
+    const e1 = ease(seg(p, 0.06, 0.46)), e2 = ease(seg(p, 0.6, 0.94));
+    const rot = ((ROT * e2) * Math.PI) / 180;
+    const lerp = (a: number[], b: number[], t: number) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    let k: number, c: number[], an: number[];
+    if (p < 0.6) { k = Math.exp(Math.log(k0) + (Math.log(k1) - Math.log(k0)) * e1); c = lerp(c0, c1, e1); an = lerp(a0, a1, e1); }
+    else { k = Math.exp(Math.log(k1) + (Math.log(k2) - Math.log(k1)) * e2); c = lerp(c1, c2, e2); an = lerp(a1, a0, e2); }
+    const S = (wx: number, wy: number) => [(wx - c[0]) * k + an[0], (wy - c[1]) * k + an[1]];
+
+    ctx.clearRect(0, 0, W, H);
+    const aSky = p < 0.6 ? 0 : seg(e2, 0.02, 0.35);
+    if (aSky > 0 && imgs.sky?.naturalWidth) {
+      const a = S(skyX, skyY);
+      ctx.globalAlpha = aSky;
+      ctx.drawImage(imgs.sky, a[0], a[1], skyW * k, skyH * k);
+      ctx.globalAlpha = 1;
+    }
+    const lc = S(0.5, 0.5);
+    ctx.save();
+    ctx.translate(lc[0], lc[1]);
+    ctx.rotate(rot);
+    const aL = p < 0.6 ? seg(e1, 0.08, 0.5) : 1;
+    const L = imgs.lmc;
+    if (aL > 0 && L?.naturalWidth) {
+      // Draw only the visible part of the LMC so deep zooms stay cheap.
+      const half = k / 2, iw = L.naturalWidth, lim = W + H;
+      const v0 = Math.max(-half, -lim), v1 = Math.min(half, lim);
+      const s0 = ((v0 + half) / k) * iw, sw = ((v1 - v0) / k) * iw;
+      if (sw > 0.5) { ctx.globalAlpha = aL; ctx.drawImage(L, s0, s0, sw, sw, v0, v0, v1 - v0, v1 - v0); ctx.globalAlpha = 1; }
+    }
+    if (imgs.tar?.naturalWidth) ctx.drawImage(imgs.tar, (T_C[0] - TW / 2 - 0.5) * k, (T_C[1] - TH / 2 - 0.5) * k, TW * k, TH * k);
+    ctx.restore();
+
+    const tw = TW * k, th = TH * k, tc = S(T_C[0], T_C[1]);
+    const dx = tc[0] - lc[0], dy = tc[1] - lc[1], cs = Math.cos(rot), sn = Math.sin(rot);
+    const tcx = lc[0] + dx * cs - dy * sn, tcy = lc[1] + dx * sn + dy * cs;
+    const showT = tw < W * 0.85 && tw > 6;
+    fT.style.display = showT ? "block" : "none";
+    if (showT) {
+      Object.assign(fT.style, { left: tcx - tw / 2 + "px", top: tcy - th / 2 + "px", width: tw + "px", height: th + "px", rotate: rot + "rad" });
+      fT.classList.toggle("mini", tw < 90 && p > 0.3 && p < 0.62);
+    }
+    const showL = p > 0.62 && k < W * 0.8;
+    fL.style.display = showL ? "block" : "none";
+    if (showL) Object.assign(fL.style, { left: lc[0] - k / 2 + "px", top: lc[1] - k / 2 + "px", width: k + "px", height: k + "px" });
+    const showTg = p > 0.44 && p < 0.62;
+    targets.forEach((t, i) => {
+      const on = showTg && (reduce || seg(p, 0.44, 0.5) * targets.length > i);
+      t.e.style.display = on ? "block" : "none";
+      if (on) { const q = S(t.pos[0], t.pos[1]); t.e.style.left = q[0] + "px"; t.e.style.top = q[1] + "px"; }
+    });
+
+    const widthL = W / k;
+    if (p < 0.6) { rLabel.textContent = "Field width"; rVal.textContent = fmt(widthL * LY_PER_L) + " LY"; rSub.textContent = "across the screen"; }
+    else {
+      const deg = widthL * 12;
+      rLabel.textContent = "Field of view";
+      rVal.textContent = deg > 300 ? "360°" : (deg >= 100 ? Math.round(deg) : deg.toFixed(1)) + "°";
+      rSub.textContent = deg > 300 ? "the whole sky" : "of sky";
+    }
+    const ci = p < 0.22 ? 0 : p < 0.44 ? 1 : p < 0.66 ? 2 : 3;
+    if (ci !== capI) { capI = ci; cap.textContent = caps[ci]; }
+  }
+
+  size();
+  addEventListener("resize", size);
+  Promise.all([
+    loadImage("/sky/allsky.webp").then((i) => (imgs.sky = i)),
+    loadImage("/sky/lmc-bfield-v.webp").then((i) => (imgs.lmc = i)),
+    loadImage(innerWidth > 1100 ? "/webb/tarantula-1920.webp" : "/webb/tarantula-960.webp").then((i) => (imgs.tar = i)),
+  ]).then(() => { lastP = -1; });
+  onFrame(draw);
+</script>

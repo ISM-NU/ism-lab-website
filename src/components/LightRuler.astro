@@ -1,0 +1,140 @@
+---
+// Light-travel time on a log scale, from the Moon to SMACS 0723. Selecting an
+// object streams pixel "photons" from it to the observer.
+const LY = 31557600; // seconds in a Julian year
+const objects = [
+  { n: "Moon", s: 1.28, name: "The Moon", v: "1.3", unit: "seconds", text: "in transit. Moonlight is almost live." },
+  { n: "Sun", s: 499, name: "The Sun", v: "8.3", unit: "minutes", text: "in transit. If the Sun went out, we would not know for eight minutes." },
+  { n: "Proxima Cen", s: 4.24 * LY, name: "Proxima Centauri", v: "4.2", unit: "years", text: "in transit. The nearest star." },
+  { n: "ρ Ophiuchi", s: 390 * LY, name: "Rho Ophiuchi", v: "390", unit: "years", img: "/webb/rhooph-960.webp", text: "in transit. The nearest star-forming cloud Webb has imaged." },
+  { n: "Pillars M16", s: 6500 * LY, name: "Pillars of Creation", v: "6 500", unit: "years", img: "/webb/pillars-960.webp", text: "in transit. Older than writing." },
+  { n: "Cosmic Cliffs", s: 7600 * LY, name: "NGC 3324 · Carina", v: "7 600", unit: "years", img: "/webb/cliffs-960.webp", text: "in transit. Light from the edge of a cavity carved by young stars.", off: true },
+  { n: "Galactic Centre", s: 26000 * LY, name: "Galactic Centre", v: "26 000", unit: "years", img: "/sky/region-galactic_centre.webp", text: "in transit, through the dust the group mapped with the PILOT balloon." },
+  { n: "LMC · NGC 2070", s: 161000 * LY, name: "NGC 2070 · Large Magellanic Cloud", v: "161 000", unit: "years", img: "/webb/tarantula-960.webp", text: "in transit. This light left before the first modern humans walked out of Africa." },
+  { n: "SMC · NGC 346", s: 200000 * LY, name: "NGC 346 · Small Magellanic Cloud", v: "200 000", unit: "years", img: "/webb/ngc346-960.webp", text: "in transit. The LMC's smaller companion.", off: true },
+  { n: "Andromeda", s: 2.5e6 * LY, name: "Andromeda", v: "2.5 million", unit: "years", text: "in transit. The farthest thing you can see without a telescope." },
+  { n: "SMACS 0723", s: 4.6e9 * LY, name: "SMACS 0723 cluster", v: "4.6 billion", unit: "years", img: "/webb/deepfield-960.webp", text: "in transit. The Earth did not exist yet." },
+];
+const LOG0 = -0.5, LOG1 = 18;
+const pos = (s: number) => ((Math.log10(s) - LOG0) / (LOG1 - LOG0)) * 100;
+const decades: Record<number, string> = { 0: "1 s", 2: "100 s", 4: "3 h", 6: "12 d", 8: "3 yr", 10: "320 yr", 12: "32 kyr", 14: "3 Myr", 16: "320 Myr", 18: "32 Gyr" };
+const sel = 7;
+const o = objects[sel];
+---
+
+<section class="slab sec" aria-labelledby="light-h">
+  <div class="gut max">
+    <div class="head">
+      <span class="label">Relation 02 &middot; Time</span>
+      <h2 class="brut" id="light-h" data-scramble>How old is the light</h2>
+      <p>Every image is a message sent long ago. The scale is logarithmic in light-travel time, from one second to five billion years. Pick an object.</p>
+    </div>
+    <div class="ruler-wrap">
+      <div class="ruler" id="ruler" role="group" aria-label="Objects by light-travel time">
+        <canvas id="rulerCanvas" aria-hidden="true"></canvas>
+        <div class="axis"></div>
+        {Array.from({ length: 19 }, (_, d) => (
+          <div class="decade" style={`left:${pos(10 ** d)}%`} aria-hidden="true">{decades[d] && <span>{decades[d]}</span>}</div>
+        ))}
+        {objects.map((ob, i) => (
+          <button class="obj" type="button" style={`left:${pos(ob.s)}%`} aria-pressed={i === sel ? "true" : "false"} data-i={i} data-s={ob.s}
+            data-name={ob.name} data-v={ob.v} data-unit={ob.unit} data-text={ob.text} data-img={ob.img ?? ""}>
+            <span class={ob.off ? "off" : ""}>{ob.n}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+    <div class="out" aria-live="polite">
+      <div>
+        <span class="label" id="loName">{o.name}</span>
+        <div class="dot val" id="loVal">{o.v}</div>
+        <p class="txt"><span id="loUnit">{o.unit}</span> <span id="loText">{o.text}</span></p>
+      </div>
+      <figure id="loFig"><img id="loImg" src={o.img} alt={o.name} loading="lazy" /><figcaption id="loCap">{o.name}</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ruler-wrap { overflow-x: auto; margin-top: 40px; padding-bottom: 8px; scrollbar-width: thin; }
+  .ruler { position: relative; min-width: 980px; height: 190px; }
+  canvas { position: absolute; left: 0; top: 0; height: 140px; width: 100%; }
+  .axis { position: absolute; left: 0; right: 0; top: 140px; height: 1px; background: var(--on-paper); }
+  .decade { position: absolute; top: 132px; width: 1px; height: 16px; background: var(--on-paper); }
+  .decade span { position: absolute; top: 20px; left: 0; translate: -50% 0; font: 400 10px/1 var(--mono); color: var(--on-paper-dim); white-space: nowrap; }
+  .obj { position: absolute; top: 0; height: 140px; width: 1px; background: rgba(10, 10, 11, 0.25); cursor: pointer; border: 0; padding: 0; }
+  .obj::before { content: ""; position: absolute; inset: 0 -10px; }
+  .obj::after { content: ""; position: absolute; bottom: -4px; left: -4px; width: 9px; height: 9px; background: var(--on-paper); }
+  .obj span { position: absolute; top: 8px; left: 6px; font: 600 10px/1.15 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; color: var(--on-paper); writing-mode: vertical-rl; rotate: 180deg; }
+  .obj span.off { left: -18px; }
+  .obj:hover span, .obj[aria-pressed="true"] span { color: #d42a12; }
+  .obj[aria-pressed="true"] { background: var(--signal); width: 2px; }
+  .obj[aria-pressed="true"]::after { background: var(--signal); box-shadow: 0 0 10px var(--signal); }
+  .out { margin-top: 28px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: center; }
+  .val { font-size: clamp(2.6rem, 1rem + 6vw, 6.6rem); line-height: 0.9; margin-top: 10px; }
+  .txt { margin-top: 12px; max-width: 40ch; }
+  figure { margin: 0; aspect-ratio: 4 / 3; background: var(--on-paper); overflow: hidden; position: relative; }
+  figure img { width: 100%; height: 100%; object-fit: cover; }
+  figure.empty { visibility: hidden; }
+  figcaption { position: absolute; left: 0; bottom: 0; padding: 4px 8px; background: var(--on-paper); color: var(--paper); font: 600 10px/1.2 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+  @media (max-width: 760px) { .out { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<script>
+  import { onFrame, watchVisible, canvasFit, scramble, reduce } from "../scripts/motion";
+
+  const ruler = document.getElementById("ruler")!;
+  const canvas = document.getElementById("rulerCanvas") as HTMLCanvasElement;
+  const buttons = [...ruler.querySelectorAll<HTMLButtonElement>(".obj")];
+  const $ = (id: string) => document.getElementById(id)!;
+  let ctx: CanvasRenderingContext2D, w = 0, visible = false, target = 0;
+  const photons: { x: number; y: number; v: number }[] = [];
+
+  function size() { w = canvas.clientWidth; ctx = canvasFit(canvas, w, 140); setTarget(); }
+  function setTarget() {
+    const b = buttons.find((x) => x.getAttribute("aria-pressed") === "true")!;
+    target = b.offsetLeft;
+  }
+  function select(b: HTMLButtonElement) {
+    buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    const d = b.dataset;
+    $("loName").textContent = d.name!;
+    $("loVal").textContent = d.v!;
+    $("loUnit").textContent = d.unit!;
+    $("loText").textContent = d.text!;
+    scramble($("loVal"));
+    const fig = $("loFig"), img = $("loImg") as HTMLImageElement;
+    fig.classList.toggle("empty", !d.img);
+    if (d.img) { img.src = d.img; img.alt = d.name!; $("loCap").textContent = d.name!; }
+    setTarget();
+  }
+  buttons.forEach((b) => b.addEventListener("click", () => select(b)));
+  ruler.addEventListener("keydown", (e) => {
+    const i = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    if (i < 0 || (e.key !== "ArrowRight" && e.key !== "ArrowLeft")) return;
+    e.preventDefault();
+    const n = buttons[(i + (e.key === "ArrowRight" ? 1 : buttons.length - 1)) % buttons.length];
+    n.focus();
+    select(n);
+  });
+
+  size();
+  addEventListener("resize", size);
+  watchVisible(ruler, (on) => (visible = on));
+  onFrame(() => {
+    if (!visible) return;
+    ctx.clearRect(0, 0, w, 140);
+    if (!reduce && Math.random() < 0.7) photons.push({ x: target, y: 20 + Math.random() * 110, v: 2 + Math.random() * 6 });
+    ctx.fillStyle = "#ff3d24";
+    for (let i = photons.length - 1; i >= 0; i--) {
+      const p = photons[i];
+      p.x -= p.v;
+      for (let j = 0; j < 6; j++) ctx.fillRect(Math.round((p.x + j * 5) / 5) * 5, Math.round(p.y / 5) * 5, 3, 3);
+      if (p.x < 0) photons.splice(i, 1);
+    }
+    ctx.fillStyle = "rgba(10,10,11,.85)";
+    ctx.fillRect(0, 128, 6, 12);
+    ctx.font = "600 10px 'JetBrains Mono Variable', monospace";
+    ctx.fillText("YOU", 10, 136);
+  });
+</script>

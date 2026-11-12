@@ -1,0 +1,100 @@
+---
+// Image grid: Webb releases next to the group's own maps. Hover, focus or tap
+// runs the source finder's detections over a Webb frame.
+import det from "../data/detections.json";
+
+type Card = { id: string; t: string; sub: string; d: string; ins: string; ours?: boolean; src: string; srcset?: string; aspect: number; href?: string };
+const webb = (id: keyof typeof det, t: string, sub: string, d: string, ins: string): Card => ({
+  id, t, sub, d, ins, aspect: det[id].aspect,
+  src: `/webb/${id}-960.webp`, srcset: `/webb/${id}-960.webp 960w, /webb/${id}-1920.webp 1920w`,
+  href: `https://esawebb.org/images/${det[id].release}/`,
+});
+const cards: Card[] = [
+  webb("tarantula", "NGC 2070", "Tarantula · LMC", "161 000 ly", "JWST NIRCam"),
+  webb("deepfield", "SMACS 0723", "Galaxy cluster", "4.6 Gyr light time", "JWST NIRCam"),
+  webb("cliffs", "NGC 3324", "Cosmic Cliffs · Carina", "7 600 ly", "JWST NIRCam"),
+  webb("pillars", "M16", "Pillars of Creation", "6 500 ly", "JWST NIRCam"),
+  webb("rhooph", "ρ OPH", "Rho Ophiuchi", "390 ly", "JWST NIRCam"),
+  webb("ngc346", "NGC 346", "Small Magellanic Cloud", "200 000 ly", "JWST NIRCam"),
+  { id: "lmc-bfield", t: "LMC · B", sub: "Dust and magnetic field", d: "160 000 ly", ins: "Planck 353 GHz", ours: true, src: "/sky/lmc-bfield.webp", aspect: 1, href: "/research/lmc" },
+  { id: "region-monoceros_ob1", t: "MON OB1", sub: "Field lines over the cloud", d: "2 500 ly", ins: "Planck 353 GHz", ours: true, src: "/sky/region-monoceros_ob1.webp", aspect: 1, href: "/research/star-formation" },
+  { id: "region-galactic_centre", t: "GAL. CENTRE", sub: "Central molecular zone", d: "26 000 ly", ins: "Planck 353 GHz", ours: true, src: "/sky/region-galactic_centre.webp", aspect: 1, href: "/research/dust-polarization" },
+];
+---
+
+<div class="archive cells">
+  {cards.map((c) => (
+    <article class="card" data-id={c.id} tabindex="0" aria-label={`${c.t}, ${c.sub}`}>
+      <figure style={`aspect-ratio:${c.aspect}`}>
+        <img loading="lazy" decoding="async" src={c.src} srcset={c.srcset} sizes="(max-width: 800px) 100vw, 440px" alt={c.sub} />
+        <div class="dets"></div>
+        <i class="scan"></i>
+      </figure>
+      <div class="meta">
+        <div class="row"><span class="dot name">{c.t}</span><span class={c.ours ? "tag fill" : "tag"}>{c.ours ? "Our maps" : "Webb"}</span></div>
+        <div class="row"><span>{c.sub}</span><b>{c.d}</b></div>
+        <div class="row"><span>{c.ins}</span><span class="count">&nbsp;</span></div>
+        {c.href && <a class="more" href={c.href}>{c.ours ? "Research" : "Release"} &rarr;</a>}
+      </div>
+    </article>
+  ))}
+</div>
+
+<style>
+  .archive { grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); margin-top: 40px; }
+  .card { display: grid; grid-template-rows: auto 1fr; }
+  figure { margin: 0; position: relative; overflow: hidden; background: var(--panel); }
+  img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  .card:hover img, .card:focus-within img { transform: scale(1.04); }
+  .dets { position: absolute; inset: 0; pointer-events: none; }
+  .dets :global(.det span) { font-size: 8px; }
+  .scan { position: absolute; left: 0; right: 0; height: 2px; background: var(--signal); box-shadow: 0 0 12px var(--signal); top: -4px; opacity: 0; }
+  .card.on .scan { animation: scan 0.7s cubic-bezier(0.6, 0, 0.2, 1) both; }
+  @keyframes scan { 0% { top: 0; opacity: 1; } 100% { top: 100%; opacity: 0.2; } }
+  .meta { padding: 14px 16px 18px; display: grid; gap: 6px; border-top: 1px solid var(--hair); align-content: start; }
+  .name { font-size: 26px; line-height: 1; }
+  .row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--grey); letter-spacing: 0.06em; text-transform: uppercase; }
+  .row b { color: var(--ink); font-weight: 600; }
+  .more { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; justify-self: start; margin-top: 4px; }
+  @media (prefers-reduced-motion: reduce) { img { transition: none; } .card.on .scan { animation: none; } }
+</style>
+
+<script>
+  import det from "../data/detections.json";
+  import { reduce } from "../scripts/motion";
+
+  type D = { aspect: number; src: number[][]; core: number[] };
+  const all = det as unknown as Record<string, D>;
+  document.querySelectorAll<HTMLElement>(".archive .card").forEach((card) => {
+    const d = all[card.dataset.id!];
+    const box = card.querySelector<HTMLElement>(".dets")!;
+    const count = card.querySelector<HTMLElement>(".count")!;
+    let timers: number[] = [];
+    const clear = () => { timers.forEach(clearTimeout); timers = []; box.textContent = ""; card.classList.remove("on"); count.innerHTML = "&nbsp;"; };
+    const run = () => {
+      clear();
+      void card.offsetWidth;
+      card.classList.add("on");
+      if (!d) { count.textContent = "map layer"; return; }
+      const fw = box.clientWidth, fh = box.clientHeight, list = d.src.slice(0, 34);
+      list.forEach((n, i) => {
+        const b = document.createElement("div");
+        b.className = "det";
+        if (i < 6) { const s = document.createElement("span"); s.textContent = `${(i + 1).toString(16).toUpperCase().padStart(2, "0")} ${n[3].toFixed(2)}`; b.appendChild(s); }
+        b.style.left = n[0] * fw + "px";
+        b.style.top = n[1] * fh + "px";
+        b.style.width = b.style.height = Math.max(10, n[2] * fw * 2.2) + "px";
+        box.appendChild(b);
+        if (reduce) return;
+        b.style.opacity = "0";
+        timers.push(window.setTimeout(() => { b.style.opacity = ""; b.classList.add("pop"); count.textContent = `${i + 1} sources`; }, 60 + i * 14));
+      });
+      if (reduce) count.textContent = `${list.length} sources`;
+    };
+    card.addEventListener("mouseenter", run);
+    card.addEventListener("focus", run);
+    card.addEventListener("click", (e) => { if (!(e.target as HTMLElement).closest("a")) run(); });
+    card.addEventListener("mouseleave", clear);
+    card.addEventListener("blur", (e) => { if (!card.contains(e.relatedTarget as Node)) clear(); });
+  });
+</script>
