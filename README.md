@@ -1,20 +1,17 @@
-# ISM Lab website
+# ISM group website
 
-Website of the ISM group: public pages (members, projects, publications,
-datasets, events, announcements) and a control panel for administrators and
-managers. Go HTTP server, PostgreSQL, server-side HTML templates with plain JS.
+Website of the ISM group at Nazarbayev University. It is being rebuilt as a
+static, highly visual site driven by real sky data; see `PLAN.md` for the
+current status. The earlier Go and PostgreSQL site is kept at the git tag
+`legacy-go-site`.
 
-## Run locally
+## Sky renders
 
-1. Create a PostgreSQL database and apply the schema:
-   `psql "$DATABASE_URL" -f database/migrations/init.sql`
-2. Start the server from the repository root (templates and static files are
-   read with relative paths):
-   `DATABASE_URL=postgres://user:password@127.0.0.1:5432/ism_lab go run ./application`
-3. Open http://localhost:9992/.
+`scripts/render_lmc.py` turns public survey data (Planck 353 GHz, GASKAP-HI
+with Parkes, MAGMA CO) into aligned web images of the whole sky, the LMC and
+other regions the group studies. It reads the LMC workspace's shared data:
 
-Create the first administrator with the interactive CLI:
-`DATABASE_URL=... go run ./CLI`
+    LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/render_lmc.py
+    LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/render_lmc.py --regions
 
-See `ARCHITECTURE.md` for the route list and `docs/main.pdf` for the full
-documentation.
+Outputs go to `assets/lmc/` (not tracked).
