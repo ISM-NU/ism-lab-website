@@ -43,19 +43,24 @@ build needs none of this. Rerun the scripts when a source changes.
 | `scripts/webb_images.py` | ESA/Webb release images, cached in `.cache/webb/` | `public/webb/*.webp`, `src/data/detections.json` |
 | `scripts/render_lmc.py` | Planck 353 GHz, GASS H I and MAGMA CO from the LMC workspace data | `assets/lmc/` (not tracked) |
 | `scripts/web_assets.py` | `assets/lmc/` | `public/sky/*.webp`, `src/data/sky.json` |
+| `scripts/composites.py` | Herschel, Spitzer, WISE (HiPS tiles), SHASSA H-alpha (SkyView), Planck; HiPS cutouts cached in `.cache/hips/` | `public/sky/comp-*.webp`, `src/data/composites.json` |
 
     python3 scripts/fetch_publications.py
     python3 scripts/webb_images.py
     LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/render_lmc.py
     LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/render_lmc.py --regions
     python3 scripts/web_assets.py
+    LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/composites.py [lmc galactic_centre monoceros_ob1]
 
 `render_lmc.py` reads the H I cube named by `HI_CUBE` (default: the GASS LMC
-subcube). The GASKAP LMC cube is internal to the collaboration, so the public
-site uses GASS until GASKAP data are published.
+subcube). The combined GASKAP + Parkes LMC cube the group works with is
+internal to the collaboration. Single GASKAP fields are public in CASDA, but
+the site uses GASS until Dana and the collaboration agree to show GASKAP
+images.
 
 ## Credits
 
 Webb images: NASA, ESA, CSA, STScI via ESA/Webb (CC BY 4.0). Planck HFI
 353 GHz: ESA Planck Legacy Archive. H I: GASS, Kalberla and Haud (2015). CO:
-MAGMA, Wong et al. (2011). Fonts: Doto, Archivo and JetBrains Mono (SIL OFL).
+MAGMA, Wong et al. (2011). Herschel: ESA. Spitzer and WISE: NASA/JPL-Caltech.
+SHASSA: Gaustad et al. (2001). Fonts: Doto, Archivo and JetBrains Mono (SIL OFL).

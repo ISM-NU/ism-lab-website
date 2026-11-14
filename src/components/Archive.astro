@@ -1,9 +1,22 @@
 ---
-// Image grid: Webb releases next to the group's own maps. Hover, focus or tap
-// runs the source finder's detections over a Webb frame.
+// Image grid, in two sets. Webb: hover, focus or tap runs the source finder's
+// detections over the frame. Ours: the same gesture weaves the Planck magnetic
+// field into the multi-band composite (scripts/composites.py).
 import det from "../data/detections.json";
+import compCredits from "../data/composites.json";
 
-type Card = { id: string; t: string; sub: string; d: string; ins: string; ours?: boolean; src: string; srcset?: string; aspect: number; href?: string };
+interface Props { set: "webb" | "ours" }
+const { set } = Astro.props;
+type Card = { id: string; t: string; sub: string; d: string; ins: string; ours?: boolean; src: string; srcset?: string; field?: string; aspect: number; href?: string; zoom?: number };
+// Instruments come from the bands the pipeline actually used (it falls back,
+// e.g. to WISE where Spitzer does not cover the field), first word of each credit.
+const instruments = (id: keyof typeof compCredits) => [...new Set(compCredits[id].map((c) => c.split(" ")[0]))].join(" · ");
+// zoom: the LMC composite shares the 12 degree analysis grid; the card crops in.
+const comp = (id: keyof typeof compCredits, t: string, sub: string, d: string, href: string, zoom = 1): Card => ({
+  id, t, sub, d, ins: instruments(id), href, ours: true, aspect: 1, zoom,
+  src: `/sky/comp-${id}-960.webp`, srcset: `/sky/comp-${id}-960.webp 960w, /sky/comp-${id}-1920.webp 1920w`,
+  field: `/sky/comp-${id}-field-960.webp 960w, /sky/comp-${id}-field-1920.webp 1920w`,
+});
 const webb = (id: keyof typeof det, t: string, sub: string, d: string, ins: string): Card => ({
   id, t, sub, d, ins, aspect: det[id].aspect,
   src: `/webb/${id}-960.webp`, srcset: `/webb/${id}-960.webp 960w, /webb/${id}-1920.webp 1920w`,
@@ -16,17 +29,20 @@ const cards: Card[] = [
   webb("pillars", "M16", "Pillars of Creation", "6 500 ly", "JWST NIRCam"),
   webb("rhooph", "ρ OPH", "Rho Ophiuchi", "390 ly", "JWST NIRCam"),
   webb("ngc346", "NGC 346", "Small Magellanic Cloud", "200 000 ly", "JWST NIRCam"),
-  { id: "lmc-bfield", t: "LMC · B", sub: "Dust and magnetic field", d: "160 000 ly", ins: "Planck 353 GHz", ours: true, src: "/sky/lmc-bfield.webp", aspect: 1, href: "/research/lmc" },
-  { id: "region-monoceros_ob1", t: "MON OB1", sub: "Field lines over the cloud", d: "2 500 ly", ins: "Planck 353 GHz", ours: true, src: "/sky/region-monoceros_ob1.webp", aspect: 1, href: "/research/star-formation" },
-  { id: "region-galactic_centre", t: "GAL. CENTRE", sub: "Central molecular zone", d: "26 000 ly", ins: "Planck 353 GHz", ours: true, src: "/sky/region-galactic_centre.webp", aspect: 1, href: "/research/dust-polarization" },
+];
+const ours: Card[] = [
+  comp("lmc", "LMC", "Large Magellanic Cloud", "160 000 ly", "/research/lmc", 1.45),
+  comp("galactic_centre", "GAL. CENTRE", "Central molecular zone", "26 000 ly", "/research/dust-polarization"),
+  comp("monoceros_ob1", "MON OB1", "Star-forming cloud", "2 500 ly", "/research/star-formation"),
 ];
 ---
 
-<div class="archive cells">
-  {cards.map((c) => (
+<div class={`archive cells ${set}`}>
+  {(set === "ours" ? ours : cards).map((c) => (
     <article class="card" data-id={c.id} tabindex="0" aria-label={`${c.t}, ${c.sub}`}>
-      <figure style={`aspect-ratio:${c.aspect}`}>
-        <img loading="lazy" decoding="async" src={c.src} srcset={c.srcset} sizes="(max-width: 800px) 100vw, 440px" alt={c.sub} />
+      <figure style={`aspect-ratio:${c.aspect};--z:${c.zoom ?? 1}`}>
+        <img loading="lazy" decoding="async" src={c.src} srcset={c.srcset} sizes={set === "ours" ? "(max-width: 800px) 100vw, 880px" : "(max-width: 800px) 100vw, 440px"} alt={c.sub} />
+        {c.field && <img class="field" loading="lazy" decoding="async" srcset={c.field} sizes="(max-width: 800px) 100vw, 880px" alt="" />}
         <div class="dets"></div>
         <i class="scan"></i>
       </figure>
@@ -44,8 +60,11 @@ const cards: Card[] = [
   .archive { grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); margin-top: 40px; }
   .card { display: grid; grid-template-rows: auto 1fr; }
   figure { margin: 0; position: relative; overflow: hidden; background: var(--panel); }
-  img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
-  .card:hover img, .card:focus-within img { transform: scale(1.04); }
+  img { width: 100%; height: 100%; object-fit: cover; transform: scale(var(--z)); transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  .card:hover img, .card:focus-within img { transform: scale(calc(var(--z) * 1.04)); }
+  .field { position: absolute; inset: 0; opacity: 0; transition: opacity 0.9s ease, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  .card.on .field { opacity: 1; }
+  @media (min-width: 900px) { .ours .card:first-child { grid-column: span 2; grid-row: span 2; } .ours .card:first-child .name { font-size: 40px; } }
   .dets { position: absolute; inset: 0; pointer-events: none; }
   .dets :global(.det span) { font-size: 8px; }
   .scan { position: absolute; left: 0; right: 0; height: 2px; background: var(--signal); box-shadow: 0 0 12px var(--signal); top: -4px; opacity: 0; }
@@ -56,7 +75,7 @@ const cards: Card[] = [
   .row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--grey); letter-spacing: 0.06em; text-transform: uppercase; }
   .row b { color: var(--ink); font-weight: 600; }
   .more { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; justify-self: start; margin-top: 4px; }
-  @media (prefers-reduced-motion: reduce) { img { transition: none; } .card.on .scan { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { img, .field { transition: none; } .card.on .scan { animation: none; } }
 </style>
 
 <script>
@@ -75,7 +94,7 @@ const cards: Card[] = [
       clear();
       void card.offsetWidth;
       card.classList.add("on");
-      if (!d) { count.textContent = "map layer"; return; }
+      if (!d) { count.textContent = "field on"; return; }
       const fw = box.clientWidth, fh = box.clientHeight, list = d.src.slice(0, 34);
       list.forEach((n, i) => {
         const b = document.createElement("div");

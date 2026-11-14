@@ -163,7 +163,7 @@
   addEventListener("resize", size);
   Promise.all([
     loadImage("/sky/allsky.webp").then((i) => (imgs.sky = i)),
-    loadImage("/sky/lmc-bfield-v.webp").then((i) => (imgs.lmc = i)),
+    loadImage("/sky/comp-lmc-field-v.webp").then((i) => (imgs.lmc = i)),
     loadImage(innerWidth > 1100 ? "/webb/tarantula-1920.webp" : "/webb/tarantula-960.webp").then((i) => (imgs.tar = i)),
   ]).then(() => { lastP = -1; });
   onFrame(draw);

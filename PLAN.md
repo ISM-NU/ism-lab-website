@@ -22,13 +22,26 @@ news/announcements, contacts.
   2026-11-13 from https://claude.ai/artifact/Mai9FCdFLTE5pQhfH4bAxk
 - Everything public goes on the site: all published papers and public data.
   Work in progress shows as COMING SOON until Dana approves it.
-- GASKAP-HI LMC cube: ours comes from the collaboration's internal drive, and
-  only the SMC cube is public (CSIRO DAP, doi:10.25919/www0-4p48). The site
-  uses GASS (public Parkes survey, 16') for LMC H I. `scripts/render_lmc.py`
-  takes `HI_CUBE=<path>`, so a sharper public cube can replace GASS later.
-- Sharper H I option: image the public ASKAP visibilities (CASDA, project
-  AS108) with IViS (github.com/antoinemarchal/ivis, GPU) on Irgetas. This is a
-  separate task: first check which LMC measurement sets are public and their size.
+- GASKAP-HI LMC: per-scheduling-block H I cubes are public in CASDA (project
+  AS108, collection GASKAP-HI, e.g. SB79298 `MS_M000+04A_5`, quality GOOD,
+  released 2026-01-22, 216 GB each, 2112 channels). Downloads need an OPAL
+  login. The combined LMC mosaic the group uses is still internal. Until Dana
+  and the collaboration agree to show GASKAP images, the site uses GASS
+  (public Parkes survey, 16') for LMC H I. `scripts/render_lmc.py` takes
+  `HI_CUBE=<path>` for a sharper cube later.
+- IViS (github.com/antoinemarchal/ivis, GPU) on Irgetas, approved 2026-11-13.
+  Public line visibilities exist only for pilot-era SBs (33047 GOOD; 38373,
+  38758, 38791, 38814, 38845, 53093 UNCERTAIN), about 30 TB in all, about
+  60 GB per beam. Pilot plan: SB33047 beams nearest 30 Dor (M000+02C beam 27,
+  M000+02B beam 20, M000+02A beam 21), GASS as the short-spacing model.
+  Blocked on: NU VPN for ssh, an OPAL account stored on Irgetas. Scripts go in
+  LMC-cold-gas (experiment repo), not here.
+- Visuals: our maps are multi-band composites (`scripts/composites.py`):
+  Herschel, Spitzer, WISE and SHASSA from HiPS/SkyView for the detail, Planck
+  only for the field direction (LIC texture), plus a Hessian ridge filter.
+  HiPS tiles are sampled directly by HEALPix index: reproject 0.21
+  `hips_as_dask_array` misplaces data near the poles (about 2 deg at the LMC).
+  Planck alone (5' beam) is too soft for large images.
 - Publications come from ADS through `scripts/fetch_publications.py`, which
   writes `src/data/publications.json`. The build never calls ADS.
 - Members are mock placeholders (`mock: true`) until real photos and bios
@@ -49,7 +62,8 @@ news/announcements, contacts.
 - [x] Site scaffold (Astro), content model, all pages, publications from ADS
 - [ ] Real member data (photos, roles, bios) from Denis
 - [ ] Dana's sign-off on research graph links and COMING SOON items
-- [ ] IViS imaging of public ASKAP LMC visibilities
+- [x] Multi-band composites for LMC, Galactic centre, Mon OB1
+- [ ] IViS pilot on SB33047 (needs VPN and OPAL login)
 - [ ] Domain, hosting, editors
 - [ ] Performance pass on mobile for the scroll zoom
 

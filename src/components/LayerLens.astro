@@ -4,7 +4,10 @@
 // on the same 12 deg grid, so they line up pixel for pixel.
 import sky from "../data/sky.json";
 const layers = [
-  { id: "bfield", l: "B field", src: "/sky/lmc-bfield.webp", note: "Planck 353 GHz dust, textured along the field" },
+  { id: "comp", l: "Composite", src: "/sky/comp-lmc-1920.webp", note: "Herschel 250 µm cold dust (red), WISE 12 µm warm dust (teal), SHASSA H-alpha ionized gas (blue), WISE 3.4 µm stars" },
+  { id: "field", l: "Field", src: "/sky/comp-lmc-field-1920.webp", note: "The composite with the Planck 353 GHz field direction woven in" },
+  { id: "fil", l: "Filaments", src: "/sky/comp-lmc-ridges-1920.webp", note: "Ridge filter on Herschel 250 µm: multiscale Hessian, the first step of a filament finder" },
+  { id: "bfield", l: "Planck", src: "/sky/lmc-bfield.webp", note: "Planck 353 GHz dust, textured along the field" },
   { id: "dust", l: "Dust", src: "/sky/lmc-dust.webp", note: "Planck 353 GHz total intensity" },
   { id: "hi", l: "H I", src: "/sky/lmc-hi.webp", note: "GASS H I column density, 16' beam" },
   { id: "vel", l: "Rotation", src: "/sky/lmc-vel.webp", note: "GASS H I mean velocity, blue approaching" },
@@ -15,25 +18,25 @@ const ch = sky.channels_kms;
 
 <div class="lens-wrap">
   <div class="stage" id="lensStage" style="--x:50%;--y:50%">
-    <img class="base" id="lensBase" src={layers[1].src} alt="LMC map, base layer" />
-    <img class="top" id="lensTop" src={layers[0].src} alt="" />
+    <img class="base" id="lensBase" src={layers[0].src} alt="LMC map, base layer" />
+    <img class="top" id="lensTop" src={layers[1].src} alt="" />
     <img class="vel" id="lensVel" src="/sky/channels/24.webp" alt="" hidden />
     <span class="ring" aria-hidden="true"></span>
-    <span class="readout label" id="lensRead" aria-live="polite">Lens: {layers[0].l}</span>
+    <span class="readout label" id="lensRead" aria-live="polite">Lens: {layers[1].l}</span>
   </div>
   <div class="ctl">
     <fieldset>
       <legend class="label">Base</legend>
-      {layers.map((l, i) => <label><input type="radio" name="base" value={l.id} data-src={l.src} data-note={l.note} checked={i === 1} /><span>{l.l}</span></label>)}
+      {layers.map((l, i) => <label><input type="radio" name="base" value={l.id} data-src={l.src} data-note={l.note} checked={i === 0} /><span>{l.l}</span></label>)}
     </fieldset>
     <fieldset>
       <legend class="label">Lens</legend>
-      {layers.map((l, i) => <label><input type="radio" name="top" value={l.id} data-src={l.src} data-note={l.note} checked={i === 0} /><span>{l.l}</span></label>)}
+      {layers.map((l, i) => <label><input type="radio" name="top" value={l.id} data-src={l.src} data-note={l.note} checked={i === 1} /><span>{l.l}</span></label>)}
     </fieldset>
     <div class="vctl">
       <label class="label" for="vel">H I velocity <b class="dot" id="velOut">off</b></label>
       <input type="range" id="vel" min="-1" max={ch.length - 1} value="-1" step="1" aria-valuetext="off" />
-      <p class="note" id="lensNote">{layers[0].note}. Move over the map; the lens shows a second layer.</p>
+      <p class="note" id="lensNote">{layers[1].note}. Move over the map; the lens shows a second layer.</p>
     </div>
   </div>
 </div>

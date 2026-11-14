@@ -49,9 +49,20 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
       <div class="head">
         <span class="label">Archive</span>
         <h2 class="brut" id="arch-h" data-scramble>Look closer</h2>
-        <p>Webb images next to the group's own maps. Hover or tap a frame to run the source finder on it.</p>
+        <p>Webb images of star-forming clouds and distant galaxies. Hover or tap a frame to run the source finder on it.</p>
       </div>
-      <Archive />
+      <Archive set="webb" />
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="ours-h">
+    <div class="gut max">
+      <div class="head">
+        <span class="label red">Our maps</span>
+        <h2 class="brut" id="ours-h" data-scramble>What Webb cannot see</h2>
+        <p>The magnetic field. Herschel, Spitzer and H&alpha; surveys give the dust and gas their detail; Planck gives the field direction. Hover or tap a map to weave the field in.</p>
+      </div>
+      <Archive set="ours" />
     </div>
   </section>
 

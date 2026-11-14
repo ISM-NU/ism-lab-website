@@ -1,0 +1,23 @@
+{
+ "galactic_centre": [
+  "Spitzer IRAC 8 µm",
+  "Herschel PACS 70 µm",
+  "Herschel SPIRE 250 µm",
+  "Spitzer IRAC 3.6 µm",
+  "Planck 353 GHz (field)"
+ ],
+ "lmc": [
+  "SHASSA H-alpha",
+  "WISE 12 µm",
+  "Herschel SPIRE 250 µm",
+  "WISE 3.4 µm",
+  "Planck 353 GHz (field)"
+ ],
+ "monoceros_ob1": [
+  "SHASSA H-alpha",
+  "WISE 12 µm",
+  "Herschel SPIRE 250 µm",
+  "WISE 3.4 µm",
+  "Planck 353 GHz (field)"
+ ]
+}

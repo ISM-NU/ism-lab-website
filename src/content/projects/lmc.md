@@ -3,7 +3,7 @@ title: "The magnetic field of the Large Magellanic Cloud"
 code: "LMC"
 summary: "Mapping the field of our nearest gas-rich galaxy from polarized dust and from the motions of its atomic hydrogen, and separating the gas into its cold and warm phases."
 order: 1
-image: "/sky/lmc-bfield.webp"
+image: "/sky/comp-lmc-field-960.webp"
 instruments: ["Planck", "ASKAP", "Parkes"]
 papers:
   - "2023MNRAS.518.4466A"

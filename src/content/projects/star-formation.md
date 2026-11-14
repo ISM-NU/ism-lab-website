@@ -3,7 +3,7 @@ title: "Where stars form"
 code: "SF"
 summary: "Magnetic fields, cores and gas flows inside individual molecular clouds, from the Orion cold clumps to Monoceros OB1, infrared dark clouds and the centre of NGC 253."
 order: 3
-image: "/sky/region-monoceros_ob1.webp"
+image: "/sky/comp-monoceros_ob1-field-960.webp"
 instruments: ["ALMA", "JCMT", "JWST", "TRAO"]
 papers:
   - "2026MNRAS.552g1764D"
