@@ -5,7 +5,7 @@ Inputs (from the LMC workspace's shared data folder, LMC_DATA):
     (Parkes, 16'). The GASKAP-HI + Parkes cube we hold is collaboration-internal
     and must not feed the public site until it is released.
   - CO: MAGMA CO(1-0) cube and its rms cube
-  - Dust and magnetic field: Planck HFI 353 GHz I, Q, U (PR3, HEALPix, Galactic)
+  - Dust and magnetic field: Planck HFI 353 GHz I, Q, U (PR4 / NPIPE, HEALPix, Galactic)
 
 Everything is put on one fixed equatorial TAN grid (GRID below: 12 deg, 40"
 pixels), so the layers line up pixel for pixel and can be stacked or
@@ -104,22 +104,6 @@ def hi_products(target_wcs):
     return m0g, m1g, np.stack(chans), v, spectrum, to_grid
 
 
-def write_channels(chans, v, to_grid):
-    """Velocity sweep: N frames, each the mean of a block of channels."""
-    edges = np.linspace(0, len(v), N_CHANNEL_FRAMES + 1).astype(int)
-    hi = np.percentile(chans[chans > 0], 99.8)
-    frames = []
-    cmap = colormaps["magma"]
-    (OUT / "channels").mkdir(exist_ok=True)
-    for i in range(N_CHANNEL_FRAMES):
-        a, b = edges[i], edges[i + 1]
-        plane = np.nan_to_num(to_grid(chans[a:b].mean(axis=0)))
-        x = np.arcsinh(np.clip(plane / hi, 0, 1) / 0.08) / np.arcsinh(1 / 0.08)
-        save_rgba(cmap(x)[..., :3], f"channels/{i:02d}.jpg", quality=80)
-        frames.append(round(float(v[a:b].mean()), 1))
-    return frames
-
-
 def co_moment0(target_wcs, shape):
     with fits.open(CO_CUBE, memmap=True) as h, fits.open(CO_RMS, memmap=True) as hr:
         cube, rms, hdr = h[0].data, hr[0].data, h[0].header
@@ -136,30 +120,108 @@ def co_moment0(target_wcs, shape):
 
 
 def read_planck():
-    return hp.read_map(PLANCK, field=(0, 1, 2), dtype=np.float32)
+    """I, Q, U in K_CMB, RING ordering, with the solar dipole removed from I.
+
+    The NPIPE (PR4) frequency maps keep the solar dipole (3.3 mK towards
+    l=262, b=+48). At 353 GHz it outshines the high-latitude dust and turns
+    one hemisphere bright and the other black, so it is fitted away from the
+    plane (|b| > 30 deg, nside 128) and subtracted. The monopole is left in;
+    every stretch below is percentile based."""
+    m = list(hp.read_map(PLANCK, field=(0, 1, 2), dtype=np.float32))
+    nside = hp.get_nside(m[0])
+    low = hp.ud_grade(m[0], 128)
+    lat = hp.pix2ang(128, np.arange(low.size), lonlat=True)[1]
+    low[np.abs(lat) < 30] = hp.UNSEEN
+    _, dip = hp.fit_dipole(low)
+    step = 1 << 22
+    for s in range(0, m[0].size, step):
+        x, y, z = hp.pix2vec(nside, np.arange(s, min(s + step, m[0].size)))
+        m[0][s : s + step] -= (dip[0] * x + dip[1] * y + dip[2] * z).astype(np.float32)
+    return m
 
 
-def allsky(planck, nside=256, width=2400):
-    """Full-sky Mollweide: dust intensity textured by the field direction.
+# Dust palette for every Planck image: black through oxblood and copper to
+# warm white. Lightness rises monotonically, so brightness always means more
+# dust, and the hue stays clear of the site's signal red.
+DUST_STOPS = [(0.0, "#000000"), (0.18, "#1c0a06"), (0.38, "#5a1e0e"), (0.58, "#a8461a"),
+              (0.76, "#e08a3c"), (0.9, "#f6c98a"), (1.0, "#fff6e6")]
 
-    Q/U are averaged down to nside 256 (about 14') before taking angles; the
-    angle is used directly in the projected plane, which is a fair visual
-    approximation away from the map edge.
+
+# Atomic gas gets a cool monochrome so it never reads as dust.
+GAS_STOPS = [(0.0, "#000000"), (0.2, "#14161a"), (0.42, "#3b4048"), (0.64, "#7d848c"),
+             (0.84, "#c9c7bf"), (1.0, "#fffdf6")]
+
+
+def dust_cmap(stops=None):
+    from matplotlib.colors import LinearSegmentedColormap
+    return LinearSegmentedColormap.from_list("dust", stops or DUST_STOPS)
+
+
+def shade(dust, tex, cmap=None, amount=0.22):
+    """Colour a 0..1 dust map, with the field texture worked into the value
+    before the colormap (not multiplied after it), so the palette stays
+    monotonic and faint regions keep visible streaks."""
+    v = np.clip(dust + amount * (tex - 0.5) * (0.35 + dust), 0, 1)
+    return (cmap or dust_cmap())(v)[..., :3]
+
+
+def mollweide_field_angle(proj, theta, d=0.05):
+    """Convert a field position angle (east of Galactic north) at every pixel
+    of a healpy Mollweide image into the step direction lic() expects.
+
+    Mollweide is not conformal and its meridians converge, so image-up is
+    not north away from the central meridian. The tangent vector
+    cos(theta) N + sin(theta) E is pushed through the projection by finite
+    differences of ang2xy along north and east."""
+    x, y = (np.ma.filled(a.astype(float), np.nan) for a in proj.ij2xy())
+    out = np.full(theta.shape, np.nan)
+    ok = np.isfinite(x) & np.isfinite(y)
+    x, y, th = x[ok], y[ok], theta[ok]
+    lon, lat = proj.xy2ang(x, y, lonlat=True)
+    lat = np.clip(lat, -89.5, 89.5)
+    xy = lambda lo, la: proj.ang2xy(lo, np.clip(la, -90, 90), lonlat=True)
+    xn, yn = xy(lon, lat + d)
+    dlon = d / np.cos(np.radians(lat))
+    xe, ye = xy(lon + dlon, lat)
+    xw, yw = xy(lon - dlon, lat)
+    # At the map's left and right edges one side of the east step wraps to
+    # the far edge; take whichever one-sided difference stayed local.
+    ex, ey = xe - x, ye - y
+    wrap = np.hypot(ex, ey) > np.hypot(xw - x, yw - y) * 3
+    ex, ey = np.where(wrap, x - xw, ex), np.where(wrap, y - yw, ey)
+    vx = np.cos(th) * (xn - x) + np.sin(th) * ex
+    vy = np.cos(th) * (yn - y) + np.sin(th) * ey
+    # healpy projmap rows run upward with y and columns with x, which is the
+    # (x, y-up) frame lic() steps in: (dx, dy) = (-sin a, cos a).
+    out[ok] = np.arctan2(-vx, vy)
+    return out
+
+
+def allsky(planck, nside=512, width=2400, fwhm_arcmin=30):
+    """Full-sky Mollweide: dust intensity textured by the field orientation.
+
+    I, Q, U are smoothed together on the sphere (spin-2 aware) to 30', then
+    projected. The plane-of-sky field is the IAU polarization angle + 90 deg,
+    converted to image directions with the projection's Jacobian.
     """
-    i_map, q_map, u_map = (hp.ud_grade(m, nside) for m in planck)
+    low = [hp.ud_grade(m, nside) for m in planck]
+    i_map, q_map, u_map = hp.smoothing(low, fwhm=np.radians(fwhm_arcmin / 60), pol=True)
     u_map = -u_map  # COSMO -> IAU
     proj = hp.projector.MollweideProj(xsize=width)
     f = lambda m: proj.projmap(m, lambda x, y, z: hp.vec2pix(nside, x, y, z))
     I, Q, U = f(i_map), f(q_map), f(u_map)
     inside = np.isfinite(I) & (I > -1e20)
-    Qs, Us = (gaussian_filter(np.where(inside, a, 0), 1.5) for a in (Q, U))
-    ang = 0.5 * np.arctan2(Us, Qs) + np.pi / 2
-    tex = lic(ang, length=24)
-    dust = stretch(np.where(inside, np.log10(np.clip(I, 1e-3, None)), np.nan), 1, 99.9)
-    rgb = colormaps["inferno"](dust)[..., :3] * (0.4 + 0.8 * tex[..., None])
-    rgba = np.dstack([np.clip(rgb, 0, 1), inside.astype(float)])
+    theta = 0.5 * np.arctan2(np.where(inside, U, 0), np.where(inside, Q, 1)) + np.pi / 2
+    ang = mollweide_field_angle(proj, theta)
+    tex = lic(np.where(inside, ang, 0), length=26)
+    lo = np.percentile(I[inside], 0.5)
+    dust = stretch(np.where(inside, np.log10(np.clip(I - lo, 1e-6, None)), np.nan), 2, 99.95)
+    # Drop the faintest fifth (CMB and CIB dominate there at 30') to black.
+    dust = np.clip((dust - 0.2) / 0.8, 0, 1)
+    rgba = np.dstack([shade(dust, tex, amount=0.45), inside.astype(float)])
     save_rgba(rgba, "allsky_bfield.png")
     save_gray(np.where(inside, tex, 0), "allsky_lic.jpg")
+    np.save(OUT / "allsky_dust.npy", np.where(inside, dust, 0).astype(np.float32))
 
 
 def planck_maps(planck, target_wcs, shape, smooth_px=12):
@@ -186,12 +248,35 @@ def planck_maps(planck, target_wcs, shape, smooth_px=12):
     return I, b_eq, p
 
 
+def grid_angle(wcs, shape, pa, step_arcmin=2.0):
+    """Turn a position angle on the sky into an angle on the pixel grid.
+
+    pa is measured from north towards east in the WCS's own frame (celestial
+    for RA/Dec grids, Galactic for GLON/GLAT). Away from the projection centre
+    local north is not the grid's vertical (on the 12 deg LMC grid at
+    Dec -68.5 it tilts by up to ~20 deg), so we step along pa on the sky and
+    project the step. Returns the angle lic() expects: step (-sin a, cos a)
+    in array (x, y) with y up, i.e. measured from +y towards -x.
+    """
+    yy, xx = np.mgrid[0 : shape[0], 0 : shape[1]]
+    sky = wcs.pixel_to_world(xx.ravel(), yy.ravel())
+    to = sky.directional_offset_by(np.ravel(pa) * u.rad, step_arcmin * u.arcmin)
+    x2, y2 = wcs.world_to_pixel(to)
+    a = np.arctan2(-(x2 - xx.ravel()), y2 - yy.ravel())
+    return a.reshape(shape)
+
+
+def north_tilt(wcs, shape):
+    """Grid angle of local north at each pixel (0 at the projection centre)."""
+    return grid_angle(wcs, shape, np.zeros(shape))
+
+
 def lic(angle, length=30, seed=1):
     """Line integral convolution of white noise along the field direction.
 
-    angle is the position angle east of north; image x grows to the west on
-    this grid (CDELT1 < 0) after the vertical flip used for saving, so the
-    pixel step is (-sin, cos) in array (x, y) with y up.
+    angle is measured on the pixel grid from +y towards -x (use grid_angle()
+    to convert a sky position angle), so the pixel step is (-sin, cos) in
+    array (x, y) with y up.
     """
     ny, nx = angle.shape
     rng = np.random.default_rng(seed)
@@ -235,10 +320,9 @@ def regions(planck, size=900):
         I, Q, U = proj(planck[0]), proj(planck[1]), -proj(planck[2])
         sm = max(2.0, 10 * (8.0 / width) ** -0.3)
         ang = 0.5 * np.arctan2(gaussian_filter(np.nan_to_num(U), sm), gaussian_filter(np.nan_to_num(Q), sm)) + np.pi / 2
-        tex = lic(ang, length=28)
+        tex = lic(grid_angle(wcs, (size, size), ang), length=28)
         dust = stretch(np.log10(np.clip(I, 1e-3, None)), 1, 99.8)
-        rgb = colormaps["inferno"](dust)[..., :3] * (0.4 + 0.8 * tex[..., None])
-        save_rgba(np.clip(rgb, 0, 1), f"region_{name}.jpg")
+        save_rgba(shade(dust, tex, amount=0.4), f"region_{name}.jpg")
         print("region", name, flush=True)
 
 
@@ -252,13 +336,12 @@ def main():
 
     hi = stretch(m0, 2, 99.9, asinh=0.15)
     save_gray(hi, "hi_column.jpg")
-    save_rgba(colormaps["magma"](hi)[..., :3], "hi_column_color.jpg")
+    save_rgba(dust_cmap(GAS_STOPS)(hi)[..., :3], "hi_column_color.jpg")
 
     vel = (np.nan_to_num(m1, nan=np.nanmedian(m1)) - 200) / (320 - 200)
     rgb = colormaps["RdBu_r"](np.clip(vel, 0, 1))[..., :3] * hi[..., None] ** 0.8
     save_rgba(rgb, "hi_velocity.jpg")
 
-    frames = write_channels(chans, v, to_grid)
     del chans
 
     print("CO ...", flush=True)
@@ -273,21 +356,22 @@ def main():
     allsky(planck)
     I, b_eq, p = planck_maps(planck, wcs, shape)
     dust = stretch(I, 2, 99.8, asinh=0.2)
-    save_rgba(colormaps["inferno"](dust)[..., :3], "dust_353.jpg")
-    tex = lic(b_eq)
+    save_rgba(dust_cmap()(dust)[..., :3], "dust_353.jpg")
+    b_grid = grid_angle(wcs, shape, b_eq)
+    tex = lic(b_grid)
     save_gray(tex, "bfield_lic.jpg")
-    combo = colormaps["inferno"](dust)[..., :3] * (0.45 + 0.75 * tex[..., None])
-    save_rgba(np.clip(combo, 0, 1), "bfield_on_dust.jpg")
-    np.save(OUT / "bfield_angle.npy", b_eq.astype(np.float32))
+    save_rgba(shade(dust, tex, amount=0.4), "bfield_on_dust.jpg")
+    # Grid angle for drawing; north tilt so a readout can recover the sky PA.
+    np.save(OUT / "bfield_angle.npy", b_grid.astype(np.float32))
+    np.save(OUT / "north_tilt.npy", north_tilt(wcs, shape).astype(np.float32))
 
     meta = {
         "grid": {"nx": shape[1], "ny": shape[0], "wcs": dict(wcs.to_header())},
-        "channels_kms": frames,
         "hi_spectrum": {"v_kms": [round(float(x), 2) for x in v], "sum_K": [float(x) for x in spectrum]},
         "sources": {
             "hi": HI_CUBE.name,
             "co": "MAGMA CO(1-0), Wong et al. 2011",
-            "dust_bfield": "Planck HFI 353 GHz PR3, I/Q/U, smoothed",
+            "dust_bfield": "Planck HFI 353 GHz PR4 (NPIPE), I/Q/U, smoothed",
         },
     }
     (OUT / "meta.json").write_text(json.dumps(meta, indent=1, default=str))

@@ -25,8 +25,8 @@ OUT = ROOT / "public" / "sky"
 DATA = ROOT / "src" / "data" / "sky.json"
 
 FIELD_N = 96  # field-angle grid the dot field samples
+TILT_N = 24  # coarse grid of local north, for the PA readout
 ALLSKY_W = 2400  # must match render_lmc.allsky width
-LMC_CENTRE = SkyCoord(ra=80.894 * u.deg, dec=-69.756 * u.deg)
 TARGETS = {
     "30 Doradus": "05h38m42s -69d06m03s",
     "N11": "04h56m49s -66d24m00s",
@@ -35,7 +35,7 @@ TARGETS = {
     "N79": "04h52m00s -69d22m00s",
 }
 IMAGES = {
-    "allsky_bfield.png": ("allsky.webp", 2000),
+    "allsky_bfield.png": ("allsky.webp", 2400),
     "hi_column_color.jpg": ("lmc-hi.webp", 1000),
     "hi_velocity.jpg": ("lmc-vel.webp", 1000),
     "co_clouds.png": ("lmc-co.webp", 1000),
@@ -71,20 +71,25 @@ def main():
     meta = json.loads((SRC / "meta.json").read_text())
     for src, (dst, size) in IMAGES.items():
         save(src, dst, size)
-    # Vignetted dust + field texture for the zoom: the square map edge must
-    # not show. Planck (5') is sharper than the public GASS H I (16').
+    # Vignetted dust + field texture: the square map edge must not show.
     save("bfield_on_dust.jpg", "lmc-bfield-v.webp", 1000, alpha=True)
     for r in REGIONS:
         save(f"region_{r}.jpg", f"region-{r}.webp", 900)
-    (OUT / "channels").mkdir(exist_ok=True)
-    for i, _ in enumerate(meta["channels_kms"]):
-        save(f"channels/{i:02d}.jpg", f"channels/{i:02d}.webp", 640)
 
-    # Field angle grid: circular mean in 2*theta, rows top = north.
+    # Field angle grid: circular mean in 2*theta, rows top = north. The cells
+    # cover the whole grid (uneven 11-12 px blocks), so the dashes register
+    # with the images the dots are drawn over.
     a = np.load(SRC / "bfield_angle.npy")
-    b = a.shape[0] // FIELD_N
-    blk = lambda x: x[: FIELD_N * b, : FIELD_N * b].reshape(FIELD_N, b, FIELD_N, b).mean((1, 3))
+    e0 = np.linspace(0, a.shape[0], FIELD_N + 1).astype(int)[:-1]
+    e1 = np.linspace(0, a.shape[1], FIELD_N + 1).astype(int)[:-1]
+    blk = lambda x: np.add.reduceat(np.add.reduceat(x, e0, axis=0), e1, axis=1)
     ang = (0.5 * np.arctan2(blk(np.sin(2 * a)), blk(np.cos(2 * a))))[::-1]
+    # Local north on the grid, coarse (it varies smoothly): the dot field's
+    # readout subtracts it to show the position angle east of north.
+    t = np.load(SRC / "north_tilt.npy")
+    t0 = np.linspace(0, t.shape[0], TILT_N + 1).astype(int)[:-1]
+    t1 = np.linspace(0, t.shape[1], TILT_N + 1).astype(int)[:-1]
+    tilt = (np.add.reduceat(np.add.reduceat(t, t0, axis=0), t1, axis=1) / np.outer(np.diff(np.r_[t0, t.shape[0]]), np.diff(np.r_[t1, t.shape[1]])))[::-1]
 
     wcs, nx, ny = grid_wcs(meta)
     targets = {}
@@ -92,8 +97,10 @@ def main():
         x, y = wcs.world_to_pixel(SkyCoord(v, unit=(u.hourangle, u.deg)))
         targets[k] = [round(float(x) / nx, 4), round(1 - float(y) / ny, 4)]
 
-    # LMC position on the Mollweide all-sky map and the angle of celestial
-    # north there (clockwise from up), from continuous projected coordinates.
+    # Position on the Mollweide all-sky map and the angle of celestial north
+    # there (clockwise from up), from continuous projected coordinates. Both
+    # are taken at the grid centre: that is the point the zoom pins the LMC
+    # image to (the optical centre is 1.2 deg away).
     proj = hp.projector.MollweideProj(xsize=ALLSKY_W)
 
     def xy(c):
@@ -102,8 +109,10 @@ def main():
 
     # Projected x grows with image column and y grows up. Use continuous x, y:
     # xy2ij rounds to whole pixels, which snaps this angle to 90 deg.
-    x0, y0 = xy(LMC_CENTRE)
-    x1, y1 = xy(SkyCoord(ra=LMC_CENTRE.ra, dec=LMC_CENTRE.dec + 0.1 * u.deg))
+    g = meta["grid"]["wcs"]
+    centre = SkyCoord(ra=g["CRVAL1"] * u.deg, dec=g["CRVAL2"] * u.deg)
+    x0, y0 = xy(centre)
+    x1, y1 = xy(SkyCoord(ra=centre.ra, dec=centre.dec + 0.1 * u.deg))
     i, j = proj.xy2ij(x0, y0)
     rot = float(np.degrees(np.arctan2(x1 - x0, y1 - y0)))
 
@@ -115,7 +124,8 @@ def main():
     out = {
         "field_n": FIELD_N,
         "field": [round(float(v), 3) for v in ang.ravel()],
-        "channels_kms": meta["channels_kms"],
+        "tilt_n": TILT_N,
+        "north_tilt": [round(float(v), 3) for v in tilt.ravel()],
         "lmc_in_allsky": [round(float(j) / ALLSKY_W, 4), round(1 - float(i) / (ALLSKY_W / 2), 4)],
         "lmc_rot_deg": round(rot, 1),
         "hi_spectrum": [round(float(v), 3) for v in bars],

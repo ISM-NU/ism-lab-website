@@ -298,7 +298,8 @@ def star_layer(a):
 
 
 def field_angle(r, wcs, planck):
-    """Plane-of-sky field position angle on this grid, smoothed over ~2 Planck beams."""
+    """Plane-of-sky field position angle (from north in the grid's frame). Q and U are smoothed with a
+    10' sigma Gaussian (FWHM about 24') for signal to noise, much wider than the 5' beam."""
     n = r["n"]
     smooth = (10 / 60) / (r["fov"] / n)
     if r["frame"] == "icrs":
@@ -376,7 +377,8 @@ def composite(name, planck):
     # LIC on a quarter-resolution grid, upsampled and softened, so the field
     # reads as broad flowing lines rather than pixel scratches.
     f = 4
-    ang = field_angle(r, wcs, planck)[::f, ::f]
+    pa = field_angle(r, wcs, planck)[::f, ::f]
+    ang = rl.grid_angle(wcs.slice((slice(None, None, f), slice(None, None, f))), pa.shape, pa)
     tex = gaussian_filter(zoom(rl.lic(ang, length=30), f, order=1)[: r["n"], : r["n"]], 1.6)
     tex = (tex - tex.mean()) / (tex.std() + 1e-9)
     lum = rgb.max(axis=2, keepdims=True)

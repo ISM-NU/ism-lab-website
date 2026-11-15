@@ -34,7 +34,9 @@ IMAGES = {
     "weic2301a": "ngc346",
 }
 # R136 sits off the brightest smoothed peak in the Tarantula frame, so its
-# position is set by hand from the release's annotated image.
+# position is set by hand from the release's annotated image. Checked against
+# an astrometric fit of the full mosaic to Spitzer IRAC 3.6 um (0.0300"/px,
+# north 13.5 deg left of vertical): R136a1 lands within 0.7" of this point.
 CORE_OVERRIDE = {"tarantula": [0.5967, 0.5508]}
 WIDTHS = (960, 1920)
 N_SOURCES = 70
