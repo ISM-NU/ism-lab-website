@@ -69,6 +69,8 @@ server and a DNS A record for the hostname.
 ## Credits
 
 Webb images: NASA, ESA, CSA, STScI via ESA/Webb (CC BY 4.0). Planck HFI
-353 GHz: ESA Planck Legacy Archive. H I: GASS, Kalberla and Haud (2015). CO:
-MAGMA, Wong et al. (2011). Herschel: ESA. Spitzer and WISE: NASA/JPL-Caltech.
+353 GHz PR4 (NPIPE): ESA Planck Legacy Archive. H I: GASS, McClure-Griffiths et
+al. (2009) and Kalberla and Haud (2015); HI4PI for the Milky Way column. CO:
+MAGMA, Wong et al. (2011). Herschel: ESA, including HERITAGE (Meixner et al.
+2013) and Hi-GAL (Molinari et al. 2016). Spitzer and WISE: NASA/JPL-Caltech.
 SHASSA: Gaustad et al. (2001). Fonts: Doto, Archivo and JetBrains Mono (SIL OFL).
