@@ -47,10 +47,10 @@ build needs none of this. Rerun the scripts when a source changes.
 
     python3 scripts/fetch_publications.py
     python3 scripts/webb_images.py
-    LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/render_lmc.py
-    LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/render_lmc.py --regions
+    LMC_DATA=/path/to/lmc-data python3 scripts/render_lmc.py
+    LMC_DATA=/path/to/lmc-data python3 scripts/render_lmc.py --regions
     python3 scripts/web_assets.py
-    LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/composites.py [lmc galactic_centre monoceros_ob1]
+    LMC_DATA=/path/to/lmc-data python3 scripts/composites.py [lmc galactic_centre monoceros_ob1]
 
 `render_lmc.py` reads the H I cube named by `HI_CUBE` (default: the GASS LMC
 subcube). The combined GASKAP + Parkes LMC cube the group works with is
