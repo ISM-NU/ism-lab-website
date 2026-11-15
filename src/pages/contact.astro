@@ -1,28 +1,40 @@
 ---
 import Base from "../layouts/Base.astro";
 import PageHead from "../components/PageHead.astro";
+import LmcSky from "../components/LmcSky.astro";
 // Coordinates of Nazarbayev University, Astana.
 const LAT = 51.0906, LON = 71.3982;
 ---
 
 <Base title="Contact" description="How to reach the ISM group at Nazarbayev University, Astana.">
-  <PageHead label="Contact" title="Find us" intro="Students who want to work on the interstellar medium, collaborators and visitors are welcome. Write first; we answer.">
+  <PageHead title="Find us" intro="Students who want to work on the interstellar medium, collaborators and visitors are welcome. Please write before visiting. What a student could work on is on the join page.">
   </PageHead>
   <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
     <div class="gut max grid">
       <div class="cell">
-        <span class="label">Where</span>
         <p class="big brut">Nazarbayev University</p>
         <p>Department of Physics, School of Sciences and Humanities<br />53 Kabanbay Batyr Ave, Astana 010000, Kazakhstan</p>
         <p class="coord dot">{LAT.toFixed(4)}° N &nbsp; {LON.toFixed(4)}° E</p>
       </div>
       <div class="cell">
-        <span class="label">Write</span>
         <p class="big brut">Email</p>
         <p>Group address to be confirmed. <span class="tag soon">Coming soon</span></p>
-        <span class="label" style="margin-top:20px">Sky from here</span>
-        <p>The LMC never rises over Astana: at latitude 51° N the whole cloud stays below the horizon. The group observes it through Planck, Parkes and ASKAP in the south.</p>
+        <p><a href="/join">What a student or visitor could work on</a></p>
       </div>
+    </div>
+  </section>
+
+  <section class="slab sec" aria-labelledby="sky-h">
+    <div class="gut max">
+      <div class="head">
+        <h2 class="brut" id="sky-h">The LMC from here</h2>
+        <p>Where the Large Magellanic Cloud is in the sky of Astana and of the telescopes behind our data.</p>
+      </div>
+      <div class="why">
+        <p>At 51° N the LMC never rises. Its centre is at declination −70°, so from Astana it peaks about 31° below the horizon, and the whole 12° field we map stays down with it. A group here cannot point a telescope at it.</p>
+        <p>The data do not need us to. Planck mapped the whole sky from space. GASS, the Parkes H I survey, and the ASKAP survey GASKAP-HI observe the LMC from the south and are available through public archives. At Parkes, ASKAP and ALMA the LMC is circumpolar: it never sets, though at ALMA it sinks to 3° at its lowest and peaks at 43°. JCMT on Maunakea never gets it above 0.4°, so that telescope serves our Galactic cloud work instead.</p>
+      </div>
+      <div class="panel"><LmcSky /></div>
     </div>
   </section>
 </Base>
@@ -31,5 +43,8 @@ const LAT = 51.0906, LON = 71.3982;
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 1px; background: var(--hair); border: 1px solid var(--hair); }
   .cell { background: var(--void); padding: clamp(20px, 3vw, 36px); display: grid; gap: 12px; align-content: start; }
   .big { font-size: clamp(2.2rem, 1.2rem + 2.6vw, 3.6rem); }
+  .why { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px 40px; margin-top: 24px; max-width: 120ch; }
+  .why p { margin: 0; }
+  .panel { margin-top: 32px; color: var(--ink); }
   .coord { font-size: 22px; margin-top: 10px; color: var(--signal); }
 </style>

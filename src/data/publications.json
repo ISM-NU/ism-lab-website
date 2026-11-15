@@ -43,7 +43,11 @@
    "arxiv": "2605.14693",
    "citations": 0,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "We present a multiwavelength study of the massive protocluster G286.21 + 0.17 (G286) using James Webb Space Telescope (JWST) near-infrared (NIR) imaging and ALMA (Atacama Large Millimeter/submillimeter Array) H<inline-formula><tex-math>$^{13}$</tex-math></inline-formula>CO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula>(1-0) observations. The JWST images uncover a compact (<inline-formula><tex-math>$\\sim$</tex-math></inline-formula>0.5 pc) hub-filament system (HFS), comprising a dense central hub connected by at least four converging filaments seen in absorption, along with multiple H<inline-formula><tex-math>$_2$</tex-math></inline-formula> protostellar jets/outflows. The hub hosts the dense core G286c1. H<inline-formula><tex-math>$^{13}$</tex-math></inline-formula>CO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula> emission confirms this HFS over [--19.2, --16.4] km s<inline-formula><tex-math>$^{-1}$</tex-math></inline-formula>, while the JWST images also trace prominent photodissociation regions surrounding H II region A, powered by a B-type star. The identified H<inline-formula><tex-math>$^{13}$</tex-math></inline-formula>CO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula> skeletons closely trace the major JWST absorption structures and show steep velocity gradients indicative of inflow. The radial distribution of ALMA 1.3 mm continuum cores exhibits power-law trends toward the hub centre. The core number density, surface density, and core mass follow <inline-formula><tex-math>$Y \\propto r^{\\alpha }$</tex-math></inline-formula> with <inline-formula><tex-math>$\\alpha _\\rho$</tex-math></inline-formula> <inline-formula><tex-math>$\\sim$</tex-math></inline-formula> --2.8 to --1.1, <inline-formula><tex-math>$\\alpha _\\Sigma$</tex-math></inline-formula> <inline-formula><tex-math>$\\sim$</tex-math></inline-formula> --0.4 to --0.6, and <inline-formula><tex-math>$\\alpha _M$</tex-math></inline-formula> <inline-formula><tex-math>$\\sim$</tex-math></inline-formula> --0.7, whereas the core diameter remains nearly constant. Together with filament mass accretion rates of 7.6--11<inline-formula><tex-math>$\\times 10^{-5}$</tex-math></inline-formula> M<inline-formula><tex-math>$_\\odot$</tex-math></inline-formula> yr<inline-formula><tex-math>$^{-1}$</tex-math></inline-formula>, these results are consistent with competitive accretion, highlighting preferential core growth toward the hub. Increasing filament linewidths toward the hub imply gravity-driven inflow, but misaligned local velocity gradient and gravitational force directions along filaments point to a dynamically evolved system. The HFS likely formed through large-scale gas--layer interactions aided by compression from the adjacent H II region. Overall, star formation in G286 appears to be regulated by filamentary accretion, competitive core growth in the hub, and stellar feedback.",
+   "bibtex": "@ARTICLE{2026MNRAS.552g1764D,\n       author = {{Dewangan}, L.~K. and {Bhadari}, Naval K. and {Yadav}, Ram K. and {Maity}, A.~K. and {Jadhav}, O.~R. and {Kim}, Kee-Tae and {Goldsmith}, Paul F. and {Saha}, A. and {Alina}, Dana and {Lee}, Chang Won},\n        title = \"{Discovery of a compact hub-filament system in G286.21 + 0.17 with JWST and ALMA: insights into protocluster formation and competitive accretion}\",\n      journal = {\\mnras},\n     keywords = {ISM: clouds, dust, extinction, H II regions, ISM: individual object: G286, stars: formation, stars: pre-main-sequence, Astrophysics of Galaxies},\n         year = 2026,\n        month = nov,\n       volume = {552},\n       number = {3},\n          eid = {stag1764},\n        pages = {stag1764},\n          doi = {10.1093/mnras/stag1764},\narchivePrefix = {arXiv},\n       eprint = {2605.14693},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2026MNRAS.552g1764D},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2026arXiv260800441M",
@@ -66,30 +70,11 @@
    "arxiv": "2608.00441",
    "citations": 0,
    "group": "Preprints",
-   "doctype": "eprint"
-  },
-  {
-   "bibcode": "2026A&A...711A..97O",
-   "title": "Statistical analysis of the relative orientations between filaments and magnetic fields using Herschel and Planck data in star-forming regions",
-   "authors": [
-    "Oers, J.",
-    "Ristorcelli, I.",
-    "Ferrière, K.",
-    "Juvela, M.",
-    "Montier, L.",
-    "Alina, D.",
-    "Montillaud, J."
-   ],
-   "alina_index": 5,
-   "year": 2026,
-   "pub": "Astronomy and Astrophysics",
-   "volume": "711",
-   "page": "A97",
-   "doi": "10.1051/0004-6361/202556702",
-   "arxiv": "2606.04713",
-   "citations": 1,
-   "group": "Papers",
-   "doctype": "article"
+   "doctype": "eprint",
+   "led": true,
+   "role": "first",
+   "abstract": "The processes controlling the early mass growth of future massive stars remain poorly understood, particularly the connection of this growth to star clustering and hub-filament systems (HFSs). This connection is difficult to establish observationally, because projection effects and line-of-sight confusion in position-position-velocity (PPV) data can distort the information about the intrinsic filamentary structure. To investigate this connection, we used a three-dimensional magnetohydrodynamic (MHD) simulation of star formation, where stars are represented by accreting sink particles. We identify clustered stellar environments, reconstruct time-dependent accretion histories, and investigate the relation between enhanced-accretion episodes and the locations of HFSs. We also use line radiative transfer modeling to produce synthetic molecular-line observations and examine how the same structures appear in projected PPV data. In our simulation, we find that 80% of future massive stars are associated with clustered environments. Their growth is also highly episodic: typically, about 40% of the accreted mass is gained during periods of enhanced accretion that occupy only about 10% of the total growth time. Periods of enhanced accretion occur slightly closer to three-dimensional HFS proxies, suggesting a possible link between HFS morphology and episodic accretion in future massive stars. Overall, our results suggest that the early growth of future massive stars is connected to both their clustered environment and the HFS structure of the surrounding gas, and projection effects must be considered when interpreting HFS in PPV data.",
+   "bibtex": "@ARTICLE{2026arXiv260800441M,\n       author = {{Makarova}, Dana and {Alina}, Dana and {Padoan}, Paolo and {Kumarioldanov}, Baurzhan and {Juvela}, Mika and {Berdikhan}, Dilda and {Bhadari}, Naval},\n        title = \"{Hub-filament systems and the growth of massive stars: episodic accretion, clustered environments, and projection effects}\",\n      journal = {arXiv e-prints},\n     keywords = {Astrophysics of Galaxies},\n         year = 2026,\n        month = aug,\n          eid = {arXiv:2608.00441},\n        pages = {arXiv:2608.00441},\n          doi = {10.48550/arXiv.2608.00441},\narchivePrefix = {arXiv},\n       eprint = {2608.00441},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2026arXiv260800441M},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2026IAUS..392..179A",
@@ -110,7 +95,11 @@
    "arxiv": null,
    "citations": 0,
    "group": "Proceedings and talks",
-   "doctype": "inproceedings"
+   "doctype": "inproceedings",
+   "led": true,
+   "role": "first",
+   "abstract": "We employed HI data together with Planck polarization data to estimate the foreground magnetic field and intensity toward the Large Magellanic (Milky) Cloud. For the magnetic field structure, we applied the Velocity Gradients Technique on HI spectra while for the intensity contribution separation we correlated the atomic gas column density with the Planck intensity at 353 GHz, around the galaxy. Our study highlights the importance of neutral hydrogen measurements in and around galaxies and suggests a method for foreground subtraction.",
+   "bibtex": "@INPROCEEDINGS{2026IAUS..392..179A,\n       author = {{Alina}, Dana and {Bernard}, Jean-Philippe and {Yuen}, Ka Ho and {Lazarian}, Alex and {Hughes}, Annie},\n        title = \"{Magnetic field structure of the LMC: Insights from Atomic gas data and foreground emission separation}\",\n     keywords = {Magnetic fields, polarization, Magellanic Clouds, Atomic Hydrogen},\n    booktitle = {IAU Symposium},\n         year = 2026,\n       editor = {{Pisano}, D.~J. and {Mogotsi}, K. Moses and {Healy}, Julia and {Blyth}, Sarah},\n       series = {IAU Symposium},\n       volume = {20},\n        month = jul,\n        pages = {179-183},\n          doi = {10.1017/S1743921325000432},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2026IAUS..392..179A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2026A&A...711A.157V",
@@ -143,7 +132,38 @@
    "arxiv": "2605.21101",
    "citations": 0,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Context. On average, in our Galaxy, the star formation efficiency (SFE) is of the order of a few percent, which is lower than theoretical predictions. Detailed observational studies of individual molecular clouds may offer insight into the contributing factors to the low galactic SFE. Aims. We investigated the high-latitude molecular cloud MBM12 as part of the B-fields and star formation across scales (B-FROST) survey with the Taeduk Radio Astronomical Observatory (TRAO) to assess why star formation activity in MBM12 is low. Methods. We estimated N(H<SUB>2</SUB>) with Herschel dust emission and a dust opacity κ<SUB>ν</SUB> derived from near-infrared extinction, 21 cm HI column densities, and far-infrared emission. With <SUP>12</SUP>CO and <SUP>13</SUP>CO (J = 1-0) line observations, covering an area of 2.5° × 3° at 48″ resolution, we mapped the CO column density N(CO), CO-to-H<SUB>2</SUB> factor X(CO), and abundance [CO/H<SUB>2</SUB>]. We estimated the multi-scale virial parameter α<SUB>vir</SUB> and constructed mass-size scaling laws of hierarchical structures with dendrograms. We computed the relative orientation between column density structures and magnetic fields using Planck observations of dust polarisation. Results. We identified four main regions based on velocities with H<SUB>2</SUB> column densities ranging from 2 × 10<SUP>20</SUP>−1.3 × 10<SUP>22</SUP> cm<SUP>−2</SUP>. The CO integrated line intensity, W(CO), increases linearly with N(H<SUB>2</SUB>), providing an average X(CO) factor close to the Galactic average. At a low N(H<SUB>2</SUB>), X(CO) varies below X<SUB>Gal</SUB> due to the fall-off of collisional de-excitation in low-density gas, and above X<SUB>Gal</SUB> due to the drop of CO abundances in poorly shielded cloud edges. The hierarchical structures follow a broken power law mass-size relation M = AR<SUP>α</SUP>. The values of α<SUB>vir</SUB> ranged from 3-60, with the smallest values at 0.1 pc scales. The mass-size relations for the structures with the lowest α<SUB>vir</SUB> have scaling factors, A, three times larger than those of high α<SUB>vir</SUB> structures, indicating external pressure one order of magnitude larger than the former. We found a transition from parallel to perpendicular relative orientations between column density structures and the magnetic field at N(H<SUB>2</SUB>) = 4.5 × 10<SUP>21</SUP> cm<SUP>−2</SUP>. Conclusions. We provide the first integrated chemical, dynamical, and magnetic field analysis of MBM12. Further investigation into the scale dependence of the mass-size relation and virial parameter can highlight the role of external pressure in regulating the star-formation efficiency.",
+   "bibtex": "@ARTICLE{2026A&A...711A.157V,\n       author = {{Vorster}, J.~M. and {Montillaud}, J. and {Juvela}, M. and {Falgarone}, E. and {Oers}, J. and {Mannfors}, E. and {Alina}, D. and {Gu}, Q. and {Kang}, H. and {Lee}, C.~W.},\n        title = \"{B-FROST: B-Fields and star formation across scales with TRAO: CO abundances, dynamics, and relative orientations in the translucent high latitude cloud MBM12}\",\n      journal = {\\aap},\n     keywords = {methods: observational, ISM: abundances, ISM: clouds, ISM: kinematics and dynamics, ISM: magnetic fields, ISM: individual objects: MBM12, Astrophysics of Galaxies, Solar and Stellar Astrophysics},\n         year = 2026,\n        month = jul,\n       volume = {711},\n          eid = {A157},\n        pages = {A157},\n          doi = {10.1051/0004-6361/202659617},\narchivePrefix = {arXiv},\n       eprint = {2605.21101},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2026A&A...711A.157V},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
+  },
+  {
+   "bibcode": "2026A&A...711A..97O",
+   "title": "Statistical analysis of the relative orientations between filaments and magnetic fields using Herschel and Planck data in star-forming regions",
+   "authors": [
+    "Oers, J.",
+    "Ristorcelli, I.",
+    "Ferrière, K.",
+    "Juvela, M.",
+    "Montier, L.",
+    "Alina, D.",
+    "Montillaud, J."
+   ],
+   "alina_index": 5,
+   "year": 2026,
+   "pub": "Astronomy and Astrophysics",
+   "volume": "711",
+   "page": "A97",
+   "doi": "10.1051/0004-6361/202556702",
+   "arxiv": "2606.04713",
+   "citations": 1,
+   "group": "Papers",
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Context. Filamentary structures are ubiquitous in the interstellar medium (ISM). This is particularly true in molecular clouds, with most clumps and cores forming inside the densest regions of filaments. Observations and simulations both suggest that magnetic fields play a key role in the formation and evolution of filaments and in the process of star formation, yet their exact role is still poorly understood. In this context, the study of the relative orientations between filaments and magnetic fields has become a go-to method to obtain new insight. Aims. We aim to statistically examine the relative orientations between filaments and magnetic fields in various star-forming regions with different physical properties and Galactic environments. Methods. We used a dedicated method, FilDReaMS, that relies on a template that has the shape of a rectangular bar with a variable width to detect and extract filaments at multiple scales. We applied FilDReaMS to the 116 fields of the Herschel \"Galactic Cold Cores\" (GCC) key project (18″─36″ resolution), which measured dust emission in diverse star-forming regions. We then compared the filament orientations to the orientation of the plane-of-sky (PoS) magnetic field (B<SUB>PoS</SUB>), inferred from Planck observations of the dust polarized thermal emission (7' resolution) using histograms of relative orientations (HROs). Additionally, we used a catalog of dense cold cores detected in the GCC fields to study the relative orientations of filaments hosting cores. Results. We present the results of our statistical analysis of these relative orientations as functions of filament effective width, H<SUB>2</SUB> column density (N<SUB>H<SUB>2</SUB></SUB>), evolutionary stage, and Galactic environment. We find that low-N<SUB>H<SUB>2</SUB></SUB> filaments tend to be roughly parallel to B<SUB>PoS</SUB> at all scales, while narrow high-N<SUB>H<SUB>2</SUB></SUB> filaments do not have any preferred orientations and wide high-N<SUB>H<SUB>2</SUB></SUB> filaments tend to be roughly perpendicular. This change in preferred orientations occurs at transition column density (N<SUB>H<SUB>2</SUB></SUB>)<SUB>t</SUB> values typically in the range [0.8, 8] × 10<SUP>21</SUP> cm<SUP>−2</SUP>, a range that is consistent with results of previous Planck studies. We also analyzed the HROs for filaments with embedded cores and find them to be consistent with HROs for high-N<SUB>H<SUB>2</SUB></SUB> filaments, although the trend is less pronounced. However, several fields do not follow the general trends, with a variety of behaviors that can be due to factors such as projection effects, confusion along the line of sight (LoS), magnetic field tangling, or different magnetic field strengths. Our analysis of projection effects shows that, statistically, preferred orientations in the PoS are indicative of true preferred orientations in 3D. Our results suggest that higher polarization fractions, p, entail weaker projection effects, consistent with the presumed link between p and the magnetic field inclination to the LoS. Conclusions. Our results confirm the existence of a coupling between magnetic fields at cloud scales and filaments at smaller scales while also highlighting the complexity of the ISM. They also call for further statistical analyses studying magnetic fields and other physical processes at smaller scales to better understand the variety of behaviors seen in the HROs.",
+   "bibtex": "@ARTICLE{2026A&A...711A..97O,\n       author = {{Oers}, J. and {Ristorcelli}, I. and {Ferri{\\`e}re}, K. and {Juvela}, M. and {Montier}, L. and {Alina}, D. and {Montillaud}, J.},\n        title = \"{Statistical analysis of the relative orientations between filaments and magnetic fields using Herschel and Planck data in star-forming regions}\",\n      journal = {\\aap},\n     keywords = {polarization, ISM: clouds, dust, extinction, ISM: magnetic fields, ISM: structure, galaxies: star formation, Astrophysics of Galaxies},\n         year = 2026,\n        month = jul,\n       volume = {711},\n          eid = {A97},\n        pages = {A97},\n          doi = {10.1051/0004-6361/202556702},\narchivePrefix = {arXiv},\n       eprint = {2606.04713},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2026A&A...711A..97O},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2026Galax..14...53A",
@@ -160,7 +180,11 @@
    "arxiv": "2606.31507",
    "citations": 0,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": true,
+   "role": "first",
+   "abstract": "Filamentary structures are ubiquitous in the interstellar medium and play a key role in the evolution of molecular clouds and star formation. Their morphology and relative orientation with respect to magnetic fields have been widely used as a diagnostic of magnetohydrodynamic processes, turbulence, and gravitational accretion. In recent years, the growing availability of large continuum, spectroscopic, and polarization data stimulated the development of various filament detection techniques. In this review, we present a systematic overview of filament detection methods applied to observations of the interstellar medium. We classify the existing approaches into methodological categories, discuss underlying principles, illustrate their application on a same observational field, discuss limitations and advantages, in particular with respect to the studies of the relative alignment between magnetic fields and filaments. We conclude with presenting a point of view on the perspectives for filament studies in the era of ever-growing astronomical data volume.",
+   "bibtex": "@ARTICLE{2026Galax..14...53A,\n       author = {{Alina}, Dana},\n        title = \"{Interstellar Filament Detection and Characterization: Methods and Implications for Studies of the Magnetized Interstellar Medium}\",\n      journal = {Galaxies},\n     keywords = {interstellar medium, magnetic fields, filaments, Astrophysics of Galaxies, Instrumentation and Methods for Astrophysics},\n         year = 2026,\n        month = may,\n       volume = {14},\n       number = {3},\n          eid = {53},\n        pages = {53},\n          doi = {10.3390/galaxies14030053},\narchivePrefix = {arXiv},\n       eprint = {2606.31507},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2026Galax..14...53A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2026MNRAS.547ag186P",
@@ -213,7 +237,11 @@
    "arxiv": "2601.19971",
    "citations": 0,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "We present observations of HCN and HCO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula> J = <inline-formula><tex-math>$3 \\rightarrow 2$</tex-math></inline-formula> in the central <inline-formula><tex-math>$424\\ \\mathrm{ arcsec} \\times 424\\ \\mathrm{ arcsec}$</tex-math></inline-formula> region of the W40 massive star-forming region. The observations were taken as part of a pilot project for the MAJORS large program at the JCMT telescope. By incorporating prior knowledge of N(H<inline-formula><tex-math>$_{2}$</tex-math></inline-formula>) and <inline-formula><tex-math>$T_K$</tex-math></inline-formula>, assuming a constant density, and using the RADEX radiative transfer code we found that the HCN and HCO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula> abundances range from X(HCN) = <inline-formula><tex-math>$0.4\\!-\\!7.0 \\times 10^{-8}$</tex-math></inline-formula> and X(HCO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula>) = <inline-formula><tex-math>$0.4\\!-\\!7.3 \\times 10^{-9}$</tex-math></inline-formula>. Additional modelling using the NAUTILUS chemical evolution code, which takes H<inline-formula><tex-math>$_{2}$</tex-math></inline-formula> density variations into account, however, suggests that the HCN and HCO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula> abundances may be fairly constant. Careful modelling of three different positions finds X(HCN) = <inline-formula><tex-math>$1.3\\!-\\!1.7 \\times 10^{-8}$</tex-math></inline-formula> and X(HCO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula>) = <inline-formula><tex-math>$1.3\\!-\\!3.1 \\times 10^{-9}$</tex-math></inline-formula>. Cross-comparison of the two models also provides a crude estimate of the gas density producing the HCN and HCO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula> emission, with H<inline-formula><tex-math>$_{2}$</tex-math></inline-formula> densities in the range <inline-formula><tex-math>$5\\times 10^4$</tex-math></inline-formula>─<inline-formula><tex-math>$5\\times 10^5$</tex-math></inline-formula> cm<inline-formula><tex-math>$^{-3}$</tex-math></inline-formula>, suggesting that the HCN and HCO<inline-formula><tex-math>$^{+}$</tex-math></inline-formula> emission does indeed arise from dense gas. High UV intensity (e.g. <inline-formula><tex-math>$G_o &gt;$</tex-math></inline-formula> a few thousand) has no effect on the abundances in regions where the visual extinction is large enough to effectively shield the gas from the UV field. In regions where <inline-formula><tex-math>$A_\\text{V} \\lt 6$</tex-math></inline-formula>, however, the abundance of both species is lowered due to destructive reactions with species that are directly affected by the radiation field.",
+   "bibtex": "@ARTICLE{2026MNRAS.547ag186P,\n       author = {{Plume}, Ren{\\'e} and {Eden}, David J. and {Currie}, Malcolm J. and {Morgan}, Lawrence K. and {Jiang}, Xue-Jian and {DiFrancesco}, James and {Imanishi}, Masatoshi and {Kim}, Kee-Tae and {Liu}, Tie and {Rani}, Raffaele},\n        title = \"{MAJORS II: HCO$^{+}$ and HCN abundances in W40}\",\n      journal = {\\mnras},\n     keywords = {surveys, stars: formation, ISM: abundances, ISM: clouds, ISM: molecules, Astrophysics of Galaxies},\n         year = 2026,\n        month = apr,\n       volume = {547},\n       number = {3},\n          eid = {stag186},\n        pages = {stag186},\n          doi = {10.1093/mnras/stag186},\narchivePrefix = {arXiv},\n       eprint = {2601.19971},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2026MNRAS.547ag186P},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2025AJ....170..207U",
@@ -232,7 +260,11 @@
    "arxiv": null,
    "citations": 1,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": true,
+   "role": "first",
+   "abstract": "Studying filamentary structures opened a door for understanding the conditions of star formation and interstellar medium properties. Present-day algorithms for identifying filaments and their orientations require careful individual parameterization for each astronomical map. The increasing scale of astronomical surveys presents significant challenges in handling larger data sets. While previous data resources have been sufficient, there is a growing demand for more extensive data sets to support advanced research. The construction of new astronomical facilities will substantially increase the volume of data available for exploration. For example, the Square Kilometre Array—the largest radio telescope project to date—will enable detailed mapping of the large-scale structure of the cosmos, including filaments, so the astronomical community is expected to process enormous amounts of data. In this study, we show the efficiency of a parameterization-free approach based on the U-Net convolutional neural network. We trained our model on a synthetically generated data set and tested it on observational data. Our method achieves a validation mean squared error of 7.73, demonstrating improved accuracy over existing approaches. The modular separation of preprocessing and angle determination makes it adaptable to different data sets. The variety of filamentary structures in the synthetic data set allows us to reproduce the multifariousness encountered in observational data. The resulting open-access model provides an efficient solution for position angle determination and filamentary structures identification that can be applied to large data sets.",
+   "bibtex": "@ARTICLE{2025AJ....170..207U,\n       author = {{Umetaliev}, Temirkul and {Alina}, Dana and {Salmenova}, Anel},\n        title = \"{Deep Learning for Position Angle Quantification Applied to Interstellar Filaments}\",\n      journal = {\\aj},\n     keywords = {Interstellar filaments, Convolutional neural networks},\n         year = 2025,\n        month = oct,\n       volume = {170},\n       number = {4},\n          eid = {207},\n        pages = {207},\n          doi = {10.3847/1538-3881/adf858},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2025AJ....170..207U},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2025AJ....170..152A",
@@ -264,7 +296,11 @@
    "arxiv": "2507.19281",
    "citations": 0,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": true,
+   "role": "first",
+   "abstract": "We present a detailed study of the magnetic field structure in the G111 molecular cloud, a ring-like filamentary cloud within the NGC 7538 region. Our analysis combines multiwavelength polarization data and molecular-line observations to investigate the magnetic field's role in the cloud's formation and evolution. We utilized interstellar dust polarization from the Planck telescope to trace large-scale field orientations, starlight extinction polarization from the Kanata telescope to probe the cloud's magnetic field after foreground subtraction, and velocity gradients derived from CO isotopologues observed with the IRAM 30 m telescope to examine dense regions. Our results reveal a coherent yet spatially varying magnetic field within G111. The alignment between Planck-derived orientations and starlight extinction polarization highlights significant foreground dust contamination, which we correct through careful subtraction. The global alignment of the magnetic field with density structures suggests that the field is dynamically important in shaping the cloud. Variations in CO-derived orientations further suggest that local dynamical effects, such as gravitational interactions and turbulence, influence the cloud's structure. The curved magnetic field along the dense ridges, coinciding with mid-infrared emission in WISE data, indicates shock compression, likely driven by stellar feedback or supernova remnants. Our findings support a scenario where G111's morphology results from turbulent shock-driven compression, rather than simple gravitational contraction. The interplay between magnetic fields and external forces is crucial in shaping molecular clouds and regulating star formation. Future high-resolution observations will be essential to further constrain the magnetic field's role in cloud evolution.",
+   "bibtex": "@ARTICLE{2025AJ....170..152A,\n       author = {{Alina}, Dana and {Umirbayeva}, Adel and {Doi}, Yasuo and {Jo}, Soichiro and {Hu}, Yue and {Lazarian}, Alex and {Karoly}, Janik and {Liu}, Tie and {Kawabata}, Koji S. and {Mukhash}, Alua},\n        title = \"{Magnetic Field of a Ring-like Molecular Cloud}\",\n      journal = {\\aj},\n     keywords = {Interstellar magnetic fields, Polarimetry, Molecular clouds, Interstellar filaments, Astrophysics of Galaxies},\n         year = 2025,\n        month = sep,\n       volume = {170},\n       number = {3},\n          eid = {152},\n        pages = {152},\n          doi = {10.3847/1538-3881/adec9f},\narchivePrefix = {arXiv},\n       eprint = {2507.19281},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2025AJ....170..152A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2025zndo..16647869U",
@@ -283,7 +319,11 @@
    "arxiv": null,
    "citations": 1,
    "group": "Data and code",
-   "doctype": "software"
+   "doctype": "software",
+   "led": true,
+   "role": "first",
+   "abstract": "Quantification of orientation of filamentary structures in the ISM using the U-Net CNN. The model was trained on a synthetic dataset and can be applied to any grayscale binary image (i.e. image with pixel values of 1 or 0).",
+   "bibtex": "@software{2025zndo..16647869U,\n       author = {{Umetaliev}, Temirkul and {Alina}, Dana and {Salmenova}, Anel},\n        title = \"{Temirkul/ism-filaments-analysis: U-Net for Angle Identification of Filamentary Structures --- First Release}\",\n         year = 2025,\n        month = jul,\n          eid = {10.5281/zenodo.16647869},\n          doi = {10.5281/zenodo.16647869},\n      version = {v1.0},\n    publisher = {Zenodo},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2025zndo..16647869U},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2025A&A...697A..24B",
@@ -309,7 +349,11 @@
    "arxiv": "2503.03493",
    "citations": 4,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Context. Magnetic fields (B fields) have an impact on galaxy evolution on multiple scales. They are particularly important for starburst galaxies, where they play a crucial role in shaping the interstellar medium (ISM), influencing star formation processes and interacting with galactic outflows. Aims. The primary aim of this study is to obtain a parsec-scale map of the dust polarisation and B field structure within the central starburst region of NGC253. This includes examining the relationship between the morphology of B fields, galactic outflows, and the spatial distribution of super starclusters (SSCs), to understand their combined effects on the galaxy's star formation and ISM. Methods. We used ALMA full polarisation data in Bands 4 (∼145 GHz) and 7 (∼345 GHz) with a resolution of ∼25 and ∼5 pc scale, respectively. The Stokes I, Q, and U maps of the two bands have been used to compute the polarised intensity (PI), polarisation fraction (PF), B field orientation on the plane of the sky, and dispersion angle function (𝒮) maps. We computed the pixel-by-pixel uncertainties of these maps taking into account the covariance between the Stokes parameters I, Q, and U. The uncertainty allowed us to detect values of PF as low as ∼0.1% with a S/N (signal-to-noise ratio) greater than 3. Through a spectral energy distribution (SED)-fitting analysis including archival data, we investigated the main emitting components that contribute to the total and polarised emission in several areas of the starburst region. Results. According to our SED-fitting analysis, the observed Band 4 emission is a combination of dust, synchrotron, and free-free components, while Band 7 traces only dust. The PF of the synchrotron component measures ∼2%, while that of the dust component is ∼0.3%. The B field orientation maps in both bands at a common resolution show that the same B field structure is traced by dust and synchrotron emission at scales ∼25 pc. The B field morphology suggests a coupling with the multiphase outflow, while the distribution of PF in Band 7 shows to be correlated with the presence of SSCs. We observed a significant anti-correlation between PF and column density in both Bands 4 and 7. A negative correlation between PF and 𝒮 was observed in Band 4 but was nearly absent in Band 7 at a native resolution, suggesting that the tangling of B field geometry along the plane of the sky is the main cause of depolarisation at ∼25 pc scales, while other factors play a role at ∼5 pc scales.",
+   "bibtex": "@ARTICLE{2025A&A...697A..24B,\n       author = {{Belfiori}, Davide and {Paladino}, Rosita and {Hughes}, Annie and {Bernard}, Jean-Philippe and {Alina}, Dana and {Be{\\v{s}}li{\\'c}}, Ivana and {Lopez Rodriguez}, Enrique and {Gorski}, Mark D. and {Cronin}, Serena A. and {Bolatto}, Alberto D.},\n        title = \"{The dust polarisation and magnetic field structure in the centre of NGC253 with ALMA}\",\n      journal = {\\aap},\n     keywords = {techniques: interferometric, techniques: polarimetric, galaxies: ISM, galaxies: magnetic fields, galaxies: starburst, galaxies: star clusters: general, Astrophysics of Galaxies},\n         year = 2025,\n        month = may,\n       volume = {697},\n          eid = {A24},\n        pages = {A24},\n          doi = {10.1051/0004-6361/202451615},\narchivePrefix = {arXiv},\n       eprint = {2503.03493},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2025A&A...697A..24B},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2025jwst.prop.7433J",
@@ -336,7 +380,11 @@
    "arxiv": null,
    "citations": 0,
    "group": "Proposals",
-   "doctype": "proposal"
+   "doctype": "proposal",
+   "led": false,
+   "role": "collab",
+   "abstract": "We propose to image the Orion Molecular Cloud 3 (OMC-3), to trace mass transfer along the star-formation (SF) process. Mid-infrared (MIR) extinction will be used to measure column density N(H) at an unprecedented resolution, independent of the large temperature and gas-phase abundance uncertainties that affect ALMA studies. Further aided by NIR-MIR scattering, we can measure in exquisite detail structures from large-scale massive filaments (~0.5 pc field) down to the smallest scales (0.3\", ~120 au), over a wide range of column densities, N(H) ~ 1e21 - 1e23 cm-2. Together with the existing line and dust polarization data, this will help to unravel the formation mechanisms of filaments and confirm the the role of fibers in the growth of protostellar cores. Most importantly, JWST data will give an unprecedented view into the mass inflow at the smallest scales, such as the streamers that feed prestellar cores and potentially even young stellar objects (YSOs). The results will have profound impact on our understanding of SF, the evolution of protostellar disks, and the planet formation. Thanks to the wavelength coverage, it is also possible to separate the contributions of light scattering (&lt;5 µm; very sensitivity to grain growth) and thermal dust emission (&gt;10µm; measure of small-grain populations). Together with spatially resolved extinction curves, the data will also lead to full characterization of dust evolution in the field. OMC-3 is a unique target, being located in the closest high-mass SF cloud (d~390 pc), with known strong MIR extinction. The science case is similarly unique to JWST, unable to be addressed with any other past or present instrument.",
+   "bibtex": "@MISC{2025jwst.prop.7433J,\n       author = {{Juvela}, Mika and {Alina}, Dana and {Demyk}, Karine and {Liu}, Tie and {Mannfors}, Emma and {Paradis}, Deborah and {Pelkonen}, Veli-Matti and {Ristorcelli}, Isabelle and {Toth}, L. Viktor and {Vorster}, Jakobus Marthinus},\n        title = \"{Mass inflow structures in star formation from filaments to streamers: the unique field of Orion Molecular Cloud 3}\",\n howpublished = {JWST Proposal. Cycle 4, ID. \\#7433},\n         year = 2025,\n        month = mar,\n        pages = {7433},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2025jwst.prop.7433J},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2024ApJ...976..249G",
@@ -375,7 +423,11 @@
    "arxiv": "2410.15913",
    "citations": 6,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "We present 850 μm thermal dust polarization observations with a resolution of 14.″4 (∼0.13 pc) toward an infrared dark cloud G16.96+0.27 using James Clerk Maxwell Telescope/POL-2. The average magnetic field orientation, which roughly agrees with the larger-scale magnetic field orientation traced by the Planck 353 GHz data, is approximately perpendicular to the filament structure. The estimated plane-of-sky magnetic field strength is ∼96 μG and ∼60 μG using two variants of the Davis─Chandrasekhar─Fermi methods. We calculate the virial and magnetic critical parameters to evaluate the relative importance of gravity, the magnetic field, and turbulence. The magnetic field and turbulence are both weaker than gravity, but magnetic fields and turbulence together are equal to gravity, suggesting that G16.96+0.27 is in a quasi-equilibrium state. The alignment between the magnetic field and cloud is found to have a trend moving away from perpendicularity in the dense regions, which may serve as a tracer of potential fragmentation in such quiescent filaments.",
+   "bibtex": "@ARTICLE{2024ApJ...976..249G,\n       author = {{Gu}, Qi-Lao and {Liu}, Tie and {Shen}, Zhi-Qiang and {Jiao}, Sihan and {Montillaud}, Julien and {Juvela}, Mika and {Lu}, Xing and {Lee}, Chang Won and {Liu}, Junhao and {Li}, Pak Shing},\n        title = \"{The Magnetic Field in Quiescent Star-forming Filament G16.96+0.27}\",\n      journal = {\\apj},\n     keywords = {Magnetic fields, Star formation, Molecular clouds, Infrared dark clouds, Interstellar filaments, Astrophysics - Astrophysics of Galaxies, Astrophysics - Solar and Stellar Astrophysics},\n         year = 2024,\n        month = dec,\n       volume = {976},\n       number = {2},\n          eid = {249},\n        pages = {249},\n          doi = {10.3847/1538-4357/ad8912},\narchivePrefix = {arXiv},\n       eprint = {2410.15913},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2024ApJ...976..249G},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2024IAUGA..32P.104A",
@@ -393,7 +445,11 @@
    "arxiv": null,
    "citations": 0,
    "group": "Proceedings and talks",
-   "doctype": "abstract"
+   "doctype": "abstract",
+   "led": true,
+   "role": "first",
+   "abstract": "Filamentary molecular clouds are key stages in the star formation process, at large, of the order of a parsec, and small, of the order of thousands au. Their identification, and, in particular, determination of their position angles, is one of the main tools for the analysis of morphological structures and relative orientations with respect to the magnetic fields. Existing position angle determination algorithms are parameter-based and thus are computationally expensive. Our study employs neural network approach, in particular, the Unet model, to the identification of filamentary structures of the interstellar medium (ISM), and particularly, their position angle. We build a comprehensive synthetic dataset that allows to train the neural network to identify position angles of the detected filaments. We test our model on observational data from the Planck and Herschel space telescopes and show its reliability. <P />In our presentation, we will highlight the significance of treating extensive datasets that are provided by JWST, ALMA, MeerKAT, and ASKAP intelligently, emphasizing the pivotal role of neural networks, particularly our proposed model, in extracting meaningful information.",
+   "bibtex": "@INPROCEEDINGS{2024IAUGA..32P.104A,\n       author = {{Alina}, Dana and {Umetaliev}, Temirkul},\n        title = \"{Neural Networks Unveiling Filamentary Structures in the Interstellar Medium: A Multi-Wavelength Approach Integrating Data from Advanced Telescopes}\",\n    booktitle = {32nd General Assembly International Union (IAUGA 2024)},\n         year = 2024,\n        month = aug,\n          eid = {104},\n        pages = {104},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2024IAUGA..32P.104A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2024IAUGA..32P.103A",
@@ -416,7 +472,11 @@
    "arxiv": null,
    "citations": 0,
    "group": "Proceedings and talks",
-   "doctype": "abstract"
+   "doctype": "abstract",
+   "led": true,
+   "role": "first",
+   "abstract": "The Large Magellanic Cloud (LMC) is the closest galaxy to the Milky Way and is one of the interesting targets for the analysis of galaxy evolution. Observations of polarized dust emission provide insights about dust properties and plane-of-the-sky magnetic field direction. However, polarization data of external galaxies is altered by the polarized emission of the foreground material. <P />To separate the polarized signal from the LMC from that of the Milky Way, we used data from the Galactic All-Sky Survey (GASS) to estimate the contribution of the foreground emission. We employed a technique that allows us to probe the interstellar magnetic field via turbulent properties of the atomic gas. We also used atomic gas data to accurately estimate the column density of the gas and to derive the foreground intensity. This allowed us to remove the foreground emission and reveal the outer spiral density structures and central molecular regions of the LMC. <P />Furthermore, we will discuss how the newly arrived GASKAP data improves the results, offering the potential for more detailed insights into the interstellar medium of the LMC and other galaxies. <P />Our study demonstrates that neutral hydrogen data is crucial in studies of other galaxies and it provides a coherent view of the atomic and molecular gas in the LMC and sheds light on the properties and magnetic field structure of the LMC. Our results have important implications for our understanding of the formation and evolution of galaxies, and demonstrate the power of multi-wavelength observations in studying the interstellar medium.",
+   "bibtex": "@INPROCEEDINGS{2024IAUGA..32P.103A,\n       author = {{Alina}, Dana and {Bernard}, Jean-Philippe and {Yuen}, Ka Ho and {Lazarian}, Alexander and {Iskakova}, Meruyert and {Mukanova}, Armanay and {Akimkhan}, Aruzhan},\n        title = \"{The Magnetic Field Structure of the Large Magellanic Cloud: Insights from Atomic Gas Data and Foreground Emission Separation}\",\n    booktitle = {32nd General Assembly International Union (IAUGA 2024)},\n         year = 2024,\n        month = aug,\n          eid = {103},\n        pages = {103},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2024IAUGA..32P.103A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2024ApJ...963L...9X",
@@ -469,7 +529,11 @@
    "arxiv": "2401.14658",
    "citations": 3,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "High-latitude (∣b∣ &gt; 30°) molecular clouds have virial parameters that exceed 1, but whether these clouds can form stars has not been studied systematically. Using JCMT SCUBA-2 archival data, we surveyed 70 fields that target high-latitude Planck Galactic cold clumps (HLPCs) to find dense cores with density of 10<SUP>5</SUP>─10<SUP>6</SUP> cm<SUP>−3</SUP> and size of &lt;0.1 pc. The sample benefits from both the representativeness of the parent sample and its coverage of the densest clumps at the high column density end (&gt;1 × 10<SUP>21</SUP> cm<SUP>−2</SUP>). At an average rms of 15 mJy beam<SUP>−1</SUP>, we detected Galactic dense cores in only one field, G6.04+36.77 (L183) while also identifying 12 extragalactic objects and two young stellar objects. Compared to the low-latitude clumps, dense cores are scarce in HLPCs. With synthetic observations, the densities of cores are constrained to be n <SUB> c </SUB> ≲ 10<SUP>5</SUP> cm<SUP>−3</SUP> should they exist in HLPCs. Low-latitude clumps, Taurus clumps, and HLPCs form a sequence where a higher virial parameter corresponds to a lower dense-core detection rate. If HLPCs were affected by the Local Bubble, the scarcity should favor turbulence-inhibited rather than supernova-driven star formation. Studies of the formation mechanism of the L183 molecular cloud are warranted.",
+   "bibtex": "@ARTICLE{2024ApJ...963L...9X,\n       author = {{Xu}, Fengwei and {Wang}, Ke and {Liu}, Tie and {Eden}, David and {Liu}, Xunchuan and {Juvela}, Mika and {He}, Jinhua and {Johnstone}, Doug and {Goldsmith}, Paul and {Garay}, Guido},\n        title = \"{On the Scarcity of Dense Cores (n > {}10$^{5}$ cm$^{{\\ensuremath{-}}3}$) in High-latitude Planck Galactic Cold Clumps}\",\n      journal = {\\apjl},\n     keywords = {Star formation, Molecular clouds, High latitude field, Astrophysics - Astrophysics of Galaxies, Astrophysics - Solar and Stellar Astrophysics},\n         year = 2024,\n        month = mar,\n       volume = {963},\n       number = {1},\n          eid = {L9},\n        pages = {L9},\n          doi = {10.3847/2041-8213/ad21e6},\narchivePrefix = {arXiv},\n       eprint = {2401.14658},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2024ApJ...963L...9X},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2023MNRAS.524.2994H",
@@ -490,7 +554,11 @@
    "arxiv": "2306.10005",
    "citations": 20,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "The alignment of striated intensity structures in thin neutral hydrogen (H I) spectroscopic channels with Galactic magnetic fields has been observed. However, the origin and nature of these striations are still debatable. Some studies suggest that the striations result solely from real cold-density filaments without considering the role of turbulent velocity fields in shaping the channel's intensity distribution. To determine the relative contribution of density and velocity in forming the striations in channel maps, we analyse synthetic observations of channel maps obtained from realistic magnetized multiphase H I simulations with thermal broadening included. We vary the thickness of the channel maps and apply the Velocity Decomposition Algorithm to separate the velocity and density contributions. In parallel, we analyse GALFA-H I observations and compare the results. Our analysis shows that the thin channels are dominated by velocity contribution, and velocity caustics mainly generate the H I striations. We show that velocity caustics can cause a correlation between unsharp-masked H I structures and far-infrared emission. We demonstrate that the linear H I fibers revealed by the Rolling Hough Transform (RHT) in thin velocity channels originate from velocity caustics. As the thickness of channel maps increases, the relative contribution of density fluctuations in channel maps increases and more RHT-detected fibers tend to be perpendicular to the magnetic field. Conversely, the alignment with the magnetic field is the most prominent in thin channels. We conclude that similar to the velocity channel gradients (VChGs) approach, RHT traces magnetic fields through the analysis of velocity caustics in thin channel maps.",
+   "bibtex": "@ARTICLE{2023MNRAS.524.2994H,\n       author = {{Hu}, Yue and {Lazarian}, A. and {Alina}, D. and {Pogosyan}, D. and {Ho}, Ka Wai},\n        title = \"{Nature of striation in 21 cm channel Maps: velocity caustics}\",\n      journal = {\\mnras},\n     keywords = {magnetic field, MHD, turbulence, ISM: general, Astrophysics - Astrophysics of Galaxies},\n         year = 2023,\n        month = sep,\n       volume = {524},\n       number = {2},\n        pages = {2994-3019},\n          doi = {10.1093/mnras/stad1924},\narchivePrefix = {arXiv},\n       eprint = {2306.10005},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2023MNRAS.524.2994H},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2023ExA....56..197B",
@@ -543,7 +611,11 @@
    "arxiv": "2205.03668",
    "citations": 1,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "",
+   "bibtex": "@ARTICLE{2023ExA....56..197B,\n       author = {{Bernard}, Jean-Philippe and {Bernard}, Adam and {Roussel}, H{\\'e}l{\\`e}ne and {Choubani}, Ilyes and {Alina}, Dana and {Aumont}, Jonathan and {Hughes}, Annie and {Ristorcelli}, Isabelle and {Stever}, Samantha and {Matsumura}, Tomotake},\n        title = \"{Performance of the polarization leakage correction in the PILOT data}\",\n      journal = {Experimental Astronomy},\n     keywords = {PILOT, Interstellar Dust, Polarization, Far Infrared, Systematic effects, Astrophysics - Instrumentation and Methods for Astrophysics},\n         year = 2023,\n        month = aug,\n       volume = {56},\n       number = {1},\n        pages = {197-222},\n          doi = {10.1007/s10686-022-09882-5},\narchivePrefix = {arXiv},\n       eprint = {2205.03668},\n primaryClass = {astro-ph.IM},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2023ExA....56..197B},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2023eas..conf.1537A",
@@ -574,7 +646,11 @@
    "arxiv": null,
    "citations": 0,
    "group": "Proceedings and talks",
-   "doctype": "inproceedings"
+   "doctype": "inproceedings",
+   "led": true,
+   "role": "first",
+   "abstract": "PILOT (Polarized Instrument for Long Wavelength Observations of Tenuous interstellar medium) is a stratospheric balloon-borne experiment that observes the polarised thermal emission of interstellar dust at a wavelength of 240 microns and an angular resolution of 2.2 angular minutes. PILOT uses large multiplexed bolometer arrays, which enables fast wide- field mapping. The PILOT data processing pipeline implements correction strategies for several systematic effects that affect many existing IR polarimeters, including pointing uncertainties, detector readout artefacts, and intensity to polarization leakage. The PILOT experiment has had three successful flights: from Timmins, Caanada in 2015 and 2019, and from Alice Spring, Australia in 2017. PILOT obtained degree-scale maps of about 15 different sky regions that include molecular clouds and nearby galaxies. In this contribution, I will present the PILOT data for the Orion, Taurus and Ophiuchi molecular clouds, the nearby galaxies M31 and the Large Magellanic Cloud, as well as the improved maps of the Milky Way's Central Molecular Zone. I will also present some preliminary results from our co-analysis of the PILOT and Planck data to investigate the magnetic field geometry and dust physics in our Milky Way targets. A first public release of science-ready PILOT data is scheduled during the EAS.",
+   "bibtex": "@INPROCEEDINGS{2023eas..conf.1537A,\n       author = {{Alina}, Dana and {Bernard}, Jean-Philippe and {Roussel}, Helene and {Ferriere}, Katia and {de Gasperis}, Giancarlo and {Aumont}, Johnathan and {Choubani}, Ilyes and {Guillet}, Vincent and {Hughes}, Annie and {Komatsu}, Kunimoto},\n        title = \"{An overview of the PILOT balloon-borne experiment dust polarization data}\",\n    booktitle = {EAS2023, European Astronomical Society Annual Meeting},\n         year = 2023,\n        month = jul,\n          eid = {1537},\n        pages = {1537},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2023eas..conf.1537A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2023MNRAS.518.4466A",
@@ -598,7 +674,11 @@
    "arxiv": "2205.01275",
    "citations": 6,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": true,
+   "role": "first",
+   "abstract": "Polarization of interstellar dust emission is a powerful probe of dust properties and magnetic field structure. Yet studies of external galaxies are hampered by foreground dust contribution. The study aims at separating the polarized signal from the Large Magellanic Cloud (LMC) from that of the Milky Way (MW) to construct a wide-field, spatially complete map of dust polarization using the Planck 353 GHz data. To estimate the foreground polarization direction, we used velocity gradients in H I spectral line data and assessed the performance of the output by comparing to starlight extinction polarization. We estimate the foreground intensity using the dust-to-gas correlation and the average intensity around the LMC and we assume the foreground polarization to be uniform and equal to the average of the MW around the galaxy to derive foreground I, Q, and U parameters. After foreground removal, the geometry of the plane-of-the-sky magnetic field tends to follow the structure of the atomic gas. This is notably the case along the molecular ridges extending south and south-east of the 30 Doradus star-forming complex and along the more diffuse southern arm extending towards the Small Magellanic Cloud. There is also an alignment between the magnetic field and the outer arm in the western part. The median polarization fraction in the LMC is slightly lower than that observed for the MW as well as the anticorrelation between the polarization angle dispersion function and the polarization fraction. Overall, polarization fraction distribution is similar to that observed in the MW.",
+   "bibtex": "@ARTICLE{2023MNRAS.518.4466A,\n       author = {{Alina}, D. and {Bernard}, J.-Ph and {Yuen}, K.~H. and {Lazarian}, A. and {Hughes}, A. and {Iskakova}, M. and {Akimkhan}, A. and {Mukanova}, A.},\n        title = \"{Unveiling polarized emission from interstellar dust of the Large Magellanic Cloud with Planck}\",\n      journal = {\\mnras},\n     keywords = {magnetic fields, galaxies: general, Magellanic Clouds, Astrophysics - Astrophysics of Galaxies},\n         year = 2023,\n        month = jan,\n       volume = {518},\n       number = {3},\n        pages = {4466-4480},\n          doi = {10.1093/mnras/stac3164},\narchivePrefix = {arXiv},\n       eprint = {2205.01275},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2023MNRAS.518.4466A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2022arXiv220500683A",
@@ -617,7 +697,11 @@
    "arxiv": "2205.00683",
    "citations": 6,
    "group": "Preprints",
-   "doctype": "eprint"
+   "doctype": "eprint",
+   "led": true,
+   "role": "first",
+   "abstract": "Filament identification became a key step to tackling fundamental problems in various fields of Astronomy. Nevertheless, existing filament identification algorithms are critically user-dependent and require individual parametrization. In this study, we aimed at adapting the neural networks approach to elaborate the best model for filament identification that would not require fine-tuning for a given astronomical map. First, we created training samples based on the most commonly used maps of the interstellar medium obtained by Planck and Herschel space telescopes and the atomic hydrogen all-sky survey HI4PI. We used the Rolling Hough Transform, a widely used algorithm for filament identification, to produce training outputs. In the next step, we trained different neural network models and discovered that a combination of the Mask R-CNN and U-Net architecture is most appropriate for filament identification and determination of their orientation angles. We showed that neural network training might be performed efficiently on a relatively small training sample of only around 100 maps. Our approach eliminates the parametrization bias and facilitates filament identification and angle determination on large data sets.",
+   "bibtex": "@ARTICLE{2022arXiv220500683A,\n       author = {{Alina}, D. and {Shomanov}, A. and {Baimukhametova}, S.},\n        title = \"{MaLeFiSenta: Machine Learning for FilamentS Identification and orientation in the ISM}\",\n      journal = {arXiv e-prints},\n     keywords = {Astrophysics - Instrumentation and Methods for Astrophysics, Astrophysics - Astrophysics of Galaxies},\n         year = 2022,\n        month = may,\n          eid = {arXiv:2205.00683},\n        pages = {arXiv:2205.00683},\n          doi = {10.48550/arXiv.2205.00683},\narchivePrefix = {arXiv},\n       eprint = {2205.00683},\n primaryClass = {astro-ph.IM},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2022arXiv220500683A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2022A&A...658A..90A",
@@ -643,7 +727,11 @@
    "arxiv": "2007.15344",
    "citations": 26,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": true,
+   "role": "first",
+   "abstract": "Context. The role of large-scale magnetic fields in the evolution of star-forming regions remains elusive. Its investigation requires the observational characterization of well-constrained molecular clouds. The Monoceros OB 1 molecular cloud is a large complex containing several structures that have been shown to be engaged in an active interaction and to have a rich star formation history. However, the magnetic fields in this region have only been studied on small scales. <BR /> Aims: We study the large-scale magnetic field structure and its interplay with the gas dynamics in the Monoceros OB 1 east molecular cloud. <BR /> Methods: We combined observations of dust polarized emission from the Planck telescope and CO molecular line emission observations from the Taeduk Radio Astronomy Observatory 14-metre telescope. We calculated the strength of the plane-of-sky magnetic field using a modified Chandrasekhar-Fermi method and estimated the mass-over-flux ratios in different regions of the cloud. We used the comparison of the velocity and intensity gradients of the molecular line observations with the polarimetric observations to trace dynamically active regions. <BR /> Results: The molecular complex shows an ordered large-scale plane-of-sky magnetic field structure. In the northern part, it is mostly orientated along the filamentary structures, while the southern part shows at least two regions with distinct magnetic field orientations. Our analysis reveals a shock region in the northern part right between two filamentary clouds that, in previous studies, were suggested to be involved in a collision. The magnetic properties of the north-main and north-eastern filaments suggest that these filaments once formed a single one, and that the magnetic field evolved together with the material and did not undergo major changes during the evolution of the cloud. In the southern part, we find that either the magnetic field guides the accretion of interstellar matter towards the cloud or it is dragged by the matter falling towards the main cloud. <BR /> Conclusions: The large-scale magnetic field in the Monoceros OB 1 east molecular cloud is tightly connected to the global structure of the complex. In the northern part, it seems to serve a dynamically important role by possibly providing support against gravity in the direction perpendicular to the field and to the filament. In the southern part, it is probably the most influential factor governing the morphological structure by guiding possible gas inflow. A study of the whole Monoceros OB 1 molecular complex at large scales is necessary to form a global picture of the formation and evolution of the Monoceros OB 1 east cloud and the role of the magnetic field in this process.",
+   "bibtex": "@ARTICLE{2022A&A...658A..90A,\n       author = {{Alina}, D. and {Montillaud}, J. and {Hu}, Y. and {Lazarian}, A. and {Ristorcelli}, I. and {Abdikamalov}, E. and {Sagynbayeva}, S. and {Juvela}, M. and {Liu}, T. and {Carri{\\`e}re}, J.-S.},\n        title = \"{Large-scale magnetic field in the Monoceros OB 1 east molecular cloud}\",\n      journal = {\\aap},\n     keywords = {ISM: magnetic fields, ISM: clouds, ISM: general, Astrophysics - Astrophysics of Galaxies},\n         year = 2022,\n        month = feb,\n       volume = {658},\n          eid = {A90},\n        pages = {A90},\n          doi = {10.1051/0004-6361/202039065},\narchivePrefix = {arXiv},\n       eprint = {2007.15344},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2022A&A...658A..90A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2021A&A...647A.121M",
@@ -665,7 +753,11 @@
    "arxiv": "1810.10014",
    "citations": 7,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Context. The all-sky survey from the Planck space telescope has revealed that thermal emission from Galactic dust is polarized on scales ranging from the whole sky down to the inner regions of molecular clouds. Polarized dust emission can therefore be used as a probe for magnetic fields on different scales. In particular, the analysis of the relative orientation between the density structures and the magnetic field projected on the plane of the sky can provide information on the role of magnetic fields in shaping the structure of molecular clouds where star formation takes place. <BR /> Aims: The orientation of the magnetic field with respect to the density structures has been investigated using different methods. The goal of this paper is to explicitly compare two of these: the Rolling Hough Transform (RHT) and the gradient technique (GRAD). <BR /> Methods: We generated synthetic surface brightness maps at 353 GHz (850 μm) via magnetohydrodynamic simulations. We applied RHT and GRAD to two morphologically different regions identified in our maps. Region 1 is dominated by a dense and thick filamentary structure with some branches, while Region 2 includes a thinner filament with denser knots immersed in a more tenuous medium. Both methods derive the relative orientation between the magnetic field and the density structures, to which we applied two statistics, the histogram of relative orientation and the projected Rayleigh statistic, to quantify the variations of the relative orientation as a function of column density. <BR /> Results: Both methods find areas with significant signal, and these areas are substantially different. In terms of relative orientations, in all our considered cases the predominant orientation of the density structures is perpendicular to the direction of the magnetic field. When the methods are applied to the same selected areas the results are consistent with each other in Region 2 but show some noticeable differences in Region 1. In Region 1, RHT globally finds the relative orientation becoming more perpendicular for increasing column density, while GRAD, applied at the same resolution as RHT, gives the opposite trend. These disparities are caused by the intrinsic differences in the methods and in the structures that they select. <BR /> Conclusions: Our results indicate that the interpretation of the relative orientation between the magnetic field and density structures should take into account the specificity of the methods used to determine such orientation. The combined use of complementary techniques such as RHT and GRAD provides more complete information, which can be advantageously used to better understand the physical mechanisms operating in magnetized molecular clouds.",
+   "bibtex": "@ARTICLE{2021A&A...647A.121M,\n       author = {{Micelotta}, Elisabetta R. and {Juvela}, Mika and {Padoan}, Paolo and {Ristorcelli}, Isabelle and {Alina}, Dana and {Malinen}, Johanna},\n        title = \"{Dust polarization studies on MHD simulations of molecular clouds: comparison of methods for the relative-orientation analysis}\",\n      journal = {\\aap},\n     keywords = {dust, extinction, magnetic fields, polarization, magnetohydrodynamics (MHD), radiative transfer, methods: numerical, Astrophysics - Astrophysics of Galaxies},\n         year = 2021,\n        month = mar,\n       volume = {647},\n          eid = {A121},\n        pages = {A121},\n          doi = {10.1051/0004-6361/201834490},\narchivePrefix = {arXiv},\n       eprint = {1810.10014},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2021A&A...647A.121M},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2021ApJ...907L..15S",
@@ -722,7 +814,11 @@
    "arxiv": "2012.08737",
    "citations": 32,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Prestellar cores are self-gravitating dense and cold structures within molecular clouds where future stars are born. They are expected, at the stage of transitioning to the protostellar phase, to harbor centrally concentrated dense (sub)structures that will seed the formation of a new star or the binary/multiple stellar systems. Characterizing this critical stage of evolution is key to our understanding of star formation. In this work, we report the detection of high-density (sub)structures on the thousand-astronomical-unit (au) scale in a sample of dense prestellar cores. Through our recent ALMA observations toward the Orion Planck Galactic Cold Clumps, we have found five extremely dense prestellar cores, which have centrally concentrated regions of ∼2000 au in size, and several 10<SUP>7</SUP> cm<SUP>-3</SUP> in average density. Masses of these centrally dense regions are in the range of 0.30 to 6.89 M<SUB>☉</SUB>. For the first time, our higher resolution observations (0.8″ ∼ 320 au) further reveal that one of the cores shows clear signatures of fragmentation; such individual substructures/fragments have sizes of 800-1700 au, masses of 0.08 to 0.84 M<SUB>☉</SUB>, densities of 2 - 8 × 10<SUP>7</SUP> cm<SUP>-3</SUP>, and separations of ∼1200 au. The substructures are massive enough (≳0.1 M<SUB>☉</SUB>) to form young stellar objects and are likely examples of the earliest stage of stellar embryos that can lead to widely (∼1200 au) separated multiple systems.",
+   "bibtex": "@ARTICLE{2021ApJ...907L..15S,\n       author = {{Sahu}, Dipen and {Liu}, Sheng-Yuan and {Liu}, Tie and {Evans}, II, Neal J. and {Hirano}, Naomi and {Tatematsu}, Ken'ichi and {Lee}, Chin-Fei and {Kim}, Kee-Tae and {Dutta}, Somnath and {Alina}, Dana},\n        title = \"{ALMA Survey of Orion Planck Galactic Cold Clumps (ALMASOP): Detection of Extremely High-density Compact Structure of Prestellar Cores and Multiple Substructures Within}\",\n      journal = {\\apjl},\n     keywords = {Molecular clouds, Collapsing clouds, Star-forming regions, Star formation, Protostars, Astrophysics - Astrophysics of Galaxies},\n         year = 2021,\n        month = jan,\n       volume = {907},\n       number = {1},\n          eid = {L15},\n        pages = {L15},\n          doi = {10.3847/2041-8213/abd3aa},\narchivePrefix = {arXiv},\n       eprint = {2012.08737},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2021ApJ...907L..15S},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2020IAUGA..30..104A",
@@ -742,50 +838,11 @@
    "arxiv": null,
    "citations": 0,
    "group": "Proceedings and talks",
-   "doctype": "abstract"
-  },
-  {
-   "bibcode": "2019A&A...631A...3M",
-   "title": "Multi-scale analysis of the Monoceros OB 1 star-forming region. II. Colliding filaments in the Monoceros OB1 molecular cloud",
-   "authors": [
-    "Montillaud, Julien",
-    "Juvela, Mika",
-    "Vastel, Charlotte",
-    "He, Jinhua",
-    "Liu, Tie",
-    "Ristorcelli, Isabelle",
-    "Eden, David J.",
-    "Kang, Sung-ju",
-    "Kim, Kee-Tae",
-    "Koch, Patrick M.",
-    "Lee, Chang Won",
-    "Rawlings, Mark G.",
-    "Saajasto, Mika",
-    "Sanhueza, Patricio",
-    "Soam, Archana",
-    "Zahorecz, Sarolta",
-    "Alina, Dana",
-    "Bögner, Rebeka",
-    "Cornu, David",
-    "Doi, Yasuo",
-    "Malinen, Johanna",
-    "Marshall, Douglas J.",
-    "Micelotta, Elisabetta R.",
-    "Pelkonen, Veli-Matti",
-    "Tóth, L. Viktor",
-    "Traficante, Alessio",
-    "Wang, Ke"
-   ],
-   "alina_index": 16,
-   "year": 2019,
-   "pub": "Astronomy and Astrophysics",
-   "volume": "631",
-   "page": "A3",
-   "doi": "10.1051/0004-6361/201834903",
-   "arxiv": "1909.06145",
-   "citations": 29,
-   "group": "Papers",
-   "doctype": "article"
+   "doctype": "abstract",
+   "led": true,
+   "role": "first",
+   "abstract": "We present a statistical analysis of the relative orientation between the plane-of-sky magnetic field and the filaments associated with the Galactic Cold Clumps. We separated polarization parameters components of the filaments and their background using thin optical medium assumption, the filaments were detected using the Rolling Hough Transform algorithm and we separated the clump and the filament contributions in our maps. We found that in high column density environments the magnetic fields inside the filaments and in the background are less likely to be aligned with each other. This suggests a decoupling between the inner and background magnetic fields at some stage of filamentsâ€™ evolution. A preferential alignment between the filaments and their inferred magnetic fields is observed in the whole selection if the clumpsâ€™ contribution is subtracted. Interestingly, a bimodal distribution of relative orientation is observed between the filamentary structures of the clumps and the filaments' magnetic field. Similar results are seen in a subsample of nearby filaments. The relative orientation clearly shows a transition from parallel to no preferential and perpendicular alignment depending on the volume densities of both clumps and filaments. Our results confirm a strong interplay between the magnetic field and filamentary structures during their formation and evolutionary process.",
+   "bibtex": "@INPROCEEDINGS{2020IAUGA..30..104A,\n       author = {{Alina}, D. and {Ristorcelli}, I. and {Montier}, L. and {Juvela}, M.},\n        title = \"{Statistics on the relative orientation between magnetic fields and filaments hosting Planck Galactic Cold Clumps}\",\n    booktitle = {IAU General Assembly},\n         year = 2020,\n        month = mar,\n        pages = {104-104},\n          doi = {10.1017/S1743921319003594},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2020IAUGA..30..104A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2019A&A...631L...1M",
@@ -828,7 +885,58 @@
    "arxiv": "1909.03781",
    "citations": 12,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Context. Current theories and models attempt to explain star formation globally, from core scales to giant molecular cloud scales. A multi-scale observational characterisation of an entire molecular complex is necessary to constrain them. We investigate star formation in G202.3+2.5, a ∼10 × 3 pc sub-region of the Monoceros OB1 cloud with a complex morphology that harbours interconnected filamentary structures. <BR /> Aims: We aim to connect the evolution of cores and filaments in G202.3+2.5 with the global evolution of the cloud and to identify the engines of the cloud dynamics. <BR /> Methods: In this first paper, the star formation activity is evaluated by surveying the distributions of dense cores and protostars and their evolutionary state, as characterised using both infrared observations from the Herschel and WISE telescopes and molecular line observations with the IRAM 30 m telescope. <BR /> Results: We find ongoing star formation in the whole cloud, with a local peak in star formation activity around the centre of G202.3+2.5, where a chain of massive cores (10 - 50 M<SUB>☉</SUB>) forms a massive ridge (≳150 M<SUB>☉</SUB>). All evolutionary stages from starless cores to Class II protostars are found in G202.3+2.5, including a possibly starless and massive (52 M<SUB>☉</SUB>) core, which presents a high column density (8 × 10<SUP>22</SUP> cm<SUP>-2</SUP>). <BR /> Conclusions: All the core-scale observables we examined point to an enhanced star formation activity that is centred on the junction between the three main branches of the ramified structure of G202.3+2.5. This suggests that the increased star formation activity results from the convergence of these branches. To further investigate the origin of this enhancement, it is now necessary to extend the analysis to larger scales in order to examine the relationship between cores, filaments, and their environment. We address these points through the analysis of the dynamics of G202.3+2.5 in a joint paper.",
+   "bibtex": "@ARTICLE{2019A&A...631L...1M,\n       author = {{Montillaud}, Julien and {Juvela}, Mika and {Vastel}, Charlotte and {He}, Jinhua and {Liu}, Tie and {Ristorcelli}, Isabelle and {Eden}, David J. and {Kang}, Sung-ju and {Kim}, Kee-Tae and {Koch}, Patrick M.},\n        title = \"{Multi-scale analysis of the Monoceros OB 1 star-forming region. I. The dense core population}\",\n      journal = {\\aap},\n     keywords = {stars: formation, ISM: clouds, dust, extinction, Astrophysics - Astrophysics of Galaxies},\n         year = 2019,\n        month = nov,\n       volume = {631},\n          eid = {L1},\n        pages = {L1},\n          doi = {10.1051/0004-6361/201936377},\narchivePrefix = {arXiv},\n       eprint = {1909.03781},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2019A&A...631L...1M},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
+  },
+  {
+   "bibcode": "2019A&A...631A...3M",
+   "title": "Multi-scale analysis of the Monoceros OB 1 star-forming region. II. Colliding filaments in the Monoceros OB1 molecular cloud",
+   "authors": [
+    "Montillaud, Julien",
+    "Juvela, Mika",
+    "Vastel, Charlotte",
+    "He, Jinhua",
+    "Liu, Tie",
+    "Ristorcelli, Isabelle",
+    "Eden, David J.",
+    "Kang, Sung-ju",
+    "Kim, Kee-Tae",
+    "Koch, Patrick M.",
+    "Lee, Chang Won",
+    "Rawlings, Mark G.",
+    "Saajasto, Mika",
+    "Sanhueza, Patricio",
+    "Soam, Archana",
+    "Zahorecz, Sarolta",
+    "Alina, Dana",
+    "Bögner, Rebeka",
+    "Cornu, David",
+    "Doi, Yasuo",
+    "Malinen, Johanna",
+    "Marshall, Douglas J.",
+    "Micelotta, Elisabetta R.",
+    "Pelkonen, Veli-Matti",
+    "Tóth, L. Viktor",
+    "Traficante, Alessio",
+    "Wang, Ke"
+   ],
+   "alina_index": 16,
+   "year": 2019,
+   "pub": "Astronomy and Astrophysics",
+   "volume": "631",
+   "page": "A3",
+   "doi": "10.1051/0004-6361/201834903",
+   "arxiv": "1909.06145",
+   "citations": 29,
+   "group": "Papers",
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Context. We started a multi-scale analysis of star formation in G202.3+2.5, an intertwined filamentary sub-region of the Monoceros OB1 molecular complex, in order to provide observational constraints on current theories and models that attempt to explain star formation globally. In the first paper (Paper I), we examined the distributions of dense cores and protostars and found enhanced star formation activity in the junction region of the filaments. <BR /> Aims: In this second paper, we aim to unveil the connections between the core and filament evolutions, and between the filament dynamics and the global evolution of the cloud. <BR /> Methods: We characterise the gas dynamics and energy balance in different parts of G202.3+2.5 using infrared observations from the Herschel and WISE telescopes and molecular tracers observed with the IRAM 30-m and TRAO 14-m telescopes. The velocity field of the cloud is examined and velocity-coherent structures are identified, characterised, and put in perspective with the cloud environment. <BR /> Results: Two main velocity components are revealed, well separated in radial velocities in the north and merged around the location of intense N<SUB>2</SUB>H<SUP>+</SUP> emission in the centre of G202.3+2.5 where Paper I found the peak of star formation activity. We show that the relative position of the two components along the sightline, and the velocity gradient of the N<SUB>2</SUB>H<SUP>+</SUP> emission imply that the components have been undergoing collision for ~10<SUP>5</SUP> yr, although it remains unclear whether the gas moves mainly along or across the filament axes. The dense gas where N<SUB>2</SUB>H<SUP>+</SUP> is detected is interpreted as the compressed region between the two filaments, which corresponds to a high mass inflow rate of ~1 × 10<SUP>-3</SUP> M<SUB>☉</SUB> yr<SUP>-1</SUP> and possibly leads to a significant increase in its star formation efficiency. We identify a protostellar source in the junction region that possibly powers two crossed intermittent outflows. We show that the H II region around the nearby cluster NCG 2264 is still expanding and its role in the collision is examined. However, we cannot rule out the idea that the collision arises mostly from the global collapse of the cloud. <BR /> Conclusions: The (sub-)filament-scale observables examined in this paper reveal a collision between G202.3+2.5 sub-structures and its probable role in feeding the cores in the junction region. To shed more light on this link between core and filament evolutions, one must characterise the cloud morphology, its fragmentation, and magnetic field, all at high resolution. We consider the role of the environment in this paper, but a larger-scale study of this region is now necessary to investigate the scenario of a global cloud collapse. <P />The reduced datacubes (FITS files) of our IRAM and TRAO observations are only available at the CDS via anonymous ftp to <A href=\"http://cdsarc.u-strasbg.fr\">http://cdsarc.u-strasbg.fr</A> (ftp://130.79.128.5) or via <A href=\"http://cdsarc.u-strasbg.fr/viz-bin/cat/J/A+A/631/A3\">http://cdsarc.u-strasbg.fr/viz-bin/cat/J/A+A/631/A3</A>",
+   "bibtex": "@ARTICLE{2019A&A...631A...3M,\n       author = {{Montillaud}, Julien and {Juvela}, Mika and {Vastel}, Charlotte and {He}, Jinhua and {Liu}, Tie and {Ristorcelli}, Isabelle and {Eden}, David J. and {Kang}, Sung-ju and {Kim}, Kee-Tae and {Koch}, Patrick M.},\n        title = \"{Multi-scale analysis of the Monoceros OB 1 star-forming region. II. Colliding filaments in the Monoceros OB1 molecular cloud}\",\n      journal = {\\aap},\n     keywords = {ISM: clouds, stars: formation, Astrophysics - Astrophysics of Galaxies},\n         year = 2019,\n        month = nov,\n       volume = {631},\n          eid = {A3},\n        pages = {A3},\n          doi = {10.1051/0004-6361/201834903},\narchivePrefix = {arXiv},\n       eprint = {1909.06145},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2019A&A...631A...3M},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2019A&A...630A..74M",
@@ -884,7 +992,11 @@
    "arxiv": "1901.06196",
    "citations": 49,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "We present the first far infrared (FIR) dust emission polarization map covering the full extent of Milky Way's central molecular zone (CMZ). The data, obtained with the PILOT balloon-borne experiment, covers the Galactic center region - 2° &lt; ℓ &lt; 2°, - 4° &lt; b &lt; 3° at a wavelength of 240 μm and an angular resolution of 2.2'. From our measured dust polarization angles, we infer a magnetic field orientation projected onto the plane of the sky (POS) that is remarkably ordered over the full extent of the CMZ, with an average tilt angle of ≃22° clockwise with respect to the Galactic plane. Our results confirm previous claims that the field traced by dust polarized emission is oriented nearly orthogonally to the field traced by GHz radio synchrotron emission in the Galactic center region. The observed field structure is globally compatible with the latest Planck polarization data at 353 and 217 GHz. Upon subtraction of the extended emission in our data, the mean field orientation that we obtain shows good agreement with the mean field orientation measured at higher angular resolution by the JCMT within the 20 and 50 km s<SUP>-1</SUP> molecular clouds. We find no evidence that the magnetic field orientation is related to the 100 pc twisted ring structure within the CMZ. The low polarization fraction in the Galactic center region measured with Planck at 353 GHz combined with a highly ordered projected field orientation is unusual. This feature actually extends to the whole inner Galactic plane. We propose that it could be caused by the increased number of turbulent cells for the long lines of sight towards the inner Galactic plane or to dust properties specific to the inner regions of the Galaxy. Assuming equipartition between magnetic pressure and ram pressure, we obtain magnetic field strength estimates of the order of 1 mG for several CMZ molecular clouds.",
+   "bibtex": "@ARTICLE{2019A&A...630A..74M,\n       author = {{Mangilli}, A. and {Aumont}, J. and {Bernard}, J.-Ph. and {Buzzelli}, A. and {de Gasperis}, G. and {Durrive}, J.~B. and {Ferriere}, K. and {Fo{\\\"e}nard}, G. and {Hughes}, A. and {Lacourt}, A.},\n        title = \"{The geometry of the magnetic field in the central molecular zone measured by PILOT}\",\n      journal = {\\aap},\n     keywords = {Galaxy: center, polarization, magnetic fields, balloons, methods: data analysis, dust, extinction, Astrophysics - Astrophysics of Galaxies},\n         year = 2019,\n        month = oct,\n       volume = {630},\n          eid = {A74},\n        pages = {A74},\n          doi = {10.1051/0004-6361/201935072},\narchivePrefix = {arXiv},\n       eprint = {1901.06196},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2019A&A...630A..74M},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2019ApJ...883...95S",
@@ -943,7 +1055,11 @@
    "arxiv": "1908.03624",
    "citations": 55,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "We present the B-fields mapped in IRDC G34.43+0.24 using 850 μm polarized dust emission observed with the POL-2 instrument at the James Clerk Maxwell telescope. We examine the magnetic field geometries and strengths in the northern, central, and southern regions of the filament. The overall field geometry is ordered and aligned closely perpendicular to the filament’s main axis, particularly in regions containing the central clumps MM1 and MM2, whereas MM3 in the north has field orientations aligned with its major axis. The overall field orientations are uniform at large (POL-2 at 14″ and SHARP at 10″) to small scales (TADPOL at 2.″5 and SMA at 1.″5) in the MM1 and MM2 regions. SHARP/CSO observations in MM3 at 350 μm from Tang et al. show a similar trend as seen in our POL-2 observations. TADPOL observations demonstrate a well-defined field geometry in MM1/MM2 consistent with MHD simulations of accreting filaments. We obtained a plane-of-sky magnetic field strength of 470 ± 190 μG, 100 ± 40 μG, and 60 ± 34 μG in the central, northern, and southern regions of G34, respectively, using the updated Davis-Chandrasekhar-Fermi relation. The estimated value of field strength, combined with column density and velocity dispersion values available in the literature, suggests G34 to be marginally critical with criticality parameter λ values 0.8 ± 0.4, 1.1 ± 0.8, and 0.9 ± 0.5 in the central, northern, and southern regions, respectively. The turbulent motions in G34 are sub-Alfvénic with Alfvénic Mach numbers of 0.34 ± 0.13, 0.53 ± 0.30, and 0.49 ± 0.26 in the three regions. The observed aligned B-fields in G34.43+0.24 are consistent with theoretical models suggesting that B-fields play an important role in guiding the contraction of the cloud driven by gravity.",
+   "bibtex": "@ARTICLE{2019ApJ...883...95S,\n       author = {{Soam}, Archana and {Liu}, Tie and {Andersson}, B.-G. and {Lee}, Chang Won and {Liu}, Junhao and {Juvela}, Mika and {Li}, Pak Shing and {Goldsmith}, Paul F. and {Zhang}, Qizhou and {Koch}, Patrick M.},\n        title = \"{Magnetic Fields in the Infrared Dark Cloud G34.43+0.24}\",\n      journal = {\\apj},\n     keywords = {ISM: magnetic fields, Astrophysics - Astrophysics of Galaxies},\n         year = 2019,\n        month = sep,\n       volume = {883},\n       number = {1},\n          eid = {95},\n        pages = {95},\n          doi = {10.3847/1538-4357/ab39dd},\narchivePrefix = {arXiv},\n       eprint = {1908.03624},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2019ApJ...883...95S},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2019MNRAS.485.2895E",
@@ -1122,7 +1238,11 @@
    "arxiv": "1902.10180",
    "citations": 43,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "We present the first release of the data and compact-source catalogue for the JCMT Large Program SCUBA-2 Continuum Observations of Pre-protostellar Evolution (SCOPE). SCOPE consists of 850 μm continuum observations of 1235 Planck Galactic Cold Clumps (PGCCs) made with the Submillimetre Common-User Bolometer Array 2 on the James Clerk Maxwell Telescope. These data are at an angular resolution of 14.4 arcsec, significantly improving upon the 353 GHz resolution of Planck at 5 arcmin, and allowing for a catalogue of 3528 compact sources in 558 PGCCs. We find that the detected PGCCs have significant sub-structure, with 61 per cent of detected PGCCs having three or more compact sources, with filamentary structure also prevalent within the sample. A detection rate of 45 per cent is found across the survey, which is 95 per cent complete to Planck column densities of N_{H<SUB>2</SUB>} &gt; 5 × 10<SUP>21</SUP> cm<SUP>-2</SUP>. By positionally associating the SCOPE compact sources with young stellar objects, the star formation efficiency, as measured by the ratio of luminosity to mass, in nearby clouds is found to be similar to that in the more distant Galactic Plane, with the column density distributions also indistinguishable from each other.",
+   "bibtex": "@ARTICLE{2019MNRAS.485.2895E,\n       author = {{Eden}, D.~J. and {Liu}, Tie and {Kim}, Kee-Tae and {Juvela}, M. and {Liu}, S.-Y. and {Tatematsu}, K. and {Francesco}, J. Di and {Wang}, K. and {Wu}, Y. and {Thompson}, M.~A.},\n        title = \"{SCOPE: SCUBA-2 Continuum Observations of Pre-protostellar Evolution - survey description and compact source catalogue}\",\n      journal = {\\mnras},\n     keywords = {surveys, stars: formation, ISM: clouds, submillimetre: ISM, Astrophysics - Astrophysics of Galaxies, Astrophysics - Solar and Stellar Astrophysics},\n         year = 2019,\n        month = may,\n       volume = {485},\n       number = {2},\n        pages = {2895-2908},\n          doi = {10.1093/mnras/stz574},\narchivePrefix = {arXiv},\n       eprint = {1902.10180},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2019MNRAS.485.2895E},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2019MNRAS.485.2825A",
@@ -1146,7 +1266,11 @@
    "arxiv": "1712.09325",
    "citations": 34,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": true,
+   "role": "first",
+   "abstract": "We present a statistical study of the relative orientation in the plane of the sky between interstellar magnetic fields and filaments hosting cold clumps. For the first time, we consider both the density of the environment and the density contrast between the filaments and their environment. Moreover, we geometrically distinguish between the clumps and the remaining portions of the filaments. We infer the magnetic field orientations in the filaments and in their environment from the Stokes parameters,<SUP><SUP>1</SUP></SUP> assuming optically thin conditions. Thus, we analyse the relative orientations between filaments, embedded clumps, internal and background magnetic fields, depending on their environment and evolutionary stages. We recover the previously observed trend for filaments in low column density environments to be aligned parallel to the background magnetic field; however, we find that this trend is significant only for low-contrast filaments, whereas high-contrast filaments tend to be randomly orientated with respect to the background magnetic field. Filaments in high column density environments do not globally show any preferential orientation, although low-contrast filaments alone tend to have perpendicular relative orientation with respect to the background magnetic field. For a subsample of nearby filaments, for which volume densities can be derived, we find a clear transition in the relative orientation with increasing density, at n<SUB>H</SUB> ∼ 10<SUP>3</SUP> cm<SUP>-3</SUP>, changing from mostly parallel to mostly perpendicular in the off-clump portions of filaments and from even to bimodal in clumps. Our results confirm a strong interplay between interstellar magnetic fields and filaments during their formation and evolution.",
+   "bibtex": "@ARTICLE{2019MNRAS.485.2825A,\n       author = {{Alina}, D. and {Ristorcelli}, I. and {Montier}, L. and {Abdikamalov}, E. and {Juvela}, M. and {Ferri{\\`e}re}, K. and {Bernard}, J.-Ph and {Micelotta}, E.~R.},\n        title = \"{Statistical analysis of the interplay between interstellar magnetic fields and filaments hosting Planck Galactic cold clumps}\",\n      journal = {\\mnras},\n     keywords = {polarization, methods: statistical, (ISM:) dust, extinction, Astrophysics - Astrophysics of Galaxies},\n         year = 2019,\n        month = may,\n       volume = {485},\n       number = {2},\n        pages = {2825-2843},\n          doi = {10.1093/mnras/stz508},\narchivePrefix = {arXiv},\n       eprint = {1712.09325},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2019MNRAS.485.2825A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2018A&A...620A..26J",
@@ -1183,7 +1307,11 @@
    "arxiv": "1809.00864",
    "citations": 27,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Context. The sub-millimetre polarisation of dust emission from star-forming clouds carries information on grain properties and on the effects that magnetic fields have on cloud evolution. <BR /> Aims: Using observations of a dense filamentary cloud G035.39-00.33, we aim to characterise the dust emission properties and the variations of the polarisation fraction. <BR /> Methods: JCMT SCUBA-2/POL-2 observations at 850 μm were combined with Planck 850 μm(353 GHz) data to map polarisation fraction at small and large scales. With previous total intensity SCUBA-2 observations (450 and 850 μm) and Herschel data, the column densities were determined via modified black-body fits and via radiative transfer modelling. Models were constructed to examine how the observed polarisation angles and fractions depend on potential magnetic field geometries and grain alignment processes. <BR /> Results: POL-2 data show clear changes in the magnetic field orientation. These are not in contradiction with the uniform orientation and almost constant polarisation fraction seen by Planck, because of the difference in the beam sizes and the POL-2 data being affected by spatial filtering. The filament has a peak column density of N(H<SUB>2</SUB>) 7 × 10<SUP>22</SUP> cm<SUP>-2</SUP>, a minimum dust temperature of T 12 K, and a mass of 4300 M<SUB>☉</SUB> for the area N(H<SUB>2</SUB>) &gt; 5 × 10<SUP>21</SUP> cm<SUP>-2</SUP>. The estimated average value of the dust opacity spectral index is β 1.9. The ratio of sub-millimetre and J-band optical depths is τ (250 μm)/τ (J) 2.5 × 10<SUP>-3</SUP>, more than four times the typical values for diffuse medium. The polarisation fraction decreases as a function of column density to p 1% in the central filament. Because of noise, the observed decrease of p(N) is significant only at N(H<SUB>2</SUB>) &gt; 2 × 10<SUP>22</SUP> cm<SUP>-2</SUP>. The observations suggest that the grain alignment is not constant. Although the data can be explained with a complete loss of alignment at densities above 10<SUP>4</SUP> cm<SUP>-3</SUP> or using the predictions of radiative torques alignment, the uncertainty of the field geometry and the spatial filtering of the SCUBA-2 data prevent strong conclusions. <BR /> Conclusions: The G035.39-00.33 filament shows strong signs of dust evolution and the low polarisation fraction is suggestive of a loss of polarised emission from its densest parts.",
+   "bibtex": "@ARTICLE{2018A&A...620A..26J,\n       author = {{Juvela}, Mika and {Guillet}, Vincent and {Liu}, Tie and {Ristorcelli}, Isabelle and {Pelkonen}, Veli-Matti and {Alina}, Dana and {Bronfman}, Leonardo and {Eden}, David J. and {Kim}, Kee Tae and {Koch}, Patrick M.},\n        title = \"{Dust spectrum and polarisation at 850 {\\ensuremath{\\mu}}m in the massive IRDC G035.39-00.33}\",\n      journal = {\\aap},\n     keywords = {ISM: clouds, infrared: ISM, submillimeter: ISM, dust, extinction, stars: formation, stars: protostars, Astrophysics - Astrophysics of Galaxies},\n         year = 2018,\n        month = nov,\n       volume = {620},\n          eid = {A26},\n        pages = {A26},\n          doi = {10.1051/0004-6361/201833245},\narchivePrefix = {arXiv},\n       eprint = {1809.00864},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2018A&A...620A..26J},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2018ApJS..236...49Z",
@@ -1225,7 +1353,11 @@
    "arxiv": "1805.03883",
    "citations": 15,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "In order to understand the initial conditions and early evolution of star formation in a wide range of Galactic environments, we carried out an investigation of 64 Planck Galactic cold clumps (PGCCs) in the second quadrant of the Milky Way. Using the <SUP>13</SUP>CO and C<SUP>18</SUP>O J = 1-0 lines and 850 μm continuum observations, we investigated cloud fragmentation and evolution associated with star formation. We extracted 468 clumps and 117 cores from the <SUP>13</SUP>CO line and 850 μm continuum maps, respectively. We made use of the Bayesian distance calculator and derived the distances of all 64 PGCCs. We found that in general, the mass-size plane follows a relation of m ∼ r <SUP>1.67</SUP>. At a given scale, the masses of our objects are around 1/10 of that of typical Galactic massive star-forming regions. Analysis of the clump and core masses, virial parameters, densities, and mass-size relation suggests that the PGCCs in our sample have a low core formation efficiency (∼3.0%), and most PGCCs are likely low-mass star-forming candidates. Statistical study indicates that the 850 μm cores are more turbulent, more optically thick, and denser than the <SUP>13</SUP>CO clumps for star formation candidates, suggesting that the 850 μm cores are likely more appropriate future star formation candidates than the <SUP>13</SUP>CO clumps.",
+   "bibtex": "@ARTICLE{2018ApJS..236...49Z,\n       author = {{Zhang}, Chuan-Peng and {Liu}, Tie and {Yuan}, Jinghua and {Sanhueza}, Patricio and {Traficante}, Alessio and {Li}, Guang-Xing and {Li}, Di and {Tatematsu}, Ken'ichi and {Wang}, Ke and {Lee}, Chang Won},\n        title = \"{The TOP-SCOPE Survey of PGCCs: PMO and SCUBA-2 Observations of 64 PGCCs in the Second Galactic Quadrant}\",\n      journal = {\\apjs},\n     keywords = {dust, extinction, ISM: clouds, ISM: structure, stars: formation, Astrophysics - Astrophysics of Galaxies, Astrophysics - Solar and Stellar Astrophysics},\n         year = 2018,\n        month = jun,\n       volume = {236},\n       number = {2},\n          eid = {49},\n        pages = {49},\n          doi = {10.3847/1538-4365/aac513},\narchivePrefix = {arXiv},\n       eprint = {1805.03883},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2018ApJS..236...49Z},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2018ApJ...859..151L",
@@ -1298,7 +1430,11 @@
    "arxiv": "1803.09457",
    "citations": 81,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Magnetic field plays a crucial role in shaping molecular clouds and regulating star formation, yet the complete information on the magnetic field is not well constrained owing to the limitations in observations. We study the magnetic field in the massive infrared dark cloud G035.39-00.33 from dust continuum polarization observations at 850 μm with SCUBA-2/POL-2 at JCMT for the first time. The magnetic field tends to be perpendicular to the densest part of the main filament (F <SUB>M</SUB>), whereas it has a less defined relative orientation in the rest of the structure, where it tends to be parallel to some diffuse regions. A mean plane-of-the-sky magnetic field strength of ∼50 μG for F <SUB>M</SUB> is obtained using the Davis-Chandrasekhar-Fermi method. Based on <SUP>13</SUP>CO (1-0) line observations, we suggest a formation scenario of F <SUB>M</SUB> due to large-scale (∼10 pc) cloud-cloud collision. Using additional NH<SUB>3</SUB> line data, we estimate that F <SUB>M</SUB> will be gravitationally unstable if it is only supported by thermal pressure and turbulence. The northern part of F <SUB>M</SUB>, however, can be stabilized by a modest additional support from the local magnetic field. The middle and southern parts of F <SUB>M</SUB> are likely unstable even if the magnetic field support is taken into account. We claim that the clumps in F <SUB>M</SUB> may be supported by turbulence and magnetic fields against gravitational collapse. Finally, we identified for the first time a massive (∼200 M <SUB>☉</SUB>), collapsing starless clump candidate, “c8,” in G035.39-00.33. The magnetic field surrounding “c8” is likely pinched, hinting at an accretion flow along the filament.",
+   "bibtex": "@ARTICLE{2018ApJ...859..151L,\n       author = {{Liu}, Tie and {Li}, Pak Shing and {Juvela}, Mika and {Kim}, Kee-Tae and {Evans}, II, Neal J. and {Di Francesco}, James and {Liu}, Sheng-Yuan and {Yuan}, Jinghua and {Tatematsu}, Ken'ichi and {Zhang}, Qizhou},\n        title = \"{A Holistic Perspective on the Dynamics of G035.39-00.33: The Interplay between Gas and Magnetic Fields}\",\n      journal = {\\apj},\n     keywords = {ISM: clouds, ISM: magnetic fields, stars: formation, Astrophysics - Astrophysics of Galaxies, Astrophysics - Solar and Stellar Astrophysics},\n         year = 2018,\n        month = jun,\n       volume = {859},\n       number = {2},\n          eid = {151},\n        pages = {151},\n          doi = {10.3847/1538-4357/aac025},\narchivePrefix = {arXiv},\n       eprint = {1803.09457},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2018ApJ...859..151L},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2018ApJS..234...28L",
@@ -1470,7 +1606,11 @@
    "arxiv": "1711.04382",
    "citations": 65,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "The low dust temperatures (&lt;14 K) of Planck Galactic cold clumps (PGCCs) make them ideal targets to probe the initial conditions and very early phase of star formation. “TOP-SCOPE” is a joint survey program targeting ∼2000 PGCCs in J = 1-0 transitions of CO isotopologues and ∼1000 PGCCs in 850 μm continuum emission. The objective of the “TOP-SCOPE” survey and the joint surveys (SMT 10 m, KVN 21 m, and NRO 45 m) is to statistically study the initial conditions occurring during star formation and the evolution of molecular clouds, across a wide range of environments. The observations, data analysis, and example science cases for these surveys are introduced with an exemplar source, PGCC G26.53+0.17 (G26), which is a filamentary infrared dark cloud (IRDC). The total mass, length, and mean line mass (M/L) of the G26 filament are ∼6200 M <SUB>☉</SUB>, ∼12 pc, and ∼500 M <SUB>☉</SUB> pc<SUP>-1</SUP>, respectively. Ten massive clumps, including eight starless ones, are found along the filament. The most massive clump as a whole may still be in global collapse, while its denser part seems to be undergoing expansion owing to outflow feedback. The fragmentation in the G26 filament from cloud scale to clump scale is in agreement with gravitational fragmentation of an isothermal, nonmagnetized, and turbulent supported cylinder. A bimodal behavior in dust emissivity spectral index (β) distribution is found in G26, suggesting grain growth along the filament. The G26 filament may be formed owing to large-scale compression flows evidenced by the temperature and velocity gradients across its natal cloud.",
+   "bibtex": "@ARTICLE{2018ApJS..234...28L,\n       author = {{Liu}, Tie and {Kim}, Kee-Tae and {Juvela}, Mika and {Wang}, Ke and {Tatematsu}, Ken'ichi and {Di Francesco}, James and {Liu}, Sheng-Yuan and {Wu}, Yuefang and {Thompson}, Mark and {Fuller}, Gary},\n        title = \"{The TOP-SCOPE Survey of Planck Galactic Cold Clumps: Survey Overview and Results of an Exemplar Source, PGCC G26.53+0.17}\",\n      journal = {\\apjs},\n     keywords = {ISM: abundances, ISM: clouds, ISM: kinematics and dynamics, stars: formation, surveys, Astrophysics - Astrophysics of Galaxies, Astrophysics - Solar and Stellar Astrophysics},\n         year = 2018,\n        month = feb,\n       volume = {234},\n       number = {2},\n          eid = {28},\n        pages = {28},\n          doi = {10.3847/1538-4365/aaa3dd},\narchivePrefix = {arXiv},\n       eprint = {1711.04382},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2018ApJS..234...28L},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2017ExA....43..211M",
@@ -1537,7 +1677,11 @@
    "arxiv": null,
    "citations": 3,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "",
+   "bibtex": "@ARTICLE{2017ExA....43..211M,\n       author = {{Misawa}, R. and {Bernard}, J.-Ph. and {Longval}, Y. and {Ristorcelli}, I. and {Ade}, P. and {Alina}, D. and {Andr{\\'e}}, Y. and {Aumont}, J. and {Bautista}, L. and {de Bernardis}, P.},\n        title = \"{The optical performance of the PILOT instrument from ground end-to-end tests}\",\n      journal = {Experimental Astronomy},\n     keywords = {Far infrared, Interstellar dust, Optics, PILOT, Point spread function, Polarization, Straylight},\n         year = 2017,\n        month = jun,\n       volume = {43},\n       number = {3},\n        pages = {211-235},\n          doi = {10.1007/s10686-017-9528-3},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2017ExA....43..211M},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2016A&A...595A..57A",
@@ -1559,21 +1703,23 @@
    "arxiv": "1608.07105",
    "citations": 16,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": true,
+   "role": "first",
+   "abstract": "High precision polarization measurements, such as those from the Planck satellite, open new opportunities for the study of the magnetic field structure as traced by polarimetric measurements of the interstellar dust emission. The polarization parameters suffer from bias in the presence of measurement noise. It is critical to take into account all the information available in the data in order to accurately derive these parameters. In our previous work, we studied the bias on polarization fraction and angle, various estimators of these quantities, and their associated uncertainties. The goal of this paper is to characterize the bias on the polarization angle dispersion function that is used to study the spatial coherence of the polarization angle. We characterize for the first time the bias on the conventional estimator of the polarization angle dispersion function and show that it can be positive or negative depending on the true value. Monte Carlo simulations were performed to explore the impact of the noise properties of the polarization data, as well as the impact of the distribution of the true polarization angles on the bias. We show that in the case where the ellipticity of the noise in (Q,U) varies by less than 10%, one can use simplified, diagonal approximation of the noise covariance matrix. In other cases, the shape of the noise covariance matrix should be taken into account in the estimation of the polarization angle dispersion function. We also study new estimators such as the dichotomic and the polynomial estimators. Though the dichotomic estimator cannot be directly used to estimate the polarization angle dispersion function, we show that, on the one hand, it can serve as an indicator of the accuracy of the conventional estimator and, on the other hand, it can be used for deriving the polynomial estimator. We propose a method for determining the upper limit of the bias on the conventional estimator of the polarization angle dispersion function. The method is applicable to any linear polarization data set for which the noise covariance matrices are known.",
+   "bibtex": "@ARTICLE{2016A&A...595A..57A,\n       author = {{Alina}, D. and {Montier}, L. and {Ristorcelli}, I. and {Bernard}, J.-P. and {Levrier}, F. and {Abdikamalov}, E.},\n        title = \"{Polarization measurement analysis. III. Analysis of the polarization angle dispersion function with high precision polarization data}\",\n      journal = {\\aap},\n     keywords = {polarization, methods: statistical, methods: data analysis, techniques: polarimetric, Astrophysics - Astrophysics of Galaxies},\n         year = 2016,\n        month = oct,\n       volume = {595},\n          eid = {A57},\n        pages = {A57},\n          doi = {10.1051/0004-6361/201628809},\narchivePrefix = {arXiv},\n       eprint = {1608.07105},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2016A&A...595A..57A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
-   "bibcode": "2015A&A...576A.105P",
-   "title": "Planck intermediate results. XX. Comparison of polarized thermal emission from Galactic dust with simulations of MHD turbulence",
+   "bibcode": "2015A&A...576A.106P",
+   "title": "Planck intermediate results. XXI. Comparison of polarized thermal emission from Galactic dust at 353 GHz with interstellar polarization in the visible",
    "authors": [
     "Planck Collaboration",
     "Ade, P. A. R.",
     "Aghanim, N.",
     "Alina, D.",
-    "Alves, M. I. R.",
     "Aniano, G.",
     "Armitage-Caplan, C.",
     "Arnaud, M.",
-    "Arzoumanian, D.",
     "Ashdown, M.",
     "Atrio-Barandela, F.",
     "Aumont, J.",
@@ -1581,20 +1727,22 @@
     "Banday, A. J.",
     "Barreiro, R. B.",
     "Battaner, E.",
+    "Beichman, C.",
     "Benabed, K.",
     "Benoit-Lévy, A.",
     "Bernard, J.-P.",
     "Bersanelli, M.",
     "Bielewicz, P.",
+    "Bock, J. J.",
     "Bond, J. R.",
     "Borrill, J.",
     "Bouchet, F. R.",
     "Boulanger, F.",
-    "Bracco, A.",
     "Burigana, C.",
     "Cardoso, J.-F.",
     "Catalano, A.",
     "Chamballu, A.",
+    "Chary, R.-R.",
     "Chiang, H. C.",
     "Christensen, P. R.",
     "Colombi, S.",
@@ -1612,18 +1760,19 @@
     "de Rosa, A.",
     "de Zotti, G.",
     "Delabrouille, J.",
+    "Désert, F.-X.",
     "Dickinson, C.",
     "Diego, J. M.",
     "Donzelli, S.",
     "Doré, O.",
     "Douspis, M.",
+    "Dunkley, J.",
     "Dupac, X.",
     "Efstathiou, G.",
     "Enßlin, T. A.",
     "Eriksen, H. K.",
     "Falgarone, E.",
     "Fanciullo, L.",
-    "Ferrière, K.",
     "Finelli, F.",
     "Forni, O.",
     "Frailis, M.",
@@ -1661,6 +1810,7 @@
     "Kunz, M.",
     "Kurki-Suonio, H.",
     "Lagache, G.",
+    "Lähteenmäki, A.",
     "Lamarre, J.-M.",
     "Lasenby, A.",
     "Lawrence, C. R.",
@@ -1672,6 +1822,8 @@
     "López-Caniego, M.",
     "Lubin, P. M.",
     "Macías-Pérez, J. F.",
+    "Maffei, B.",
+    "Magalhães, A. M.",
     "Maino, D.",
     "Mandolesi, N.",
     "Maris, M.",
@@ -1702,9 +1854,9 @@
     "Oxborrow, C. A.",
     "Pagano, L.",
     "Pajot, F.",
+    "Paladini, R.",
     "Paoletti, D.",
     "Pasian, F.",
-    "Pelkonen, V.-M.",
     "Perdereau, O.",
     "Perotto, L.",
     "Perrotta, F.",
@@ -1712,6 +1864,7 @@
     "Piat, M.",
     "Pietrobon, D.",
     "Plaszczynski, S.",
+    "Poidevin, F.",
     "Pointecouteau, E.",
     "Polenta, G.",
     "Popa, L.",
@@ -1719,6 +1872,8 @@
     "Prunet, S.",
     "Puget, J.-L.",
     "Rachen, J. P.",
+    "Reach, W. T.",
+    "Rebolo, R.",
     "Reinecke, M.",
     "Remazeilles, M.",
     "Renault, C.",
@@ -1730,8 +1885,8 @@
     "Roudier, G.",
     "Rusholme, B.",
     "Sandri, M.",
+    "Savini, G.",
     "Scott, D.",
-    "Soler, J. D.",
     "Spencer, L. D.",
     "Stolyarov, V.",
     "Stompor, R.",
@@ -1759,12 +1914,16 @@
    "year": 2015,
    "pub": "Astronomy and Astrophysics",
    "volume": "576",
-   "page": "A105",
-   "doi": "10.1051/0004-6361/201424086",
-   "arxiv": "1405.0872",
-   "citations": 143,
+   "page": "A106",
+   "doi": "10.1051/0004-6361/201424087",
+   "arxiv": "1405.0873",
+   "citations": 94,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "The Planck survey provides unprecedented full-sky coverage of the submillimetre polarized emission from Galactic dust. In addition to the information on the direction of the Galactic magnetic field, this also brings new constraints on the properties of dust. The dust grains that emit the radiation seen by Planck in the submillimetre also extinguish and polarize starlight in the visible. Comparison of the polarization of the emission and of the interstellar polarization on selected lines of sight probed by stars provides unique new diagnostics of the emission and light scattering properties of dust, and therefore of the important dust model parameters, composition, size, and shape. Using ancillary catalogues of interstellar polarization and extinction of starlight, we obtain the degree of polarization, p<SUB>V</SUB>, and the optical depth in the V band to the star, τ<SUB>V</SUB>. Toward these stars we measure the submillimetre polarized intensity, P<SUB>S</SUB>, and total intensity, I<SUB>S</SUB>, in the Planck 353 GHz channel. We compare the column density measure in the visible, E(B - V), with that inferred from the Planck product map of the submillimetre dust optical depth and compare the polarization direction (position angle) in the visible with that in the submillimetre. For those lines of sight through the diffuse interstellar medium with comparable values of the estimated column density and polarization directions close to orthogonal, we correlate properties in the submillimetre and visible to find two ratios, R<SUB>S /V</SUB> = (P<SUB>S</SUB>/I<SUB>S</SUB>) / (p<SUB>V</SUB>/τ<SUB>V</SUB>) and R<SUB>P/p</SUB> = P<SUB>S</SUB>/p<SUB>V</SUB>, the latter focusing directly on the polarization properties of the aligned grain population alone.We find R<SUB>S /V</SUB> = 4.2, with statistical and systematic uncertainties 0.2 and 0.3, respectively, and R<SUB>P/p</SUB> = 5.4 MJy sr<SUP>-1</SUP>, with uncertainties 0.2 and 0.3 MJy sr<SUP>-1</SUP>, respectively. Our estimate of R<SUB>S /V</SUB> is compatible with predictions based on a range of polarizing dust models that have been developed for the diffuse interstellar medium. This estimate provides new empirical validation of many of the common underlying assumptions of the models, but is not yet very discriminating among them. However, our estimate of R<SUB>P/p</SUB> is not compatible with predictions, which are too low by a factor of about 2.5. This more discriminating diagnostic, R<SUB>P/p</SUB>, indicates that changes to the optical properties in the models of the aligned grain population are required. These new diagnostics, together with the spectral dependence in the submillimetre from Planck,will be important for constraining and understanding the full complexity of the grain models, and for interpreting the Planck thermal dust polarization and refinement of the separation of this contamination of the cosmic microwave background. <P />Appendices are available in electronic form at <A href=\"http://www.aanda.org/10.1051/0004-6361/201424087/olm\">http://www.aanda.org</A>",
+   "bibtex": "@ARTICLE{2015A&A...576A.106P,\n       author = {{Planck Collaboration} and {Ade}, P.~A.~R. and {Aghanim}, N. and {Alina}, D. and {Aniano}, G. and {Armitage-Caplan}, C. and {Arnaud}, M. and {Ashdown}, M. and {Atrio-Barandela}, F. and {Aumont}, J.},\n        title = \"{Planck intermediate results. XXI. Comparison of polarized thermal emission from Galactic dust at 353 GHz with interstellar polarization in the visible}\",\n      journal = {\\aap},\n     keywords = {polarization, dust, extinction, ISM: clouds, ISM: magnetic fields, submillimeter: ISM, Astrophysics - Astrophysics of Galaxies},\n         year = 2015,\n        month = apr,\n       volume = {576},\n          eid = {A106},\n        pages = {A106},\n          doi = {10.1051/0004-6361/201424087},\narchivePrefix = {arXiv},\n       eprint = {1405.0873},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2015A&A...576A.106P},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2015A&A...576A.104P",
@@ -1981,21 +2140,27 @@
    "page": "A104",
    "doi": "10.1051/0004-6361/201424082",
    "arxiv": "1405.0871",
-   "citations": 442,
+   "citations": 438,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "This paper presents an overview of the polarized sky as seen by Planck HFI at 353 GHz, which is the most sensitive Planck channel for dust polarization. We construct and analyse maps of dust polarization fraction and polarization angle at 1° resolution, taking into account noise bias and possible systematic effects. The sensitivity of the Planck HFI polarization measurements allows for the first time a mapping of Galactic dust polarized emission on large scales, including low column density regions. We find that the maximum observed dust polarization fraction is high (p<SUB>max</SUB> = 19.8%), in particular in some regions of moderate hydrogen column density (N<SUB>H</SUB> &lt; 2 × 10<SUP>21</SUP> cm<SUP>-2</SUP>). The polarization fraction displays a large scatter at N<SUB>H</SUB> below a few 10<SUP>21</SUP> cm<SUP>-2</SUP>. There is a general decrease in the dust polarization fraction with increasing column density above N<SUB>H</SUB> ≃ 1 × 10<SUP>21</SUP> cm<SUP>-2</SUP> and in particular a sharp drop above N<SUB>H</SUB> ≃ 1.5 × 10<SUP>22</SUP> cm<SUP>-2</SUP>. We characterize the spatial structure of the polarization angle using the angle dispersion function. We find that the polarization angle is ordered over extended areas of several square degrees, separated by filamentary structures of high angle dispersion function. These appear as interfaces where the sky projection of the magnetic field changes abruptly without variations in the column density. The polarization fraction is found to be anti-correlated with the dispersion of polarization angles. These results suggest that, at the resolution of 1°, depolarization is due mainly to fluctuations in the magnetic field orientation along the line of sight, rather than to the loss of grain alignment in shielded regions. We also compare the polarization of thermal dust emission with that of synchrotron measured with Planck, low-frequency radio data, and Faraday rotation measurements toward extragalactic sources. These components bear resemblance along the Galactic plane and in some regions such as the Fan and North Polar Spur regions. The poor match observed in other regions shows, however, that dust, cosmic-ray electrons, and thermal electrons generally sample different parts of the line of sight. <P />Appendices are available in electronic form at <A href=\"http://www.aanda.org/10.1051/0004-6361/201424082/olm\">http://www.aanda.org</A>",
+   "bibtex": "@ARTICLE{2015A&A...576A.104P,\n       author = {{Planck Collaboration} and {Ade}, P.~A.~R. and {Aghanim}, N. and {Alina}, D. and {Alves}, M.~I.~R. and {Armitage-Caplan}, C. and {Arnaud}, M. and {Arzoumanian}, D. and {Ashdown}, M. and {Atrio-Barandela}, F.},\n        title = \"{Planck intermediate results. XIX. An overview of the polarized thermal emission from Galactic dust}\",\n      journal = {\\aap},\n     keywords = {ISM: general, dust, extinction, ISM: magnetic fields, ISM:, clouds, submillimeter: ISM, Astrophysics - Astrophysics of Galaxies},\n         year = 2015,\n        month = apr,\n       volume = {576},\n          eid = {A104},\n        pages = {A104},\n          doi = {10.1051/0004-6361/201424082},\narchivePrefix = {arXiv},\n       eprint = {1405.0871},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2015A&A...576A.104P},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
-   "bibcode": "2015A&A...576A.106P",
-   "title": "Planck intermediate results. XXI. Comparison of polarized thermal emission from Galactic dust at 353 GHz with interstellar polarization in the visible",
+   "bibcode": "2015A&A...576A.105P",
+   "title": "Planck intermediate results. XX. Comparison of polarized thermal emission from Galactic dust with simulations of MHD turbulence",
    "authors": [
     "Planck Collaboration",
     "Ade, P. A. R.",
     "Aghanim, N.",
     "Alina, D.",
+    "Alves, M. I. R.",
     "Aniano, G.",
     "Armitage-Caplan, C.",
     "Arnaud, M.",
+    "Arzoumanian, D.",
     "Ashdown, M.",
     "Atrio-Barandela, F.",
     "Aumont, J.",
@@ -2003,22 +2168,20 @@
     "Banday, A. J.",
     "Barreiro, R. B.",
     "Battaner, E.",
-    "Beichman, C.",
     "Benabed, K.",
     "Benoit-Lévy, A.",
     "Bernard, J.-P.",
     "Bersanelli, M.",
     "Bielewicz, P.",
-    "Bock, J. J.",
     "Bond, J. R.",
     "Borrill, J.",
     "Bouchet, F. R.",
     "Boulanger, F.",
+    "Bracco, A.",
     "Burigana, C.",
     "Cardoso, J.-F.",
     "Catalano, A.",
     "Chamballu, A.",
-    "Chary, R.-R.",
     "Chiang, H. C.",
     "Christensen, P. R.",
     "Colombi, S.",
@@ -2036,19 +2199,18 @@
     "de Rosa, A.",
     "de Zotti, G.",
     "Delabrouille, J.",
-    "Désert, F.-X.",
     "Dickinson, C.",
     "Diego, J. M.",
     "Donzelli, S.",
     "Doré, O.",
     "Douspis, M.",
-    "Dunkley, J.",
     "Dupac, X.",
     "Efstathiou, G.",
     "Enßlin, T. A.",
     "Eriksen, H. K.",
     "Falgarone, E.",
     "Fanciullo, L.",
+    "Ferrière, K.",
     "Finelli, F.",
     "Forni, O.",
     "Frailis, M.",
@@ -2086,7 +2248,6 @@
     "Kunz, M.",
     "Kurki-Suonio, H.",
     "Lagache, G.",
-    "Lähteenmäki, A.",
     "Lamarre, J.-M.",
     "Lasenby, A.",
     "Lawrence, C. R.",
@@ -2098,8 +2259,6 @@
     "López-Caniego, M.",
     "Lubin, P. M.",
     "Macías-Pérez, J. F.",
-    "Maffei, B.",
-    "Magalhães, A. M.",
     "Maino, D.",
     "Mandolesi, N.",
     "Maris, M.",
@@ -2130,9 +2289,9 @@
     "Oxborrow, C. A.",
     "Pagano, L.",
     "Pajot, F.",
-    "Paladini, R.",
     "Paoletti, D.",
     "Pasian, F.",
+    "Pelkonen, V.-M.",
     "Perdereau, O.",
     "Perotto, L.",
     "Perrotta, F.",
@@ -2140,7 +2299,6 @@
     "Piat, M.",
     "Pietrobon, D.",
     "Plaszczynski, S.",
-    "Poidevin, F.",
     "Pointecouteau, E.",
     "Polenta, G.",
     "Popa, L.",
@@ -2148,8 +2306,6 @@
     "Prunet, S.",
     "Puget, J.-L.",
     "Rachen, J. P.",
-    "Reach, W. T.",
-    "Rebolo, R.",
     "Reinecke, M.",
     "Remazeilles, M.",
     "Renault, C.",
@@ -2161,8 +2317,8 @@
     "Roudier, G.",
     "Rusholme, B.",
     "Sandri, M.",
-    "Savini, G.",
     "Scott, D.",
+    "Soler, J. D.",
     "Spencer, L. D.",
     "Stolyarov, V.",
     "Stompor, R.",
@@ -2190,35 +2346,16 @@
    "year": 2015,
    "pub": "Astronomy and Astrophysics",
    "volume": "576",
-   "page": "A106",
-   "doi": "10.1051/0004-6361/201424087",
-   "arxiv": "1405.0873",
-   "citations": 94,
+   "page": "A105",
+   "doi": "10.1051/0004-6361/201424086",
+   "arxiv": "1405.0872",
+   "citations": 143,
    "group": "Papers",
-   "doctype": "article"
-  },
-  {
-   "bibcode": "2015A&A...574A.135M",
-   "title": "Polarization measurement analysis. I. Impact of the full covariance matrix on polarization fraction and angle measurements",
-   "authors": [
-    "Montier, L.",
-    "Plaszczynski, S.",
-    "Levrier, F.",
-    "Tristram, M.",
-    "Alina, D.",
-    "Ristorcelli, I.",
-    "Bernard, J.-P."
-   ],
-   "alina_index": 4,
-   "year": 2015,
-   "pub": "Astronomy and Astrophysics",
-   "volume": "574",
-   "page": "A135",
-   "doi": "10.1051/0004-6361/201322271",
-   "arxiv": "1406.6536",
-   "citations": 58,
-   "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "Polarized emission observed by Planck HFI at 353 GHz towards a sample of nearby fields is presented, focusing on the statistics of polarization fractions p and angles ψ. The polarization fractions and column densities in these nearby fields are representative of the range of values obtained over the whole sky. We find that: (i) the largest polarization fractions are reached in the most diffuse fields; (ii) the maximum polarization fraction p<SUB>max</SUB> decreases with column density N<SUB>H</SUB> in the more opaque fields with N<SUB>H</SUB>&gt; 10<SUP>21</SUP> cm<SUP>-2</SUP>; and (iii) the polarization fraction along a given line of sight is correlated with the local spatial coherence of the polarization angle. These observations are compared to polarized emission maps computed in simulations of anisotropic magnetohydrodynamical turbulence in which we assume a uniform intrinsic polarization fraction of the dust grains. We find that an estimate of this parameter may be recovered from the maximum polarization fraction p<SUB>max</SUB> in diffuse regions where the magnetic field is ordered on large scales and perpendicular to the line of sight. This emphasizes the impact of anisotropies of the magnetic field on the emerging polarization signal. The decrease of the maximum polarization fraction with column density in nearby molecular clouds is well reproduced in the simulations, indicating that it is essentially due to the turbulent structure of the magnetic field: an accumulation of variously polarized structures along the line of sight leads to such an anti-correlation. In the simulations, polarization fractions are also found to anti-correlate with the angle dispersion function 𝒮. However, the dispersion of the polarization angle for a given polarization fraction is found to be larger in the simulations than in the observations, suggesting a shortcoming in the physical content of these numerical models. In summary, we find that the turbulent structure of the magnetic field is able to reproduce the main statistical properties of the dust polarization as observed in a variety of nearby clouds, dense cores excluded, and that the large-scale field orientation with respect to the line of sight plays a major role in the quantitative analysis of these statistical properties. <P />Appendices are available in electronic form at <A href=\"http://www.aanda.org/10.1051/0004-6361/201424086/olm\">http://www.aanda.org</A>",
+   "bibtex": "@ARTICLE{2015A&A...576A.105P,\n       author = {{Planck Collaboration} and {Ade}, P.~A.~R. and {Aghanim}, N. and {Alina}, D. and {Alves}, M.~I.~R. and {Aniano}, G. and {Armitage-Caplan}, C. and {Arnaud}, M. and {Arzoumanian}, D. and {Ashdown}, M.},\n        title = \"{Planck intermediate results. XX. Comparison of polarized thermal emission from Galactic dust with simulations of MHD turbulence}\",\n      journal = {\\aap},\n     keywords = {ISM: general, dust, extinction, ISM: magnetic fields, ISM:, clouds, infrared: ISM, submillimeter: ISM, Astrophysics - Astrophysics of Galaxies},\n         year = 2015,\n        month = apr,\n       volume = {576},\n          eid = {A105},\n        pages = {A105},\n          doi = {10.1051/0004-6361/201424086},\narchivePrefix = {arXiv},\n       eprint = {1405.0872},\n primaryClass = {astro-ph.GA},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2015A&A...576A.105P},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2015A&A...574A.136M",
@@ -2240,9 +2377,40 @@
    "page": "A136",
    "doi": "10.1051/0004-6361/201424451",
    "arxiv": "1407.0178",
-   "citations": 76,
+   "citations": 75,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "With the forthcoming release of high precision polarization measurements, such as from the Planck satellite, it becomes critical to evaluate the performance of estimators for the polarization fraction and angle. These two physical quantities suffer from a well-known bias in the presence of measurement noise, as described in Part I of this series. In this paper, Part II of the series, we explore the extent to which various estimators may correct the bias. Traditional frequentist estimators of the polarization fraction are compared with two recent estimators: one inspired by a Bayesian analysis and a second following an asymptotic method. We investigate the sensitivity of these estimators to the asymmetry of the covariance matrix, which may vary over large datasets. We present for the first time a comparison among polarization angle estimators, and evaluate the statistical bias on the angle that appears when the covariance matrix exhibits effective ellipticity. We also address the question of the accuracy of the polarization fraction and angle uncertainty estimators. The methods linked to the credible intervals and to the variance estimates are tested against the robust confidence interval method. From this pool of polarization fraction and angle estimators, we build recipes adapted to different uses: the best estimators to build a mask, to compute large maps of the polarization fraction and angle, and to deal with low signal-to-noise data. More generally, we show that the traditional estimators suffer from discontinuous distributions at a low signal-to-noise ratio, while the asymptotic and Bayesian methods do not. Attention is given to the shape of the output distribution of the estimators, which is compared with a Gaussian distribution. In this regard, the new asymptotic method presents the best performance, while the Bayesian output distribution is shown to be strongly asymmetric with a sharp cut at a low signal-to-noise ratio. Finally, we present an optimization of the estimator derived from the Bayesian analysis using adapted priors. <P />Appendices are available in electronic form at <A href=\"http://www.aanda.org/10.1051/0004-6361/201424451/olm\">http://www.aanda.org</A>",
+   "bibtex": "@ARTICLE{2015A&A...574A.136M,\n       author = {{Montier}, L. and {Plaszczynski}, S. and {Levrier}, F. and {Tristram}, M. and {Alina}, D. and {Ristorcelli}, I. and {Bernard}, J.-P. and {Guillet}, V.},\n        title = \"{Polarization measurement analysis. II. Best estimators of polarization fraction and angle}\",\n      journal = {\\aap},\n     keywords = {polarization, methods: data analysis, methods: statistical, Astrophysics - Instrumentation and Methods for Astrophysics},\n         year = 2015,\n        month = feb,\n       volume = {574},\n          eid = {A136},\n        pages = {A136},\n          doi = {10.1051/0004-6361/201424451},\narchivePrefix = {arXiv},\n       eprint = {1407.0178},\n primaryClass = {astro-ph.IM},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2015A&A...574A.136M},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
+  },
+  {
+   "bibcode": "2015A&A...574A.135M",
+   "title": "Polarization measurement analysis. I. Impact of the full covariance matrix on polarization fraction and angle measurements",
+   "authors": [
+    "Montier, L.",
+    "Plaszczynski, S.",
+    "Levrier, F.",
+    "Tristram, M.",
+    "Alina, D.",
+    "Ristorcelli, I.",
+    "Bernard, J.-P."
+   ],
+   "alina_index": 4,
+   "year": 2015,
+   "pub": "Astronomy and Astrophysics",
+   "volume": "574",
+   "page": "A135",
+   "doi": "10.1051/0004-6361/201322271",
+   "arxiv": "1406.6536",
+   "citations": 57,
+   "group": "Papers",
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "With the forthcoming release of high precision polarization measurements, such as from the Planck satellite, the metrology of polarization needs to be improved. In particular, it is important to have full knowledge of the noise properties when estimating polarization fraction and polarization angle, which suffer from well-known biases. While strong simplifying assumptions have usually been made in polarization analysis, we present a method for including the full covariance matrix of the Stokes parameters in estimates of the distributions of the polarization fraction and angle. We thereby quantified the impact of the noise properties on the biases in the observational quantities and derived analytical expressions for the probability density functions of these quantities that take the full complexity of the covariance matrix into account, including the Stokes I intensity components. We performed Monte Carlo simulations to explore the impact of the noise properties on the statistical variance and bias of the polarization fraction and angle. We show that for low variations (&lt; 10%) of the effective ellipticity between the Q and U components around the symmetrical case the covariance matrix may be simplified as is usually done, with a negligible impact on the bias. For S/Ns with intensity lower than 10, the uncertainty on the total intensity is shown to drastically increase the uncertainty of the polarization fraction but not the relative bias of the polarization fraction, while a 10% correlation between the intensity and the polarized components does not significantly affect the bias of the polarization fraction. We compare estimates of the uncertainties that affect polarization measurements, addressing limitations of the estimates of the S/N, and we show how to build conservative confidence intervals for polarization fraction and angle simultaneously. This study, which is the first in a set of papers dedicated to analysing polarization measurements, focuses on the basic polarization fraction and angle measurements. It covers the noise regime where the complexity of the covariance matrix may be largely neglected in order to perform further analysis. A companion paper focuses on the best estimators of the polarization fraction and angle and on their associated uncertainties. <P />Appendices are available in electronic form at <A href=\"http://www.aanda.org/10.1051/0004-6361/201322271/olm\">http://www.aanda.org</A>",
+   "bibtex": "@ARTICLE{2015A&A...574A.135M,\n       author = {{Montier}, L. and {Plaszczynski}, S. and {Levrier}, F. and {Tristram}, M. and {Alina}, D. and {Ristorcelli}, I. and {Bernard}, J.-P.},\n        title = \"{Polarization measurement analysis. I. Impact of the full covariance matrix on polarization fraction and angle measurements}\",\n      journal = {\\aap},\n     keywords = {polarization, methods: statistical, methods: data analysis, techniques: polarimetric, Astrophysics - Instrumentation and Methods for Astrophysics, Astrophysics - Cosmology and Nongalactic Astrophysics},\n         year = 2015,\n        month = feb,\n       volume = {574},\n          eid = {A135},\n        pages = {A135},\n          doi = {10.1051/0004-6361/201322271},\narchivePrefix = {arXiv},\n       eprint = {1406.6536},\n primaryClass = {astro-ph.IM},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2015A&A...574A.135M},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2015PhDT.......311A",
@@ -2259,7 +2427,11 @@
    "arxiv": null,
    "citations": 0,
    "group": "Theses",
-   "doctype": "phdthesis"
+   "doctype": "phdthesis",
+   "led": true,
+   "role": "first",
+   "abstract": "",
+   "bibtex": "@PHDTHESIS{2015PhDT.......311A,\n       author = {{Alina}, Dana},\n        title = \"{Analysis of the interstellar dust polarized emission with the Planck Satellite Survey data}\",\n     keywords = {ESA Planck},\n       school = {IRAP, Toulouse},\n         year = 2015,\n        month = jan,\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2015PhDT.......311A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2014cosp...40E..65A",
@@ -2276,7 +2448,11 @@
    "arxiv": null,
    "citations": 0,
    "group": "Proceedings and talks",
-   "doctype": "abstract"
+   "doctype": "abstract",
+   "led": true,
+   "role": "first",
+   "abstract": "I propose to present recent results from Planck Galactic polarization data in the wavelength range dominated by the interstellar dust, which is one of the main foregrounds for the studies of CMB polarization. I will discuss specific methods elaborated to handle these new, high-sensitivity full-sky coverage data, starting from de-biasing polarization parameters through the comparison with the polarization of starlight in the visible domain to the MHD simulations for the molecular clouds. I will also present some of the results, that such methods allowed to derive from the Planck data, on the structure of the Galactic magnetic field, all-sky features discovered in sub-mm polarization and physical properties of the dust. In the case where the corresponding Planck papers are not published to the date of the Assembly, I will review what will be possible in this domain with Planck polarization data and go in to more details about the specific methods.",
+   "bibtex": "@INPROCEEDINGS{2014cosp...40E..65A,\n       author = {{Alina}, Dana},\n        title = \"{Galactic dust polarization with Planck: methods and first results}\",\n    booktitle = {40th COSPAR Scientific Assembly},\n         year = 2014,\n       volume = {40},\n        month = jan,\n          eid = {H0.2-0006-14},\n        pages = {H0.2-0006-14},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2014cosp...40E..65A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2012AIPC.1429...82A",
@@ -2300,7 +2476,11 @@
    "arxiv": "1107.5639",
    "citations": 16,
    "group": "Proceedings and talks",
-   "doctype": "inproceedings"
+   "doctype": "inproceedings",
+   "led": true,
+   "role": "first",
+   "abstract": "We present new spectropolarimetric observations of the normal A-type star Vega, obtained during the summer of 2010 with NARVAL at Télescope Bernard Lyot (Pic du Midi Observatory). This new time-series is constituted of 615 spectra collected over 6 different nights. We use the Least-Square-Deconvolution technique to compute, from each spectrum, a mean line profile with a signal-to-noise ratio close to 20,000. After averaging all 615 polarized observations, we detect a circularly polarized Zeeman signature consistent in shape and amplitude with the signatures previously reported from our observations of 2008 and 2009. The surface magnetic geometry of the star, reconstructed using the technique of Zeeman-Doppler Imaging, agrees with the maps obtained in 2008 and 2009, showing that most recognizable features of the photospheric field of Vega are only weakly distorted by large-scale surface flows (differential rotation or meridional circulation).",
+   "bibtex": "@INPROCEEDINGS{2012AIPC.1429...82A,\n       author = {{Alina}, D. and {Petit}, P. and {Ligni{\\`e}res}, F. and {Wade}, G.~A. and {Fares}, R. and {Auri{\\`e}re}, M. and {B{\\\"o}hm}, T. and {Carfantan}, H.},\n        title = \"{Long-term magnetic field stability of Vega}\",\n     keywords = {Astrophysics - Solar and Stellar Astrophysics},\n    booktitle = {Stellar Polarimetry: from Birth to Death},\n         year = 2012,\n       editor = {{Hoffman}, Jennifer L. and {Bjorkman}, Jon and {Whitney}, Barbara},\n       series = {American Institute of Physics Conference Series},\n       volume = {1429},\n        month = may,\n    publisher = {AIP},\n        pages = {82-85},\n          doi = {10.1063/1.3701905},\narchivePrefix = {arXiv},\n       eprint = {1107.5639},\n primaryClass = {astro-ph.SR},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2012AIPC.1429...82A},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2011AN....332..943P",
@@ -2323,7 +2503,11 @@
    "arxiv": "1109.6888",
    "citations": 10,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "We present the result of a highly sensitive spectropolarimetric study dedicated to intermediate-mass stars. We report the detection of sub-gauss surface magnetic fields on the normal, rapidly-rotating A-type star Vega and on the moderately-rotating Am star Sirius A. These magnetic detections constitute the first evidence that tepid stars that do not belong to the class of Ap/Bp stars can also host magnetized photospheres, suggesting that a significant fraction of stars in this mass regime are magnetic. We present here the observational clues gathered so far to progress towards understanding the physical processes at the origin of this newly identified Vega-like magnetism. <P />Based on observations obtained at the Bernard Lyot Telescope (TBL, Pic du Midi, France) of the Midi-Pyrénées Observatory, which is operated by the Institut National des Sciences de l'Univers of the Centre National de la Recherche Scientifique of France, and at the Canada-France-Hawaii Telescope (CFHT) which is operated by the National Research Council of Canada, the Institut National des Sciences de lï¿½nivers of the Centre National de la Recherche Scientifique of France, and the University of Hawaii.",
+   "bibtex": "@ARTICLE{2011AN....332..943P,\n       author = {{Petit}, P. and {Ligni{\\`e}res}, F. and {Wade}, G.~A. and {Auri{\\`e}re}, M. and {Alina}, D. and {B{\\\"o}hm}, T. and {Oza}, A.},\n        title = \"{Weak magnetic fields of intermediate-mass stars}\",\n      journal = {Astronomische Nachrichten},\n     keywords = {stars: magnetic fields, techniques: polarimetric, Astrophysics - Solar and Stellar Astrophysics},\n         year = 2011,\n        month = dec,\n       volume = {332},\n        pages = {943},\n          doi = {10.1002/asna.201111608},\narchivePrefix = {arXiv},\n       eprint = {1109.6888},\n primaryClass = {astro-ph.SR},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2011AN....332..943P},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   },
   {
    "bibcode": "2011A&A...532L..13P",
@@ -2348,9 +2532,13 @@
    "page": "L13",
    "doi": "10.1051/0004-6361/201117573",
    "arxiv": "1106.5363",
-   "citations": 119,
+   "citations": 118,
    "group": "Papers",
-   "doctype": "article"
+   "doctype": "article",
+   "led": false,
+   "role": "collab",
+   "abstract": "<BR /> Aims: We aim at a highly sensitive search for weak magnetic fields in main sequence stars of intermediate mass, by scanning classes of stars with no previously reported magnetic members. After detecting a weak magnetic field on the normal, rapidly rotating A-type star Vega, we concentrate here on the bright star Sirius A, taken as a prototypical, chemically peculiar, moderately rotating Am star. <BR /> Methods: We employed the NARVAL and ESPaDOnS high-resolution spectropolarimeters to collect 442 circularly polarized spectra, complemented by 60 linearly polarized spectra. Using a list of about 1100 photospheric spectral lines, we computed a cross correlation line profile from every spectrum, leading to a signal-to-noise ratio of up to 30 000 in the polarized profile. <BR /> Results: We report the repeated detection of circularly polarized, highly asymmetric signatures in the line profiles, interpreted as Zeeman signatures of a large-scale photospheric magnetic field, with a line-of-sight component equal to 0.2 ± 0.1 G. <BR /> Conclusions: This is the first polarimetric detection of a surface magnetic field on an Am star. Using rough estimates of the physical properties of the upper layers of Sirius A, we suggest that a dynamo operating in the shallow convective envelope cannot account for the field strength reported here. Together with the magnetic field of Vega, this result confirms that a new class of magnetic objects exists among non Ap/Bp intermediate-mass stars, and it may indicate that a significant fraction of tepid stars are magnetic. <P />Based on observations obtained at the Bernard Lyot Telescope (TBL, Pic du Midi, France) of the Midi-Pyrénées Observatory, which is operated by the Institut National des Sciences de l'Univers of the Centre National de la Recherche Scientifique of France, and at the Canada-France-Hawaii Telescope (CFHT) which is operated by the National Research Council of Canada, the Institut National des Sciences de l'Univers of the Centre National de la Recherche Scientifique of France, and the University of Hawaii.",
+   "bibtex": "@ARTICLE{2011A&A...532L..13P,\n       author = {{Petit}, P. and {Ligni{\\`e}res}, F. and {Auri{\\`e}re}, M. and {Wade}, G.~A. and {Alina}, D. and {Ballot}, J. and {B{\\\"o}hm}, T. and {Jouve}, L. and {Oza}, A. and {Paletou}, F.},\n        title = \"{Detection of a weak surface magnetic field on Sirius A: are all tepid stars magnetic?}\",\n      journal = {\\aap},\n     keywords = {stars: atmospheres, stars: magnetic field, stars: rotation, stars: individual: Sirius A, Astrophysics - Solar and Stellar Astrophysics},\n         year = 2011,\n        month = aug,\n       volume = {532},\n          eid = {L13},\n        pages = {L13},\n          doi = {10.1051/0004-6361/201117573},\narchivePrefix = {arXiv},\n       eprint = {1106.5363},\n primaryClass = {astro-ph.SR},\n       adsurl = {https://ui.adsabs.harvard.edu/abs/2011A&A...532L..13P},\n      adsnote = {Provided by the SAO/NASA Astrophysics Data System}\n}"
   }
  ]
 }

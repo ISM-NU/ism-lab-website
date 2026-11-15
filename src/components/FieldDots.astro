@@ -1,19 +1,28 @@
 ---
 // Dot grid over the LMC. Near the pointer each dot becomes a dash along the
-// plane-of-sky magnetic field measured by Planck at 353 GHz.
+// plane-of-sky field orientation inferred from Planck 353 GHz polarization
+// (angle + 90 deg, about 20' effective resolution, foreground included).
+import maps from "../data/maps.json";
+import MapFrame from "./MapFrame.astro";
+const snr = maps.snr;
+const lmc = maps.snr_stats.lmc8;
+// Polarized S/N on the 96 x 96 field grid (scripts/map_meta.py), tenths. Dashes
+// fade out below S/N 3 and the readout shows the value.
 ---
 
 <section class="sec" aria-labelledby="field-h">
   <div class="gut max">
     <div class="head">
-      <span class="label red">Relation 03 &middot; Field</span>
-      <h2 class="brut" id="field-h" data-scramble>Point anywhere. The field answers.</h2>
-      <p>A grid of dots over the LMC. Near the cursor each dot turns into a dash along the measured magnetic field, the way a polarimeter sees it.</p>
+      <h2 class="brut" id="field-h" data-scramble>The LMC field under the cursor</h2>
+      <p>A grid of dots over the LMC. Near the cursor each dot turns into a dash along the plane-of-sky field orientation, inferred from polarized dust emission.</p>
     </div>
   </div>
   <div class="dotfield" id="dotfield">
-    <canvas id="dotCanvas" role="img" aria-label="Dot grid that shows the LMC magnetic field direction near the pointer"></canvas>
-    <span class="label">Planck 353 GHz &middot; plane-of-sky field &middot; LMC 12&deg; &times; 12&deg;</span>
+    <MapFrame ids={["dotfield"]} box="abs" fill inset="62px">
+      <canvas id="dotCanvas" role="img" aria-label="Dot grid that shows the LMC magnetic field direction near the pointer"></canvas>
+    </MapFrame>
+    <span class="label">Planck 353 GHz &middot; field PA &middot; foreground not removed &middot; S/N &gt; 3 over {Math.round(lmc.frac_gt3 * 100)}% of the grid</span>
+    <script type="application/json" id="snrData" set:html={JSON.stringify(snr)}></script>
   </div>
 </section>
 
@@ -32,7 +41,11 @@
   const canvas = document.getElementById("dotCanvas") as HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D, w = 0, h = 0, visible = false, dust: HTMLImageElement | null = null;
   const m = { x: 0, y: 0, t: -1e9, has: false };
-  const N = sky.field_n, F = sky.field;
+  // F holds the field as an angle on the image grid (what the dashes need);
+  // T is the grid angle of local north, so F - T is the position angle.
+  const N = sky.field_n, F = sky.field, TN = sky.tilt_n, T = sky.north_tilt;
+  const SN = JSON.parse(document.getElementById("snrData")!.textContent!) as { n: number; scale: number; min: number; grid: number[] };
+  const snrAt = (u: number, v: number) => SN.grid[clamp(Math.floor(v * SN.n), 0, SN.n - 1) * SN.n + clamp(Math.floor(u * SN.n), 0, SN.n - 1)] / SN.scale;
 
   function size() { w = box.clientWidth; h = box.clientHeight; ctx = canvasFit(canvas, w, h); }
   function setM(e: PointerEvent) { const r = box.getBoundingClientRect(); m.x = e.clientX - r.left; m.y = e.clientY - r.top; m.has = true; m.t = performance.now(); }
@@ -68,7 +81,11 @@
     }
     for (let y = step / 2; y < h; y += step) {
       for (let x = step / 2; x < w; x += step) {
-        const q = clamp(1 - Math.hypot(x - mx, y - my) / R, 0, 1);
+        const q0 = clamp(1 - Math.hypot(x - mx, y - my) / R, 0, 1);
+        if (q0 <= 0) { ctx.fillStyle = "rgba(243,243,239,.22)"; ctx.fillRect(x - 1, y - 1, 2, 2); continue; }
+        // Below S/N 3 the direction is not trusted: the dash shrinks back to a dot (full strength at 3, none at 1).
+        const sn = snrAt((x - ox) / side, (y - oy) / side);
+        const q = q0 * clamp((sn - 1) / (SN.min - 1), 0, 1);
         if (q <= 0) { ctx.fillStyle = "rgba(243,243,239,.22)"; ctx.fillRect(x - 1, y - 1, 2, 2); continue; }
         const a = fieldAt((x - ox) / side, (y - oy) / side), L = 2 + q * step * 0.9;
         const ex = (-Math.sin(a) * L) / 2, ey = (-Math.cos(a) * L) / 2;
@@ -84,10 +101,12 @@
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.arc(mx, my, R, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(mx - 10, my); ctx.lineTo(mx + 10, my); ctx.moveTo(mx, my - 10); ctx.lineTo(mx, my + 10); ctx.stroke();
-    let a0 = (fieldAt((mx - ox) / side, (my - oy) / side) * 180) / Math.PI;
+    const tu = (mx - ox) / side, tv = (my - oy) / side;
+    const tilt = T[clamp(Math.floor(tv * TN), 0, TN - 1) * TN + clamp(Math.floor(tu * TN), 0, TN - 1)];
+    let a0 = ((fieldAt(tu, tv) - tilt) * 180) / Math.PI;
     a0 = ((a0 % 180) + 180) % 180;
     ctx.fillStyle = "#f3f3ef";
     ctx.font = "600 10px 'JetBrains Mono Variable', monospace";
-    ctx.fillText(`B PA ${a0.toFixed(0)}°`, Math.min(mx + R * 0.72 + 8, w - 80), Math.max(my - R * 0.72, 16));
+    ctx.fillText(`B PA ${a0.toFixed(0)}° · S/N ${snrAt(tu, tv).toFixed(1)}`, Math.min(mx + R * 0.72 + 8, w - 130), Math.max(my - R * 0.72, 16));
   });
 </script>

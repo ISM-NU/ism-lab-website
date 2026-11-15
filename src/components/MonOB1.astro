@@ -1,0 +1,149 @@
+---
+// Mon OB1 East after Alina et al. 2022 (2022A&A...658A..90A): Planck field
+// segments over the multi-band composite, the paper's regions, and its Table 1.
+// Data from src/data/mon-ob1.json (scripts/render_mon.py). The segments are
+// redrawn from Planck PR4 for this site; the paper used PR3 at the same 7'.
+import mon from "../data/mon-ob1.json";
+
+const ads = "https://ui.adsabs.harvard.edu/abs/2022A%26A...658A..90A";
+const half = (mon.seg_len / 2) * 0.8; // segments shorter than the cell so the grid reads as samples
+const seg = (s: { x: number; y: number; a: number }) => {
+  const r = (s.a * Math.PI) / 180, dx = -Math.sin(r) * half, dy = -Math.cos(r) * half;
+  return `M${(s.x - dx).toFixed(1)},${(s.y - dy).toFixed(1)}L${(s.x + dx).toFixed(1)},${(s.y + dy).toFixed(1)}`;
+};
+type R = (typeof mon.regions)[number] & { b?: string; lam?: string; ratio?: string };
+const regions = mon.regions as R[];
+const byId = Object.fromEntries(regions.map((r) => [r.id, r]));
+const path = (pts: number[][]) => "M" + pts.map((p) => `${p[0]},${p[1]}`).join("L") + "Z";
+const vcs = ["north_main", "north_western", "north_eastern"].map((k) => byId[k]);
+const shock = byId["shock_north"];
+const rects = ["rect_A", "rect_B"].map((k) => byId[k]);
+
+// Label chips: short codes placed beside each outline (viewBox units), so no
+// outline or segment runs through the text. The table names them in full.
+const bbox = (pts: number[][]) => {
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+};
+const place: Record<string, (b: ReturnType<typeof bbox>) => [number, number]> = {
+  north_main: (b) => [b.x0 - 34, (b.y0 + b.y1) / 2],
+  north_western: (b) => [b.x1 + 30, (b.y0 + b.y1) / 2 + 10],
+  north_eastern: (b) => [(b.x0 + b.x1) / 2 - 40, b.y0 - 26],
+  shock_north: (b) => [b.x1 + 40, b.y0 + 10],
+  rect_A: (b) => [Math.max(b.x0 + 120, 40), Math.max(b.y0 + 120, 40)],
+  rect_B: (b) => [Math.max(b.x0 + 60, 30), b.y1 - 20],
+};
+const code: Record<string, string> = { north_main: "NM", north_western: "NW", north_eastern: "NE", shock_north: "Shock", rect_A: "A", rect_B: "B" };
+const labels = regions.map((r) => {
+  const [x, y] = place[r.id](bbox(r.points));
+  return { id: r.id, x: Math.min(Math.max(x, 30), 970), y: Math.min(Math.max(y, 30), 970), text: code[r.id] };
+});
+
+// Furniture: equatorial compass (the paper's directions are in RA/Dec; the
+// image is Galactic, b up), a 5 pc bar at 723 pc, and the 7' beam.
+const fovArcmin = mon.fov_deg * 60;
+const pcBar = 5;
+const barLen = ((pcBar / mon.dist_pc) * (180 / Math.PI) * 60 / fovArcmin) * 1000;
+const cx = 925, cy = 575, L = 38;
+// Segments under the compass are left out rather than covered by a box.
+const segs = mon.segments.filter((s) => Math.hypot(s.x - cx, s.y - cy) > L + 30);
+const N = mon.compass.N, E = mon.compass.E;
+---
+
+<div class="mon">
+  <figure class="map">
+    <div class="pic">
+      <img src={mon.image_small} srcset={`${mon.image_small} 960w, ${mon.image} 1920w`} sizes="(min-width: 1100px) 760px, 100vw" alt="Multi-band image of Monoceros OB1 East: Herschel 250 µm dust in red, WISE 12 µm in teal, H-alpha in blue" loading="lazy" decoding="async" />
+      <svg viewBox="0 0 1000 1000" role="img" aria-label="Planck magnetic field segments, the regions studied by Alina et al. 2022, and the cluster NGC 2264">
+        <defs><clipPath id="mon-clip"><rect width="1000" height="1000" /></clipPath></defs>
+        <g clip-path="url(#mon-clip)">
+          <g class="segs">{segs.map((s) => <path d={seg(s)} />)}</g>
+          <g class="rect">{rects.map((r) => <path d={path(r.points)} />)}</g>
+          <g class="vcs">{vcs.map((r) => <path d={path(r.points)} />)}</g>
+          <path class="shock" d={path(shock.points)} />
+          <circle class="ngc" cx={mon.ngc2264[0]} cy={mon.ngc2264[1]} r="9" />
+        </g>
+        <g class="fur">
+          <path d={`M${cx},${cy}l${(N[0] * L).toFixed(1)},${(N[1] * L).toFixed(1)}M${cx},${cy}l${(E[0] * L).toFixed(1)},${(E[1] * L).toFixed(1)}`} />
+        </g>
+      </svg>
+      {labels.map((l) => <span class:list={["lab", l.id === "shock_north" && "red"]} style={`left:${l.x / 10}%;top:${l.y / 10}%`}>{l.text}</span>)}
+      <span class="lab cmp" style={`left:${(cx + N[0] * (L + 16)) / 10}%;top:${(cy + N[1] * (L + 16)) / 10}%`}>N</span>
+      <span class="lab cmp" style={`left:${(cx + E[0] * (L + 16)) / 10}%;top:${(cy + E[1] * (L + 16)) / 10}%`}>E</span>
+      <span class="lab ngcl" style={`left:${mon.ngc2264[0] / 10 + 2.6}%;top:${mon.ngc2264[1] / 10 + 2.2}%`}>NGC 2264</span>
+      <div class="mfoot">
+        <span class="beam"><svg viewBox="0 0 10 10" style={`width:calc(100cqw * ${((2 * mon.beam_r) / 1000).toFixed(4)})`} aria-hidden="true"><circle cx="5" cy="5" r="4.6" /></svg>{mon.fwhm_arcmin}′ beam</span>
+        <span class="bar"><i style={`width:calc(100cqw * ${(barLen / 1000).toFixed(4)})`}></i>{pcBar} pc</span>
+      </div>
+    </div>
+    <figcaption class="cap">
+      Galactic coordinates, b up and l increasing to the left, 3° wide around l = 202.9°, b = 1.9°; the compass shows equatorial north and east, which the paper's region names follow. White segments: plane-of-sky field from Planck PR4 353 GHz, smoothed to 7′ as in the paper and drawn one per beam where the angle uncertainty is below 10°, one of the paper's two cuts (it also required a polarization signal to noise of at least 2). Outlines are traced from the paper's figures to about 1′: white, the velocity-coherent structures of the northern filaments (Fig. 6); red, the candidate shock between them (Fig. 9b); grey, rectangles A and B in the south (Fig. 12). The paper used Planck PR3; these segments are recomputed here.
+    </figcaption>
+  </figure>
+
+  <aside class="panel" aria-label="Field strength and mass-to-flux ratio, Alina et al. 2022">
+    <h3 class="ph">Northern filaments</h3>
+    <table>
+      <thead><tr><th scope="col">Region</th><th scope="col">B<sub>POS</sub> (µG)</th><th scope="col">λ</th></tr></thead>
+      <tbody>
+        {vcs.map((r) => (
+          <tr><th scope="row"><span class="code">{code[r.id]}</span> {r.name}</th><td>{r.b}</td><td>{r.lam}</td></tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="how">
+      Davis-Chandrasekhar-Fermi strengths with the Houde et al. 2009 dispersion function, for an assumed density of 10<sup>2</sup> cm<sup>-3</sup>; the paper calls them tentative. λ is the observed mass-to-flux ratio over the critical one, so λ &gt; 1 means the field alone cannot hold the gas against gravity. NW has the largest turbulent part of the field, ⟨B<sub>t</sub><sup>2</sup>⟩/⟨B<sub>0</sub><sup>2</sup>⟩ = 0.67 against 0.14 and 0.11. Table 1 of <a href={ads}>Alina et al. 2022</a>.
+    </p>
+    <dl class="nums">
+      <div><dt><span class="code red">Shock</span></dt><dd>Velocity gradients of <sup>12</sup>CO perpendicular to both the field and the intensity gradients, between two filaments thought to be colliding.</dd></div>
+      <div><dt><span class="code">A</span></dt><dd>Diffuse gas elongated along the field with a velocity gradient towards the cloud: a candidate inflow.</dd></div>
+      <div><dt><span class="code">B</span></dt><dd>Velocity and intensity gradients almost perpendicular, velocity gradients agreeing with Planck: a candidate shock.</dd></div>
+    </dl>
+  </aside>
+</div>
+
+<style>
+  .mon { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); gap: 28px; align-items: start; margin-top: 40px; }
+  .map { margin: 0; display: grid; gap: 14px; }
+  .pic { position: relative; aspect-ratio: 1; background: var(--panel); overflow: hidden; container-type: inline-size; }
+  .pic > img, .pic > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .segs path { stroke: rgba(243, 243, 239, 0.62); stroke-width: 1.2; stroke-linecap: round; fill: none; vector-effect: non-scaling-stroke; }
+  .vcs path { stroke: var(--ink); stroke-width: 2; fill: none; vector-effect: non-scaling-stroke; }
+  .shock { stroke: var(--signal); stroke-width: 2; stroke-dasharray: 6 4; fill: none; vector-effect: non-scaling-stroke; }
+  .rect path { stroke: #b5b5b0; stroke-width: 1.6; stroke-dasharray: 4 4; fill: none; vector-effect: non-scaling-stroke; }
+  .ngc { fill: none; stroke: var(--ink); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+  .fur path { stroke: var(--ink); stroke-width: 1.6; fill: none; vector-effect: non-scaling-stroke; }
+  .lab { position: absolute; transform: translate(-50%, -50%); padding: 2px 5px; background: rgba(0, 0, 0, 0.78); font: 600 11px/1.2 var(--mono); letter-spacing: 0.06em; color: var(--ink); white-space: nowrap; pointer-events: none; }
+  .lab.red { color: var(--signal); }
+  .lab.ngcl { transform: none; font-weight: 500; }
+  .lab.cmp { background: none; padding: 0; }
+  .mfoot { position: absolute; left: 3%; right: 3%; bottom: 3%; display: flex; justify-content: space-between; align-items: end; gap: 12px; pointer-events: none; }
+  .mfoot > span { display: inline-flex; align-items: center; gap: 8px; padding: 3px 6px; background: rgba(0, 0, 0, 0.72); font: 500 11px/1.2 var(--mono); color: var(--ink); }
+  .beam svg { min-width: 8px; aspect-ratio: 1; height: auto; overflow: visible; }
+  .beam circle { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .bar { flex-direction: column; align-items: stretch !important; gap: 4px !important; text-align: right; min-width: 3em; }
+  .bar i { display: block; height: 5px; border: 1px solid var(--ink); border-top: 0; align-self: flex-end; }
+  .cap { font-size: 14px; color: var(--grey); max-width: 70ch; margin: 0; }
+  .panel { display: grid; gap: 14px; border: 1px solid var(--hair); padding: 16px; }
+  .ph { margin: 0; font: 700 20px/1.1 var(--brut); }
+  table { border-collapse: collapse; width: 100%; font: 500 12px/1.4 var(--mono); }
+  th, td { text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--hair); vertical-align: baseline; }
+  thead th { font-weight: 600; color: var(--grey); font-size: 11px; letter-spacing: 0.06em; }
+  tbody th { font-family: var(--brut); font-weight: 600; font-size: 14px; white-space: nowrap; }
+  td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .code { display: inline-block; min-width: 2em; font: 600 11px/1.2 var(--mono); letter-spacing: 0.06em; color: var(--ink); }
+  .code.red { color: var(--signal); }
+  .how { margin: 0; font-size: 13px; line-height: 1.5; color: var(--grey); }
+  .nums { margin: 0; display: grid; gap: 10px; }
+  .nums div { display: grid; grid-template-columns: 3.4em minmax(0, 1fr); gap: 8px; }
+  .nums dt { margin: 0; }
+  .nums dd { margin: 0; font-size: 13px; line-height: 1.45; }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+  @media (max-width: 960px) {
+    .mon { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .lab { font-size: 10px; padding: 1px 4px; }
+    .mfoot > span { font-size: 10px; }
+  }
+</style>

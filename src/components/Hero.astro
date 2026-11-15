@@ -6,17 +6,21 @@ const bars = sky.hi_spectrum;
 const [v0, v1] = sky.hi_range_kms;
 ---
 
-<header class="hero" id="hero">
-  <canvas id="heroCanvas" role="img" aria-label="James Webb Space Telescope image of the Tarantula Nebula in the Large Magellanic Cloud, with detected sources marked"></canvas>
+<header class="hero" id="hero" data-console>
+  <canvas id="heroCanvas" role="img" aria-label="James Webb Space Telescope image of the Tarantula Nebula in the Large Magellanic Cloud, with the brightest blobs in the press image boxed"></canvas>
   <noscript><img src="/webb/tarantula-1920.webp" alt="" class="hero-fallback" /></noscript>
   <div class="dets" id="heroDets"></div>
   <div class="hero-copy gut">
     <h1 class="brut">Fields between<br />the stars</h1>
+    <div class="who">
+      <p>The interstellar medium group at Nazarbayev University measures magnetic fields in interstellar dust and gas, from Galactic molecular clouds to the Large Magellanic Cloud.</p>
+      <p class="links"><a href="/research">Research</a><a href="/publications">Publications</a><a href="/join">Join or visit</a></p>
+    </div>
     <div class="hero-meta">
-      <p class="log" id="log">&gt; target NGC 2070 / 30 Doradus / LMC<br />&gt; NIRCam &middot; 161 000 ly<br />&gt; sources found <b>70</b><br />&gt; lock R136</p>
+      <p class="log" id="log">&gt; target NGC 2070 &middot; 30 Doradus &middot; LMC<br />&gt; JWST NIRCam &middot; ESA/Webb weic2212a<br />&gt; brightest blobs in the press image <b>70</b><br />&gt; centre R136 &middot; 162 000 ly</p>
       <div class="barcode-wrap">
         <div class="barcode" aria-hidden="true">{bars.map((v) => <i style={`height:${Math.max(2, v * 100)}%;opacity:${0.35 + v * 0.65}`}></i>)}</div>
-        <span class="label">LMC &middot; H I spectrum &middot; {v0}&ndash;{v1} km/s</span>
+        <span class="label">GASS H I &middot; LMC 12&deg; field &middot; v<sub>LSR</sub> {v0}&ndash;{v1} km/s</span>
       </div>
     </div>
   </div>
@@ -28,10 +32,18 @@ const [v0, v1] = sky.hi_range_kms;
   /* Darken the strip under the fixed nav so its difference-blended text stays legible over bright nebula. */
   .hero::after { content: ""; position: absolute; inset: 0 0 auto; height: 110px; background: linear-gradient(rgba(0, 0, 0, 0.6), transparent); pointer-events: none; }
   .dets { position: absolute; inset: 0; pointer-events: none; }
-  .hero-copy { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 18px; pointer-events: none; }
+  .hero-copy { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 22px; pointer-events: none; z-index: 1; }
+  /* Readability scrim under the copy: the nebula is brightest at the bottom left. */
+  .hero-copy::before { content: ""; position: absolute; inset: -30% 0 0; background: linear-gradient(transparent, rgba(0, 0, 0, 0.55) 45%, rgba(0, 0, 0, 0.75)); z-index: -1; }
+  .who { display: grid; gap: 14px; max-width: 58ch; pointer-events: auto; }
+  .who p { font-size: clamp(16px, 0.9rem + 0.35vw, 19px); line-height: 1.45; text-shadow: 0 0 12px #000; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px 22px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; }
+  .links a { padding: 12px 0; text-decoration: underline; text-decoration-color: var(--signal); text-underline-offset: 6px; }
   h1 { font-size: clamp(3.2rem, 1rem + 11.5vw, 13rem); text-shadow: 0 0 40px rgba(0, 0, 0, 0.55); }
   .hero-meta { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: end; justify-content: space-between; }
-  .log { font: 400 11px/1.6 var(--mono); text-shadow: 0 0 8px #000; min-height: 6.4em; }
+  .log { font: 400 12px/1.6 var(--mono); text-shadow: 0 0 8px #000; min-height: 6.4em; }
+  .barcode-wrap sub { font-size: 0.75em; vertical-align: -0.2em; text-transform: none; }
+  @media (max-width: 640px) { .log { display: none; } .who p { font-size: 16px; } }
   .log :global(b) { color: var(--signal); font-weight: 600; }
   .barcode-wrap { display: grid; gap: 6px; justify-items: end; }
   .barcode-wrap .label { color: var(--ink); text-shadow: 0 0 8px #000; }
@@ -89,11 +101,9 @@ const [v0, v1] = sky.hi_range_kms;
     T.src.forEach((n, i) => {
       const b = document.createElement("div");
       b.className = "det";
-      if (i < (hero.clientWidth < 700 ? 7 : 16)) {
-        const s = document.createElement("span");
-        s.textContent = `OBJ.${(i + 1).toString(16).toUpperCase().padStart(3, "0")} ${n[3].toFixed(2)}`;
-        b.appendChild(s);
-      }
+      // Boxes only: the finder's score is a brightness rank on the 8-bit press
+      // image, not a measurement, so it is not printed.
+      if (i >= (hero.clientWidth < 700 ? 24 : 70)) return;
       place(b, n);
       if (!instant) { b.style.opacity = "0"; setTimeout(() => { b.style.opacity = ""; b.classList.add("pop"); }, 700 + i * 16); }
       box.appendChild(b);
@@ -102,7 +112,7 @@ const [v0, v1] = sky.hi_range_kms;
     L.className = "det lock";
     L.id = "lock";
     const s = document.createElement("span");
-    s.textContent = "R136 · locked · 161 000 ly";
+    s.textContent = "R136";
     L.appendChild(s);
     place(L, [T.core[0], T.core[1], 0.035]);
     // Keep the tag on screen: hang it to the left when the core sits near the right edge.
@@ -117,7 +127,7 @@ const [v0, v1] = sky.hi_range_kms;
     size();
     addEventListener("resize", size);
     if (reduce) { revealed = 1; size(); detections(true); return; }
-    const lines = log.innerHTML.split("<br>");
+    const lines = log.innerHTML.split(/<br\s*\/?>/);
     log.innerHTML = "";
     lines.forEach((l, i) => setTimeout(() => { log.innerHTML += (i ? "<br>" : "") + l; }, 120 + i * (i === 3 ? 520 : 260)));
     const t0 = performance.now();

@@ -1,120 +1,147 @@
 ---
-// Regions the group has published on, joined to the instruments and methods
-// used. Every solid edge cites a paper; dashed edges are work in progress.
-// On narrow screens the layout is transposed (x <-> y) into a tall graph.
-type Kind = "region" | "inst" | "method";
-const nodes: { id: string; l: string; k: Kind; x: number; y: number; href?: string }[] = [
-  { id: "lmc", l: "LMC", k: "region", x: 50, y: 50, href: "/research/lmc" },
-  { id: "orion", l: "Orion", k: "region", x: 18, y: 22, href: "/research/star-formation" },
-  { id: "mon", l: "Mon OB1", k: "region", x: 16, y: 80, href: "/research/star-formation" },
-  { id: "gc", l: "Galactic Centre", k: "region", x: 80, y: 16, href: "/research/dust-polarization" },
-  { id: "mbm", l: "MBM 12", k: "region", x: 86, y: 80, href: "/research/star-formation" },
-  { id: "ngc253", l: "NGC 253", k: "region", x: 50, y: 92, href: "/research/star-formation" },
-  { id: "g34", l: "G34.43", k: "region", x: 42, y: 8, href: "/research/star-formation" },
-  { id: "g286", l: "G286.21", k: "region", x: 30, y: 92, href: "/research/star-formation" },
-  { id: "planck", l: "Planck", k: "inst", x: 34, y: 46 },
-  { id: "pilot", l: "PILOT", k: "inst", x: 68, y: 28 },
-  { id: "alma", l: "ALMA", k: "inst", x: 36, y: 74 },
-  { id: "jwst", l: "JWST", k: "inst", x: 8, y: 46 },
-  { id: "jcmt", l: "JCMT POL-2", k: "inst", x: 62, y: 6 },
-  { id: "askap", l: "ASKAP H I", k: "inst", x: 70, y: 56 },
-  { id: "trao", l: "TRAO", k: "inst", x: 74, y: 88 },
-  { id: "herschel", l: "Herschel", k: "inst", x: 12, y: 62 },
-  { id: "vgt", l: "VGT", k: "method", x: 90, y: 46 },
-  { id: "rohsa", l: "Gauss decomp.", k: "method", x: 58, y: 72 },
-  { id: "ml", l: "Filament ML", k: "method", x: 24, y: 60 },
-];
-const edges: { a: string; b: string; note: string; soon?: boolean }[] = [
-  { a: "lmc", b: "planck", note: "Polarized dust emission of the LMC with Planck (Alina et al. 2023, MNRAS 518)." },
-  { a: "lmc", b: "askap", note: "LMC field from atomic gas and foreground separation (Alina et al. 2026, IAU Symp. 392)." },
-  { a: "askap", b: "vgt", note: "Field from velocity gradients in GASKAP-HI data. Coming soon.", soon: true },
-  { a: "askap", b: "rohsa", note: "Cold and warm H I separated by Gaussian decomposition. Coming soon.", soon: true },
-  { a: "orion", b: "alma", note: "Prestellar cores in Orion cold clumps (ALMASOP, Sahu et al. 2021, ApJL 907)." },
-  { a: "orion", b: "jwst", note: "Mass inflow in OMC-3 (JWST Cycle 4 proposal 7433, 2025)." },
-  { a: "mon", b: "planck", note: "Large-scale field in Monoceros OB1 east (Alina et al. 2022, A&A 658)." },
-  { a: "gc", b: "pilot", note: "Field geometry in the central molecular zone from PILOT (Mangilli et al. 2019, A&A 630)." },
-  { a: "ngc253", b: "alma", note: "Dust polarization in the centre of NGC 253 with ALMA (2025, A&A 697)." },
-  { a: "g34", b: "jcmt", note: "Magnetic fields in IRDC G34.43+0.24 (Soam et al. 2019, ApJ 883)." },
-  { a: "g286", b: "jwst", note: "A compact hub-filament system in G286.21+0.17 (2026, MNRAS 552)." },
-  { a: "g286", b: "alma", note: "A compact hub-filament system in G286.21+0.17 (2026, MNRAS 552)." },
-  { a: "mbm", b: "trao", note: "B-FROST: CO and field orientation in MBM 12 (Vorster et al. 2026, A&A 711)." },
-  { a: "planck", b: "ml", note: "Filaments hosting Planck cold clumps against the field (Alina et al. 2019, MNRAS 485)." },
-  { a: "herschel", b: "ml", note: "Filament and field orientations from Herschel and Planck (2026, A&A 711)." },
-];
-const by = Object.fromEntries(nodes.map((n) => [n.id, n]));
+// Regions, the data behind them and the methods, in three columns. Edges are
+// drawn between columns (never through a label), each one citing its papers.
+// Selecting a node lists the papers. On phones the columns stack into rows
+// of chips and the lines are dropped; selection still works.
+import { nodes, edges, nodePapers, type Kind } from "../data/graph";
+import { byBibcode, titleHtml, authorLine, venue, link } from "../lib/pubs";
+
+const cited = new Set([...edges.flatMap((e) => e.papers), ...Object.values(nodePapers).flat()]);
+for (const b of cited) if (!byBibcode.has(b)) throw new Error(`ResearchGraph: bibcode ${b} is not in publications.json`);
+const ids = new Set(nodes.map((n) => n.id));
+for (const e of edges) if (!ids.has(e.a) || !ids.has(e.b)) throw new Error(`ResearchGraph: edge ${e.a}-${e.b} names an unknown node`);
+
+const cols: [Kind, string][] = [["region", "Regions"], ["data", "Data"], ["method", "Methods"]];
+const refs = Object.fromEntries([...cited].map((b) => {
+  const p = byBibcode.get(b)!;
+  return [b, { t: titleHtml(p.title), a: authorLine(p), y: p.year, v: venue(p), href: link(p) }];
+}));
 ---
 
 <div class="graph" id="graph">
-  {[false, true].map((swap) => (
-    <svg class={swap ? "lines tall" : "lines wide"} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      {edges.map((e, i) => {
-        const a = by[e.a], b = by[e.b];
-        return swap
-          ? <line data-e={i} class={e.soon ? "soon" : ""} x1={a.y} y1={a.x} x2={b.y} y2={b.x} vector-effect="non-scaling-stroke" />
-          : <line data-e={i} class={e.soon ? "soon" : ""} x1={a.x} y1={a.y} x2={b.x} y2={b.y} vector-effect="non-scaling-stroke" />;
-      })}
-    </svg>
-  ))}
-  {nodes.map((n) => (
-    <button type="button" class={`node ${n.k}${n.x > 72 ? " flip" : ""}${n.y > 72 ? " flip-m" : ""}`} data-id={n.id} data-href={n.href ?? ""} style={`--x:${n.x};--y:${n.y}`}>
-      <i></i><span>{n.l}</span>
-    </button>
+  <svg class="lines" id="graphLines" aria-hidden="true"></svg>
+  {cols.map(([k, title]) => (
+    <div class={`col ${k}`}>
+      <span class="label">{title}</span>
+      <ul>
+        {nodes.filter((n) => n.k === k).map((n) => (
+          <li><button type="button" class="node" data-id={n.id} aria-pressed="false"><i></i><span>{n.l}</span></button></li>
+        ))}
+      </ul>
+    </div>
   ))}
 </div>
-<p class="note" id="graphNote" aria-live="polite">Select a region, telescope or method to see the papers that connect them.</p>
-<script type="application/json" id="graphData" set:html={JSON.stringify(edges)}></script>
+<div class="detail" id="graphNote" aria-live="polite">
+  <p class="hint">Select a region, an instrument or a method to list the papers that connect them. Solid lines are published work; dashed lines are proposals or work in progress.</p>
+</div>
+<script type="application/json" id="graphData" set:html={JSON.stringify({ nodes, edges, nodePapers, refs })}></script>
 
 <style>
-  .graph { position: relative; margin-top: 40px; aspect-ratio: 16 / 9; width: 100%; }
-  .lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .lines.tall { display: none; }
-  line { stroke: rgba(10, 10, 11, 0.3); stroke-width: 1; }
-  line.soon { stroke-dasharray: 4 4; }
-  line.hot { stroke: var(--signal); stroke-width: 1.8; }
-  .node { position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); translate: -4px -50%; display: flex; align-items: center; gap: 7px; background: none; border: 0; padding: 4px; cursor: pointer; color: var(--on-paper); }
-  .node i { width: 7px; height: 7px; background: currentColor; flex: none; }
-  .node span { font: 600 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; background: var(--paper); padding: 2px; }
-  .node.region i { width: 11px; height: 11px; }
-  .node.region span { font-family: var(--brut); font-stretch: 62%; font-weight: 800; font-size: clamp(15px, 0.8rem + 0.6vw, 22px); letter-spacing: 0; }
-  .node.method i { border-radius: 50%; background: none; border: 1.5px solid currentColor; }
-  .node.flip { flex-direction: row-reverse; translate: calc(-100% + 4px) -50%; }
-  .node.hot { color: #d42a12; }
-  .node.dim { opacity: 0.35; }
-  .note { margin-top: 16px; min-height: 4.8em; font-size: 13px; max-width: 72ch; }
-  .note :global(a) { margin-left: 4px; }
-  @media (max-width: 700px) {
-    .graph { aspect-ratio: 9 / 15; }
-    .lines.wide { display: none; }
-    .lines.tall { display: block; }
-    .node { left: calc(var(--y) * 1%); top: calc(var(--x) * 1%); }
-    .node span { font-size: 10px; }
-    .node.flip { flex-direction: row; translate: -4px -50%; }
-    .node.flip-m { flex-direction: row-reverse; translate: calc(-100% + 4px) -50%; }
+  .graph { position: relative; margin-top: 40px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 clamp(48px, 10vw, 180px); }
+  .lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .lines :global(path) { fill: none; stroke: rgba(10, 10, 11, 0.26); stroke-width: 1; transition: stroke 0.15s, opacity 0.15s; }
+  .lines :global(path.soon) { stroke-dasharray: 4 4; }
+  .lines :global(path.hot) { stroke: var(--signal); stroke-width: 1.8; }
+  .lines :global(path.dim) { opacity: 0.25; }
+  .col { display: grid; align-content: start; gap: 14px; }
+  .col.data, .col.method { justify-items: start; }
+  .col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .node { display: inline-flex; align-items: center; gap: 9px; background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--on-paper); text-align: left; min-height: 32px; }
+  .node i { width: 8px; height: 8px; background: currentColor; flex: none; }
+  .node span { font: 600 13px/1.15 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+  .region .node span { font: 800 clamp(18px, 0.9rem + 0.6vw, 24px)/1 var(--brut); font-stretch: 62%; letter-spacing: 0; text-transform: uppercase; }
+  .region .node i { width: 11px; height: 11px; }
+  .method .node i { border-radius: 50%; background: none; border: 1.5px solid currentColor; }
+  .node:hover span { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: currentColor; }
+  .node[aria-pressed="true"], .node.hot { color: #c4260f; }
+  .graph.has-sel .node:not(.hot) { color: color-mix(in srgb, var(--on-paper) 40%, transparent); }
+
+  .detail { margin-top: 32px; border-top: 1px solid rgba(10, 10, 11, 0.2); padding-top: 20px; min-height: 7em; max-width: 90ch; }
+  .hint { font-size: 16px; color: var(--on-paper-dim); }
+  .detail :global(h3) { font: 600 12px/1.3 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 12px; color: var(--on-paper-dim); }
+  .detail :global(ol) { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .detail :global(li) { display: grid; gap: 3px; }
+  .detail :global(.t) { font-weight: 600; font-size: 16px; }
+  .detail :global(.m) { font: 400 13px/1.4 var(--mono); color: var(--on-paper-dim); }
+  .detail :global(.soon) { font: 600 13px/1.4 var(--mono); color: #c4260f; }
+  .detail :global(.more) { display: inline-block; margin-top: 14px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; padding: 8px 0; }
+
+  @media (max-width: 760px) {
+    .graph { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+    .lines { display: none; }
+    .col ul { display: flex; flex-wrap: wrap; gap: 4px 18px; }
   }
 </style>
 
 <script>
-  const edges: { a: string; b: string; note: string }[] = JSON.parse(document.getElementById("graphData")!.textContent!);
+  type Ref = { t: string; a: string; y: number; v: string; href: string };
+  type Data = {
+    nodes: { id: string; l: string; k: string; href?: string }[];
+    edges: { a: string; b: string; papers: string[]; soon?: string }[];
+    nodePapers: Record<string, string[]>;
+    refs: Record<string, Ref>;
+  };
+  const D: Data = JSON.parse(document.getElementById("graphData")!.textContent!);
   const graph = document.getElementById("graph")!;
+  const svg = document.getElementById("graphLines")!;
   const note = document.getElementById("graphNote")!;
-  const nodes = [...graph.querySelectorAll<HTMLButtonElement>(".node")];
-  const lines = [...graph.querySelectorAll<SVGLineElement>("line")];
-  function hot(id: string) {
-    const linked = new Set([id]);
-    const notes: string[] = [];
-    edges.forEach((e, i) => {
-      const on = e.a === id || e.b === id;
-      lines.filter((l) => l.dataset.e === String(i)).forEach((l) => l.classList.toggle("hot", on));
-      if (on) { linked.add(e.a); linked.add(e.b); notes.push(e.note); }
-    });
-    nodes.forEach((n) => { n.classList.toggle("hot", linked.has(n.dataset.id!)); n.classList.toggle("dim", !linked.has(n.dataset.id!)); });
-    note.textContent = [...new Set(notes)].join(" ") || "No published link yet.";
-    const href = nodes.find((n) => n.dataset.id === id)?.dataset.href;
-    if (href) { const a = document.createElement("a"); a.href = href; a.textContent = "Open research →"; note.append(" ", a); }
+  const btn = new Map([...graph.querySelectorAll<HTMLButtonElement>(".node")].map((b) => [b.dataset.id!, b]));
+  const order = ["region", "data", "method"];
+  const kind = new Map(D.nodes.map((n) => [n.id, n.k]));
+  let sel = "";
+
+  // Curves run from the right edge of the left node's label to the marker
+  // of the right node, so they never cross text.
+  function draw() {
+    if (getComputedStyle(svg).display === "none") return;
+    const g = graph.getBoundingClientRect();
+    svg.setAttribute("viewBox", `0 0 ${g.width} ${g.height}`);
+    svg.innerHTML = D.edges.map((e, i) => {
+      let [a, b] = [e.a, e.b];
+      if (order.indexOf(kind.get(a)!) > order.indexOf(kind.get(b)!)) [a, b] = [b, a];
+      const ra = btn.get(a)!.getBoundingClientRect(), rb = btn.get(b)!.querySelector("i")!.getBoundingClientRect();
+      const x1 = ra.right - g.left + 8, y1 = ra.top + ra.height / 2 - g.top;
+      const x2 = rb.left - g.left - 6, y2 = rb.top + rb.height / 2 - g.top;
+      const mx = (x1 + x2) / 2;
+      return `<path data-e="${i}" class="${e.soon ? "soon" : ""}" d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}" />`;
+    }).join("");
+    paint();
   }
-  nodes.forEach((n) => {
-    n.addEventListener("mouseenter", () => hot(n.dataset.id!));
-    n.addEventListener("focus", () => hot(n.dataset.id!));
-    n.addEventListener("click", () => hot(n.dataset.id!));
-  });
+
+  function paint() {
+    const linked = new Set(sel ? [sel] : []);
+    svg.querySelectorAll<SVGPathElement>("path").forEach((p) => {
+      const e = D.edges[Number(p.dataset.e)];
+      const on = !!sel && (e.a === sel || e.b === sel);
+      p.classList.toggle("hot", on);
+      p.classList.toggle("dim", !!sel && !on);
+    });
+    D.edges.forEach((e) => { if (sel && (e.a === sel || e.b === sel)) { linked.add(e.a); linked.add(e.b); } });
+    graph.classList.toggle("has-sel", !!sel);
+    btn.forEach((b, id) => { b.classList.toggle("hot", linked.has(id)); b.setAttribute("aria-pressed", String(id === sel)); });
+  }
+
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  function show(id: string) {
+    sel = id;
+    paint();
+    const n = D.nodes.find((x) => x.id === id)!;
+    const mine = D.edges.filter((e) => e.a === id || e.b === id);
+    const bibs = [...new Set([...mine.flatMap((e) => e.papers), ...(D.nodePapers[id] ?? [])])];
+    bibs.sort((x, y) => D.refs[y].y - D.refs[x].y);
+    const soon = mine.filter((e) => e.soon && !e.papers.length).map((e) => e.soon!);
+    const items = bibs.map((b) => {
+      const r = D.refs[b];
+      return `<li><a class="t" href="${esc(r.href)}">${r.t}</a><span class="m">${esc(r.a)} · ${r.y} · ${esc(r.v)}</span>${mine.find((e) => e.soon && e.papers.includes(b)) ? `<span class="soon">${esc(mine.find((e) => e.papers.includes(b))!.soon!)}</span>` : ""}</li>`;
+    });
+    soon.forEach((s) => items.push(`<li><span class="soon">${esc(s)}</span></li>`));
+    note.innerHTML = `<h3>${esc(n.l)} · ${bibs.length} ${bibs.length === 1 ? "paper" : "papers"}</h3><ol>${items.join("") || "<li><span class='m'>No published link yet.</span></li>"}</ol>` +
+      (n.href ? `<a class="more" href="${n.href}">Open the research line →</a>` : "");
+  }
+
+  btn.forEach((b, id) => b.addEventListener("click", () => (sel === id ? (sel = "", paint(), (note.innerHTML = note.dataset.hint!)) : show(id))));
+  note.dataset.hint = note.innerHTML;
+  draw();
+  new ResizeObserver(draw).observe(graph);
+  document.fonts?.ready.then(draw);
 </script>

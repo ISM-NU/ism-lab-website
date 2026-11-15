@@ -34,12 +34,12 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
-    <div class="console" aria-hidden="true">
+    <div class="console" id="console" aria-hidden="true">
       <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
       <div class="scrollrule"><i id="srule"></i></div>
-      <div class="bar bottom"><span id="lst">LST Astana --:--</span><span class="hide-sm" id="lmcalt">LMC alt --</span><span id="zread">Z 0.000</span></div>
+      <div class="bar bottom"><span id="lst">LST Astana --:--</span><span class="hide-sm" id="lmcalt">LMC alt --</span></div>
     </div>
-    <header class="topbar">
+    <header class="topbar" id="topbar">
       <a href="/" class="logo dot" aria-label="ISM group home">ISM/NU</a>
       <nav aria-label="Main">
         <ul>
@@ -73,7 +73,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
         </div>
         <div>
           <span class="label">Credits</span>
-          <p>Webb images: NASA, ESA, CSA, STScI, via ESA/Webb (CC BY 4.0). Planck HFI 353 GHz: ESA. GASS H I: Parkes, CSIRO (Kalberla and Haud 2015). MAGMA CO: Wong et al. 2011. Herschel: ESA (archive mosaics via ESASky). Spitzer: NASA/JPL-Caltech. WISE: NASA/JPL-Caltech/UCLA. SHASSA H&alpha;: Gaustad et al. 2001. Composites made by the group from these surveys.</p>
+          <p>Webb images: NASA, ESA, CSA, STScI, via ESA/Webb (CC BY 4.0). Planck HFI 353 GHz PR4 (NPIPE): ESA, Planck Collaboration 2020. GASS H I: Parkes, CSIRO (McClure-Griffiths et al. 2009; Kalberla and Haud 2015). MAGMA CO: Wong et al. 2011. Herschel: ESA archive mosaics via ESASky, including HERITAGE (Meixner et al. 2013) and Hi-GAL (Molinari et al. 2016). Spitzer: NASA/JPL-Caltech. WISE: NASA/JPL-Caltech/UCLA. SHASSA H&alpha;: Gaustad et al. 2001. Composites made by the group from these surveys.</p>
         </div>
       </div>
     </footer>
@@ -81,7 +81,9 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
 </html>
 
 <style is:global>
-  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) var(--gut-r) 0 var(--gut); display: flex; align-items: center; gap: 20px; font: 600 10.5px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); mix-blend-mode: difference; }
+  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) var(--gut-r) 0 var(--gut); display: flex; align-items: center; gap: 20px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); border-bottom: 1px solid transparent; transition: background-color 0.25s, border-color 0.25s; }
+  /* Transparent over the dark page tops; a solid strip once content scrolls under it. */
+  .topbar.solid { background: var(--void); border-bottom-color: var(--hair); }
   .topbar .logo { font-size: 16px; letter-spacing: 0.06em; text-decoration: none; }
   .topbar nav { flex: 1; display: flex; justify-content: center; }
   .topbar ul { list-style: none; margin: 0; padding: 0; display: flex; gap: clamp(12px, 2vw, 28px); }
@@ -101,9 +103,15 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   .menu a:hover { color: var(--signal); }
 
   .console { position: fixed; inset: 0; pointer-events: none; z-index: 30; }
-  .console .bar { position: absolute; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px var(--gut-r) 10px var(--gut); font: 600 10.5px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); mix-blend-mode: difference; font-variant-numeric: tabular-nums; }
+  /* The readout bar and frame corners belong to the console sections (hero,
+     zoom, page heads) and fade out over reading content so they never print
+     over text. */
+  .console .bar, .corner { opacity: 0; transition: opacity 0.3s; }
+  .console.on .bar { opacity: 1; }
+  .console.on .corner { opacity: 0.6; }
+  .console .bar { position: absolute; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px var(--gut-r) 10px var(--gut); font: 600 11.5px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); text-shadow: 0 0 8px #000; font-variant-numeric: tabular-nums; }
   .console .bottom { bottom: env(safe-area-inset-bottom, 0px); }
-  .corner { position: absolute; width: 14px; height: 14px; border-color: var(--ink); border-style: solid; opacity: 0.6; mix-blend-mode: difference; }
+  .corner { position: absolute; width: 14px; height: 14px; border-color: var(--ink); border-style: solid; }
   .c1 { top: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); left: var(--gut); border-width: 1px 0 0 1px; }
   .c2 { top: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); right: var(--gut-r); border-width: 1px 1px 0 0; }
   .c3 { bottom: calc(34px + env(safe-area-inset-bottom, 0px)); left: var(--gut); border-width: 0 0 1px 1px; }
@@ -122,6 +130,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
 
 <script>
   import { onFrame, scramble } from "../scripts/motion";
+  import { LMC, altitudeAtLst, lstHours } from "../lib/sky";
 
   // Headings marked data-scramble resolve from glyphs once, when first seen.
   const so = new IntersectionObserver((es) => {
@@ -129,27 +138,24 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   }, { threshold: 0.6 });
   document.querySelectorAll("[data-scramble]").forEach((el) => so.observe(el));
 
-  const LON = 71.4306, LAT = 51.1694, RA_LMC = 80.894, DEC_LMC = -69.756;
+  // Console readout position: Nazarbayev University campus, as on the contact page (src/lib/sky.ts).
+  const LON = 71.3982, LAT = 51.0906;
   const pad = (n: number) => String(n).padStart(2, "0");
   const $ = (id: string) => document.getElementById(id)!;
   function tick() {
     const now = new Date();
     $("clock").textContent = `UTC ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
-    const d = now.getTime() / 86400000 + 2440587.5 - 2451545.0;
-    let gmst = (18.697374558 + 24.06570982441908 * d) % 24;
-    if (gmst < 0) gmst += 24;
-    const lst = (gmst + LON / 15) % 24;
+    const lst = lstHours(now, LON);
     $("lst").textContent = `LST Astana ${pad(Math.floor(lst))}:${pad(Math.floor((lst % 1) * 60))}`;
-    const r = Math.PI / 180;
-    const H = (lst * 15 - RA_LMC) * r;
-    const alt = Math.asin(Math.sin(LAT * r) * Math.sin(DEC_LMC * r) + Math.cos(LAT * r) * Math.cos(DEC_LMC * r) * Math.cos(H)) / r;
+    const alt = altitudeAtLst(lst, LAT, LMC.ra, LMC.dec);
     // The LMC never rises at Astana's latitude, so this is always negative.
     $("lmcalt").textContent = `LMC alt ${alt.toFixed(1)}° · below horizon`;
   }
   tick();
   setInterval(tick, 1000);
 
-  const srule = $("srule"), zread = $("zread");
+  const srule = $("srule");
+  const bar = $("topbar");
   let lastY = -1;
   onFrame(() => {
     if (scrollY === lastY) return;
@@ -157,8 +163,17 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
     const h = document.documentElement.scrollHeight - innerHeight;
     const z = h > 0 ? scrollY / h : 0;
     srule.style.top = (z * 100).toFixed(2) + "%";
-    zread.textContent = "Z " + z.toFixed(3);
+    bar.classList.toggle("solid", scrollY > 8);
   });
+
+  // Console chrome shows while any console section covers the bottom of the viewport.
+  const con = $("console");
+  const live = new Set<Element>();
+  const co = new IntersectionObserver((es) => {
+    for (const e of es) e.isIntersecting ? live.add(e.target) : live.delete(e.target);
+    con.classList.toggle("on", live.size > 0);
+  }, { rootMargin: "0px 0px -90% 0px" });
+  document.querySelectorAll("[data-console]").forEach((el) => co.observe(el));
 
   const btn = document.querySelector<HTMLButtonElement>(".menu-btn")!;
   const menu = $("menu");

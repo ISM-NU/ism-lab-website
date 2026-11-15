@@ -1,0 +1,88 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import { directions } from "../data/openings";
+
+const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+const name = (id: string) => projects.find((p) => p.id === id)?.data.title ?? id;
+// Work in progress comes straight from the research pages' `upcoming` lists.
+const soon = projects.flatMap((p) => p.data.upcoming.map((u) => ({ ...u, line: p.id, lineTitle: p.data.title })));
+---
+
+<Base title="Join or visit" description="Directions in interstellar magnetic fields where a student or visitor could contribute, with the open code and public data behind each.">
+  <PageHead title="Join or visit" intro="Students and visitors are welcome to write. These are directions where the group has open code and public data, and where a new person could add something. Nothing here is a vacancy.">
+    <p class="cta"><a class="tag fill" href="/contact">Write to discuss</a></p>
+  </PageHead>
+
+  <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
+    <div class="gut max">
+      <div class="head"><h2 class="brut">Open code and data</h2><p>{directions.length} directions, each with a public repository or record.</p></div>
+      <ol class="dirs">
+        {directions.map((d, i) => (
+          <li>
+            <span class="n dot">{String(i + 1).padStart(2, "0")}</span>
+            <div class="body">
+              <h3 class="brut">{d.title}</h3>
+              <p>{d.exists}</p>
+              <p class="open">Where you could contribute: {d.open}</p>
+              <p class="meta">Data: {d.data}</p>
+              <p class="meta"><a href={d.code.href} rel="noopener">{d.code.label}</a> · <a href={`/research/${d.line}`}>{name(d.line)}</a></p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  {soon.length > 0 && (
+    <section class="slab sec" aria-labelledby="soon-h">
+      <div class="gut max">
+        <div class="head"><h2 class="brut" id="soon-h">In progress</h2><p>Lines the group is working on now. Details follow once the group has agreed to show them.</p></div>
+        <ul class="soon">
+          {soon.map((u) => (
+            <li>
+              <span class="tag soon">In progress</span>
+              <div>
+                <h3 class="brut">{u.title}</h3>
+                <p>{u.note}</p>
+                <p class="meta"><a href={`/research/${u.line}`}>{u.lineTitle}</a></p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <section class="sec">
+    <div class="gut max narrow">
+      <h2 class="brut">Before you write</h2>
+      <p>Positions, funding and computing are not advertised on this page. If one of the directions above interests you, tell us which one and what you have worked with, and we can discuss what is possible. Contact details are on the <a href="/contact">contact page</a>, which also shows why a group at 51° N works with data from the south.</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .cta { margin: 0; }
+  .cta a { text-decoration: none; padding: 10px 14px; font-size: 12px; }
+  .dirs, .soon { list-style: none; margin: 24px 0 0; padding: 0; }
+  .dirs li { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 8px 20px; padding: 24px 0; border-bottom: 1px solid var(--hair); }
+  .n { font-size: 28px; line-height: 1; color: var(--signal); }
+  .body { display: grid; gap: 10px; max-width: 70ch; }
+  .body > * { margin: 0; }
+  h3 { font-size: clamp(1.4rem, 1rem + 1vw, 2rem); margin: 0; }
+  .open b { font-weight: 600; }
+  .meta { font: 400 13px/1.5 var(--mono); color: var(--grey); }
+  .soon li { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 8px 20px; padding: 22px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
+  .soon li > div { display: grid; gap: 8px; max-width: 70ch; }
+  .soon li p { margin: 0; }
+  .slab .meta { color: var(--on-paper-dim); }
+  .slab .tag.soon { color: #d42a12; align-self: start; justify-self: start; }
+  .narrow { max-width: 78ch; display: grid; gap: 14px; }
+  .narrow h2 { font-size: clamp(2rem, 1rem + 2.6vw, 3.2rem); margin: 0; }
+  .narrow p { margin: 0; }
+  @media (max-width: 640px) {
+    .dirs li, .soon li { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

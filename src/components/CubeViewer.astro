@@ -1,0 +1,738 @@
+---
+// H I cube viewer for the LMC field. The cube is GASS III (Parkes, 16' beam;
+// McClure-Griffiths et al. 2009, Kalberla and Haud 2015) resampled by
+// scripts/render_cube.py onto the site's 12.08 deg TAN grid at 0.08 deg
+// pixels. Everything below runs in the browser from one 2.8 MB packed file.
+//
+// Sources for the numbers shown:
+//  - N(H I) = 1.823e18 cm^-2 * integral Tb dv, optically thin (Dickey and Lockman 1990)
+//  - distance 49.59 kpc (Pietrzynski et al. 2019)
+//  - default cut: line of nodes Theta = 139.1 +- 4.1 deg from the PM + line-of-sight
+//    velocity fit of van der Marel and Kallivayalil 2014 (ApJ 781, 121, sect. 4),
+//    through the H I dynamical centre (78.77, -69.01) deg of Kim et al. 1998
+//    as quoted in the same paper
+import meta from "../data/cube.json";
+---
+
+<div class="cube" id="cube">
+  <div class="mapcol">
+    <div class="mapwrap" id="cvMapWrap" tabindex="0" role="application"
+      aria-label="H I map of the LMC. Arrow keys move the position whose spectrum is shown; hold Shift for larger steps.">
+      <canvas id="cvMap"></canvas>
+      <svg class="ov" viewBox={`0 0 ${meta.n} ${meta.n}`} preserveAspectRatio="none" aria-hidden="true">
+        <line id="cvCutLine" class="cutline" x1="0" y1="0" x2="0" y2="0"></line>
+        <rect id="cvMark" class="mark" width="3" height="3" x="-9" y="-9"></rect>
+        <circle class="beam" cx="3.2" cy={meta.n - 3.2} r={(meta.beam_arcmin / 120) / meta.pix_deg}></circle>
+      </svg>
+      <button class="hd" id="cvHc" type="button" aria-label="Move the position-velocity cut. Arrow keys move it; hold Shift for larger steps."></button>
+      <button class="hd end" id="cvHe" type="button" aria-label="Rotate and lengthen the cut. Left and right arrows rotate it, up and down change its length."></button>
+      <span class="beamlab mono" aria-hidden="true">16′ beam</span>
+    </div>
+    <div class="bar">
+      <canvas id="cvBar" width="256" height="1" aria-hidden="true"></canvas>
+      <div class="ticks mono" id="cvTicks" aria-hidden="true"></div>
+    </div>
+    <p class="unit mono" id="cvUnit">N(H I), cm⁻²</p>
+  </div>
+
+  <div class="side">
+    <dl class="read mono" id="cvRead" aria-live="off">
+      <div><dt>RA, Dec</dt><dd id="cvRd">move over the map</dd></div>
+      <div><dt>l, b</dt><dd id="cvLb">-</dd></div>
+      <div><dt>T<sub>b</sub> peak</dt><dd id="cvPk">-</dd></div>
+      <div><dt>N(H I), window</dt><dd id="cvNh">-</dd></div>
+    </dl>
+    <span class="sr-only" id="cvLive" aria-live="polite"></span>
+
+    <figure class="plot">
+      <canvas id="cvSpec" aria-label="21 cm spectrum at the chosen position. Drag to set a velocity window; the two sliders below do the same by keyboard."></canvas>
+    </figure>
+    <div class="win">
+      <label class="mono"><span>Window start</span><input type="range" id="cvA" min="0" max={meta.nv - 1} value="0" step="1" /><output id="cvAo" class="mono"></output></label>
+      <label class="mono"><span>Window end</span><input type="range" id="cvB" min="0" max={meta.nv - 1} value={meta.nv - 1} step="1" /><output id="cvBo" class="mono"></output></label>
+      <button type="button" class="btn" id="cvAll">Full range</button>
+    </div>
+    <p class="note mono" id="cvMass"></p>
+
+    <figure class="plot">
+      <canvas id="cvPV" aria-label="Position-velocity diagram along the cut drawn on the map."></canvas>
+    </figure>
+    <div class="pvctl">
+      <span class="mono" id="cvCutRead"></span>
+      <button type="button" class="btn" id="cvCutReset">Reset cut</button>
+    </div>
+
+    <div class="snd">
+      <button type="button" class="btn" id="cvSound" aria-pressed="false">Sound off</button>
+      <span class="note">Plays the window of the spectrum under the pointer, 1.6 s long: pitch follows velocity, loudness follows T<sub>b</sub>.</span>
+    </div>
+  </div>
+
+  <p class="foot-note">
+    GASS III H I (Parkes, 16′ beam; McClure-Griffiths et al. 2009, Kalberla and Haud 2015), LSR radio velocities, resampled to 0.08° pixels on the 12° field. The cube begins at 182 km/s, so Milky Way gas near 0 km/s is not in it. The spectrum axis shows only what is there; above 340 km/s the channels hold noise and are dropped, and at 182 km/s the cube cuts into Magellanic Bridge gas.
+    N(H I) = 1.823×10¹⁸ ∫T<sub>b</sub> dv assumes optically thin 21 cm emission; dense gas is underestimated. Masses use 49.59 kpc (Pietrzyński et al. 2019) and hydrogen only. The cut starts along the line of nodes, Θ = 139° (van der Marel and Kallivayalil 2014), through the H I dynamical centre (Kim et al. 1998). Colour scale follows the window.
+  </p>
+</div>
+<script type="application/json" id="cvMeta" set:html={JSON.stringify(meta)}></script>
+
+<style>
+  .cube { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px 32px; margin-top: 40px; }
+  .mapcol { min-width: 0; }
+  .side { min-width: 0; display: grid; gap: 14px; align-content: start; }
+  .foot-note { grid-column: 1 / -1; font-size: 12px; color: var(--grey); max-width: 100ch; }
+  .mapwrap { position: relative; aspect-ratio: 1; background: var(--void); border: 1px solid var(--hair); cursor: crosshair; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  .mapwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+  .mark { fill: none; stroke: var(--ink); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+  .cutline { stroke: var(--signal); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-dasharray: 6 4; }
+  .beam { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .beamlab { position: absolute; left: 30px; bottom: 6px; font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink); text-transform: uppercase; pointer-events: none; text-shadow: 0 0 4px #000; }
+  .hd { position: absolute; width: 26px; height: 26px; translate: -50% -50%; padding: 0; border: 1.5px solid var(--signal); background: rgba(0, 0, 0, 0.55); border-radius: 50%; cursor: grab; touch-action: none; }
+  .hd.end { border-radius: 0; width: 20px; height: 20px; }
+  .hd:active { cursor: grabbing; }
+  .mapwrap:focus-visible { outline: 1px solid var(--signal); outline-offset: 3px; }
+  .bar { position: relative; margin-top: 10px; }
+  .bar canvas { width: 100%; height: 12px; border: 1px solid var(--hair); image-rendering: pixelated; }
+  .ticks { position: relative; height: 18px; font-size: 10.5px; color: var(--grey); }
+  .ticks :global(span) { position: absolute; top: 3px; translate: -50% 0; white-space: nowrap; }
+  .ticks :global(span:first-child) { translate: 0 0; }
+  .ticks :global(span.last) { translate: -100% 0; }
+  .unit { font-size: 11px; color: var(--grey); letter-spacing: 0.04em; }
+  .read { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; font-size: 12px; }
+  .read div { min-width: 0; }
+  .read dt { color: var(--grey); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .read dd { margin: 0; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .plot { margin: 0; }
+  .plot canvas { width: 100%; display: block; background: var(--panel); border: 1px solid var(--hair); }
+  #cvSpec { height: 210px; cursor: ew-resize; touch-action: pan-y; }
+  #cvPV { height: 250px; cursor: crosshair; }
+  .win { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px 16px; align-items: end; }
+  .win label { display: grid; gap: 4px; font-size: 11px; color: var(--grey); min-width: 0; }
+  .win output { color: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .win input { width: 100%; accent-color: var(--signal); margin: 0; }
+  .btn { background: none; border: 1px solid var(--hair); color: var(--ink); padding: 7px 10px; font: 600 11px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--ink); }
+  .btn[aria-pressed="true"] { background: var(--ink); color: var(--void); border-color: var(--ink); }
+  .note { font-size: 12px; color: var(--grey); }
+  .pvctl { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--grey); }
+  .pvctl .mono { min-width: 0; }
+  .snd { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+  .snd .note { flex: 1 1 220px; }
+  @media (max-width: 860px) {
+    .cube { grid-template-columns: minmax(0, 1fr); }
+    .win { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .win .btn { grid-column: 1 / -1; justify-self: start; }
+  }
+</style>
+
+<script>
+  import { canvasFit, clamp, watchVisible, reduce } from "../scripts/motion";
+
+  const meta = JSON.parse(document.getElementById("cvMeta")!.textContent!);
+  const N: number = meta.n, NV: number = meta.nv, V0: number = meta.v0, DV: number = meta.dv;
+  const PIX: number = meta.pix_deg, CRPIX: number = meta.crpix, STEP: number = meta.step;
+  const D2R = Math.PI / 180;
+  const RA0 = meta.crval[0] * D2R, DE0 = meta.crval[1] * D2R;
+  const NHI_C = 1.823e18; // cm^-2 per K km/s, Dickey and Lockman 1990
+  const PIX_CM2 = (meta.d_kpc * 3.0857e21 * PIX * D2R) ** 2;
+  const MASS_PER_KKMS = (NHI_C * PIX_CM2 * 1.6735e-24) / 1.989e33; // Msun per (K km/s) per pixel
+  const KPC_PER_DEG = meta.d_kpc * D2R;
+  const vOf = (k: number) => V0 + k * DV;
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const root = $("cube"), wrap = $("cvMapWrap");
+  const mapC = $<HTMLCanvasElement>("cvMap"), barC = $<HTMLCanvasElement>("cvBar");
+  const specC = $<HTMLCanvasElement>("cvSpec"), pvC = $<HTMLCanvasElement>("cvPV");
+  const hc = $("cvHc"), he = $("cvHe"), mark = document.getElementById("cvMark")!;
+  const cutLine = document.getElementById("cvCutLine")!;
+  const sA = $<HTMLInputElement>("cvA"), sB = $<HTMLInputElement>("cvB");
+
+  const css = getComputedStyle(document.body);
+  const mono = css.getPropertyValue("--mono").trim() || "monospace";
+  const col = (n: string, d: string) => css.getPropertyValue(n).trim() || d;
+  const INK = col("--ink", "#f3f3ef"), GREY = col("--grey", "#8a8a86"), SIGNAL = col("--signal", "#ff3d24");
+  const HAIR = col("--hair", "rgba(243,243,239,0.16)");
+
+  // ---- colour: the site's gas ramp (render_lmc.GAS_STOPS) with an asinh stretch ----
+  const STOPS: [number, string][] = [[0, "#000000"], [0.2, "#14161a"], [0.42, "#3b4048"], [0.64, "#7d848c"], [0.84, "#c9c7bf"], [1, "#fffdf6"]];
+  const hex = (s: string) => [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16));
+  const LUT = new Uint8ClampedArray(256 * 3);
+  for (let i = 0; i < 256; i++) {
+    const x = i / 255;
+    let s = 1;
+    while (s < STOPS.length - 1 && STOPS[s][0] < x) s++;
+    const [x0, c0] = STOPS[s - 1], [x1, c1] = STOPS[s];
+    const t = (x - x0) / (x1 - x0), a = hex(c0), b = hex(c1);
+    for (let c = 0; c < 3; c++) LUT[i * 3 + c] = a[c] + (b[c] - a[c]) * t;
+  }
+  const SOFT = 0.08, ASINH = Math.asinh(1 / SOFT);
+  const stretch = (x: number) => Math.asinh(clamp(x, 0, 1) / SOFT) / ASINH;
+  {
+    const x = barC.getContext("2d")!, im = x.createImageData(256, 1);
+    for (let i = 0; i < 256; i++) { im.data.set([LUT[i * 3], LUT[i * 3 + 1], LUT[i * 3 + 2], 255], i * 4); }
+    x.putImageData(im, 0, 0);
+  }
+
+  // ---- sky geometry on the TAN grid (pixel coordinates are 0-based, x east to the left) ----
+  const GAL = [[-0.0548755604, -0.8734370902, -0.4838350155], [0.4941094279, -0.44482963, 0.7469822445], [-0.867666149, -0.1980763734, 0.4559837762]];
+  function pixToSky(x: number, y: number): [number, number] {
+    const xi = -(x + 1 - CRPIX) * PIX * D2R, eta = (y + 1 - CRPIX) * PIX * D2R;
+    const rho = Math.hypot(xi, eta);
+    if (rho === 0) return [RA0, DE0];
+    const c = Math.atan(rho), sc = Math.sin(c), cc = Math.cos(c);
+    const dec = Math.asin(cc * Math.sin(DE0) + (eta * sc * Math.cos(DE0)) / rho);
+    const ra = RA0 + Math.atan2(xi * sc, rho * Math.cos(DE0) * cc - eta * Math.sin(DE0) * sc);
+    return [ra, dec];
+  }
+  function skyToPix(ra: number, dec: number): [number, number] {
+    const da = ra - RA0;
+    const cosc = Math.sin(DE0) * Math.sin(dec) + Math.cos(DE0) * Math.cos(dec) * Math.cos(da);
+    const xi = (Math.cos(dec) * Math.sin(da)) / cosc;
+    const eta = (Math.cos(DE0) * Math.sin(dec) - Math.sin(DE0) * Math.cos(dec) * Math.cos(da)) / cosc;
+    return [CRPIX - 1 - xi / (PIX * D2R), CRPIX - 1 + eta / (PIX * D2R)];
+  }
+  function toGal(ra: number, dec: number): [number, number] {
+    const v = [Math.cos(dec) * Math.cos(ra), Math.cos(dec) * Math.sin(ra), Math.sin(dec)];
+    const g = GAL.map((r) => r[0] * v[0] + r[1] * v[1] + r[2] * v[2]);
+    return [((Math.atan2(g[1], g[0]) / D2R) + 360) % 360, Math.asin(g[2]) / D2R];
+  }
+  function offsetBy(ra: number, dec: number, pa: number, s: number): [number, number] {
+    const d2 = Math.asin(Math.sin(dec) * Math.cos(s) + Math.cos(dec) * Math.sin(s) * Math.cos(pa));
+    const r2 = ra + Math.atan2(Math.sin(pa) * Math.sin(s) * Math.cos(dec), Math.cos(s) - Math.sin(dec) * Math.sin(d2));
+    return [r2, d2];
+  }
+  function bearing(ra1: number, d1: number, ra2: number, d2: number): [number, number] {
+    const da = ra2 - ra1;
+    const pa = Math.atan2(Math.sin(da) * Math.cos(d2), Math.cos(d1) * Math.sin(d2) - Math.sin(d1) * Math.cos(d2) * Math.cos(da));
+    const s = Math.acos(clamp(Math.sin(d1) * Math.sin(d2) + Math.cos(d1) * Math.cos(d2) * Math.cos(da), -1, 1));
+    return [(pa + 2 * Math.PI) % (2 * Math.PI), s];
+  }
+  const hms = (ra: number) => {
+    const h = ((ra / D2R) / 15 + 24) % 24, m = (h % 1) * 60, s = (m % 1) * 60;
+    return `${String(Math.floor(h)).padStart(2, "0")}h${String(Math.floor(m)).padStart(2, "0")}m${String(Math.floor(s)).padStart(2, "0")}s`;
+  };
+  const dms = (de: number) => {
+    const d = Math.abs(de / D2R), m = (d % 1) * 60, s = (m % 1) * 60;
+    return `${de < 0 ? "−" : "+"}${String(Math.floor(d)).padStart(2, "0")}°${String(Math.floor(m)).padStart(2, "0")}′${String(Math.floor(s)).padStart(2, "0")}″`;
+  };
+  const sci = (x: number) => {
+    if (!(x > 0)) return "0";
+    const e = Math.floor(Math.log10(x));
+    return `${(x / 10 ** e).toFixed(1)}e${e}`;
+  };
+  const COMPASS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  const compass = (paDeg: number) => COMPASS[Math.round((((paDeg % 360) + 360) % 360) / 45) % 8];
+
+  // ---- state ----
+  let cube: Float32Array | null = null; // [v][y][x], y = 0 at the south edge, K
+  let ka = 0, kb = NV - 1;
+  let pix: [number, number] | null = null;
+  const NP = N * N;
+  const win = new Float32Array(NP);
+  let mapHi = 1;
+  const DEF_CENTRE = skyToPix(78.77 * D2R, -69.01 * D2R);
+  const cut = { cx: DEF_CENTRE[0], cy: DEF_CENTRE[1], pa: 139.1, len: 4.5 };
+  const meanSpec = new Float32Array(NV);
+
+  // ---- loading ----
+  async function load() {
+    root.dataset.state = "loading";
+    $("cvRd").textContent = "loading the cube (2.8 MB)…";
+    let buf: ArrayBuffer;
+    try {
+      const r = await fetch("/sky/cube/hi.i16.gz");
+      if (!r.ok) throw new Error(String(r.status));
+      buf = await r.arrayBuffer();
+      const b8 = new Uint8Array(buf);
+      if (b8[0] === 0x1f && b8[1] === 0x8b) {
+        buf = await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
+      }
+    } catch {
+      $("cvRd").textContent = "the cube could not be loaded";
+      return;
+    }
+    const b = new Uint8Array(buf), M = NV * NP;
+    cube = new Float32Array(M);
+    for (let i = 0; i < M; i++) cube[i] = (((b[i] << 8) | b[M + i]) << 16 >> 16) * STEP;
+    for (let k = 0; k < NV; k++) {
+      let s = 0;
+      for (let i = 0, o = k * NP; i < NP; i++) s += cube[o + i];
+      meanSpec[k] = s / NP;
+    }
+    // fixed colour limit for the P-V panel: 99.8th percentile of a subsample
+    const sub: number[] = [];
+    for (let i = 0; i < M; i += 37) if (cube[i] > 0) sub.push(cube[i]);
+    sub.sort((x, y) => x - y);
+    pvHi = sub[Math.floor(sub.length * 0.998)];
+    root.dataset.state = "ready";
+    $("cvRd").textContent = "move over the map";
+    resize();
+    refreshAll();
+    (window as any).__cube = { ready: true, N, NV, setWindow, setPixel, win, cut };
+  }
+  let pvHi = 30;
+
+  // ---- windowed map ----
+  function integrate() {
+    if (!cube) return;
+    win.fill(0);
+    for (let k = ka; k <= kb; k++) {
+      const o = k * NP;
+      for (let i = 0; i < NP; i++) win[i] += cube[o + i];
+    }
+    const f = DV;
+    let tot = 0;
+    for (let i = 0; i < NP; i++) { win[i] *= f; tot += win[i]; }
+    // 99.7th percentile of the column map sets the top of the colour scale
+    const srt = Float32Array.from(win).sort();
+    mapHi = Math.max(srt[Math.floor(NP * 0.997)] * NHI_C, 1e18);
+    mass = tot * MASS_PER_KKMS;
+  }
+  let mass = 0;
+  const off = document.createElement("canvas");
+  off.width = off.height = N;
+  function drawMap() {
+    if (!cube) return;
+    const x = off.getContext("2d")!, im = x.createImageData(N, N);
+    for (let j = 0; j < N; j++) {
+      for (let i = 0; i < N; i++) {
+        const t = Math.round(stretch((win[j * N + i] * NHI_C) / mapHi) * 255);
+        const o = ((N - 1 - j) * N + i) * 4;
+        im.data[o] = LUT[t * 3]; im.data[o + 1] = LUT[t * 3 + 1]; im.data[o + 2] = LUT[t * 3 + 2]; im.data[o + 3] = 255;
+      }
+    }
+    x.putImageData(im, 0, 0);
+    const c = mapC.getContext("2d")!;
+    c.imageSmoothingEnabled = true;
+    c.imageSmoothingQuality = "high";
+    c.clearRect(0, 0, mapC.width, mapC.height);
+    c.drawImage(off, 0, 0, mapC.width, mapC.height);
+    ticks();
+  }
+  function ticks() {
+    const el = $("cvTicks");
+    el.textContent = "";
+    const add = (v: number, txt: string, last = false) => {
+      const s = document.createElement("span");
+      s.textContent = txt;
+      s.style.left = stretch(v / mapHi) * 100 + "%";
+      if (last) s.className = "last";
+      el.append(s);
+    };
+    add(0, "0");
+    const e0 = Math.floor(Math.log10(mapHi));
+    const cand: number[] = [];
+    for (let e = e0 - 3; e <= e0; e++) for (const m of [1, 3]) cand.push(m * 10 ** e);
+    const keep = cand.filter((v) => v > mapHi * 0.012 && v < mapHi * 0.9);
+    // thin out if labels would touch (about 46 px each)
+    const w = barC.clientWidth || 300;
+    let lastX = 0;
+    for (const v of keep) {
+      const px = stretch(v / mapHi) * w;
+      if (px - lastX < 46 || px < 24) continue;
+      add(v, sci(v).replace(".0", ""));
+      lastX = px;
+    }
+    add(mapHi, sci(mapHi), true);
+  }
+
+  // ---- spectrum panel ----
+  let sW = 0, sH = 0, sCtx: CanvasRenderingContext2D;
+  const SM = { l: 38, r: 10, t: 10, b: 26 };
+  let playV: number | null = null;
+  const xOfK = (k: number) => SM.l + ((k + 0.5) / NV) * (sW - SM.l - SM.r);
+  const kOfX = (x: number) => clamp(Math.floor(((x - SM.l) / (sW - SM.l - SM.r)) * NV), 0, NV - 1);
+  function pixSpec(): Float32Array {
+    if (!cube || !pix) return meanSpec;
+    const s = new Float32Array(NV), o = pix[1] * N + pix[0];
+    for (let k = 0; k < NV; k++) s[k] = cube[k * NP + o];
+    return s;
+  }
+  function niceMax(v: number) {
+    const e = 10 ** Math.floor(Math.log10(v)), m = v / e;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * e;
+  }
+  function drawSpec() {
+    if (!sCtx || !cube) return;
+    const c = sCtx, w = sW, h = sH, spec = pixSpec();
+    c.clearRect(0, 0, w, h);
+    let mx = 0, mn = 0;
+    for (const v of spec) { if (v > mx) mx = v; if (v < mn) mn = v; }
+    const top = niceMax(Math.max(mx * 1.05, 1));
+    const bot = mn < -0.3 ? -niceMax(-mn) / 2 : 0;
+    const X0 = SM.l, X1 = w - SM.r, Y0 = SM.t, Y1 = h - SM.b;
+    const yOf = (t: number) => Y1 - ((t - bot) / (top - bot)) * (Y1 - Y0);
+    c.font = `10.5px ${mono}`;
+    c.textBaseline = "middle";
+    // grid and y ticks
+    c.strokeStyle = HAIR; c.fillStyle = GREY; c.lineWidth = 1; c.textAlign = "right";
+    for (let i = 0; i <= 4; i++) {
+      const t = bot + ((top - bot) * i) / 4, y = Math.round(yOf(t)) + 0.5;
+      c.beginPath(); c.moveTo(X0, y); c.lineTo(X1, y); c.stroke();
+      c.fillText(Number.isInteger(t) ? String(t) : t.toFixed(1), X0 - 6, y);
+    }
+    c.textAlign = "center"; c.textBaseline = "top";
+    for (let v = Math.ceil((V0 - DV / 2) / 20) * 20; v < V0 + NV * DV; v += 20) {
+      const x = X0 + ((v - (V0 - DV / 2)) / (NV * DV)) * (X1 - X0);
+      c.beginPath(); c.moveTo(Math.round(x) + 0.5, Y1); c.lineTo(Math.round(x) + 0.5, Y1 + 4); c.stroke();
+      if (v % 40 === 0) c.fillText(String(v), x, Y1 + 7);
+    }
+    c.textAlign = "left"; c.textBaseline = "top";
+    c.fillText("K", 4, 0);
+    c.textAlign = "right";
+    c.textBaseline = "top";
+    c.fillText("v_LSR, km/s", w - 4, 0);
+    // window band
+    const xa = xOfK(ka) - (X1 - X0) / NV / 2, xb = xOfK(kb) + (X1 - X0) / NV / 2;
+    const full = ka === 0 && kb === NV - 1;
+    if (!full) {
+      c.fillStyle = "rgba(255,61,36,0.14)";
+      c.fillRect(xa, Y0, xb - xa, Y1 - Y0);
+      c.strokeStyle = SIGNAL; c.lineWidth = 1.5;
+      for (const x of [xa, xb]) { c.beginPath(); c.moveTo(x, Y0); c.lineTo(x, Y1); c.stroke(); }
+    }
+    // zero line and spectrum
+    c.strokeStyle = GREY; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(X0, yOf(0)); c.lineTo(X1, yOf(0)); c.stroke();
+    c.lineWidth = 1.4; c.lineJoin = "round";
+    c.beginPath();
+    for (let k = 0; k < NV; k++) { const x = xOfK(k), y = yOf(spec[k]); k ? c.lineTo(x, y) : c.moveTo(x, y); }
+    c.strokeStyle = INK; c.stroke();
+    c.fillStyle = GREY; c.textAlign = "left"; c.textBaseline = "top";
+    c.fillText(pix ? "drag to choose a window" : "mean over the field; drag to choose a window", X0 + 8, Y0 + 6);
+    if (playV !== null) {
+      const x = xOfK((playV - V0) / DV);
+      c.strokeStyle = INK; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(x, Y0); c.lineTo(x, Y1); c.stroke();
+    }
+  }
+
+  // ---- position-velocity panel ----
+  let pW = 0, pH = 0, pCtx: CanvasRenderingContext2D;
+  const PM = { l: 38, r: 10, t: 10, b: 38 };
+  const pvOff = document.createElement("canvas");
+  let pvGeom: { n: number } | null = null;
+  function cutEnds() {
+    const [ra, de] = pixToSky(cut.cx, cut.cy);
+    const e1 = offsetBy(ra, de, cut.pa * D2R, cut.len * D2R);
+    const e2 = offsetBy(ra, de, (cut.pa + 180) * D2R, cut.len * D2R);
+    return { c: [cut.cx, cut.cy], e1: skyToPix(e1[0], e1[1]), e2: skyToPix(e2[0], e2[1]), ra, de };
+  }
+  const svgXY = (p: number[]) => [p[0] + 0.5, N - p[1] - 0.5];
+  function placeOverlay() {
+    const { c, e1, e2 } = cutEnds();
+    const [a, b] = [svgXY(e1), svgXY(e2)];
+    cutLine.setAttribute("x1", String(a[0])); cutLine.setAttribute("y1", String(a[1]));
+    cutLine.setAttribute("x2", String(b[0])); cutLine.setAttribute("y2", String(b[1]));
+    const put = (el: HTMLElement, p: number[]) => {
+      const s = svgXY(p);
+      el.style.left = (clamp(s[0], 0, N) / N) * 100 + "%";
+      el.style.top = (clamp(s[1], 0, N) / N) * 100 + "%";
+    };
+    put(hc, c); put(he, e1);
+    if (pix) { mark.setAttribute("x", String(pix[0] - 1)); mark.setAttribute("y", String(N - 2 - pix[1])); }
+  }
+  function drawPV() {
+    if (!cube || !pCtx) return;
+    const { ra, de } = cutEnds();
+    const step = PIX;
+    const n = Math.max(2, Math.round((2 * cut.len) / step) + 1);
+    const xs = new Float32Array(n), ys = new Float32Array(n), off_ = new Float32Array(n);
+    for (let s = 0; s < n; s++) {
+      const o = -cut.len + (s * 2 * cut.len) / (n - 1);
+      off_[s] = o;
+      const p = o >= 0 ? offsetBy(ra, de, cut.pa * D2R, o * D2R) : offsetBy(ra, de, (cut.pa + 180) * D2R, -o * D2R);
+      const q = skyToPix(p[0], p[1]);
+      xs[s] = q[0]; ys[s] = q[1];
+    }
+    pvOff.width = n; pvOff.height = NV;
+    const x = pvOff.getContext("2d")!, im = x.createImageData(n, NV);
+    for (let s = 0; s < n; s++) {
+      const fx = xs[s], fy = ys[s];
+      const inside = fx >= 0 && fx <= N - 1 && fy >= 0 && fy <= N - 1;
+      const i0 = Math.min(N - 2, Math.floor(fx)), j0 = Math.min(N - 2, Math.floor(fy));
+      const tx = fx - i0, ty = fy - j0, o = j0 * N + i0;
+      for (let k = 0; k < NV; k++) {
+        const p = ((NV - 1 - k) * n + s) * 4;
+        if (!inside) { im.data[p + 3] = 0; continue; }
+        const b = k * NP + o;
+        const t = cube[b] * (1 - tx) * (1 - ty) + cube[b + 1] * tx * (1 - ty) + cube[b + N] * (1 - tx) * ty + cube[b + N + 1] * tx * ty;
+        const li = Math.round(stretch(t / pvHi) * 255);
+        im.data[p] = LUT[li * 3]; im.data[p + 1] = LUT[li * 3 + 1]; im.data[p + 2] = LUT[li * 3 + 2]; im.data[p + 3] = 255;
+      }
+    }
+    x.putImageData(im, 0, 0);
+    pvGeom = { n };
+    const c = pCtx, w = pW, h = pH;
+    c.clearRect(0, 0, w, h);
+    const X0 = PM.l, X1 = w - PM.r, Y0 = PM.t, Y1 = h - PM.b;
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+    c.drawImage(pvOff, X0, Y0, X1 - X0, Y1 - Y0);
+    c.strokeStyle = HAIR; c.fillStyle = GREY; c.lineWidth = 1; c.font = `10.5px ${mono}`;
+    c.strokeRect(X0 + 0.5, Y0 + 0.5, X1 - X0 - 1, Y1 - Y0 - 1);
+    c.textAlign = "right"; c.textBaseline = "middle";
+    const vlo = V0 - DV / 2, vspan = NV * DV;
+    for (let v = Math.ceil(vlo / 40) * 40; v < vlo + vspan; v += 40) {
+      const y = Y1 - ((v - vlo) / vspan) * (Y1 - Y0);
+      c.beginPath(); c.moveTo(X0 - 4, Math.round(y) + 0.5); c.lineTo(X0, Math.round(y) + 0.5); c.stroke();
+      c.fillText(String(v), X0 - 7, y);
+    }
+    c.textAlign = "center"; c.textBaseline = "top";
+    const span = 2 * cut.len, tick = span > 6 ? 2 : 1;
+    for (let o = -Math.floor(cut.len / tick) * tick; o <= cut.len + 1e-6; o += tick) {
+      const x2 = X0 + ((o + cut.len) / span) * (X1 - X0);
+      c.beginPath(); c.moveTo(Math.round(x2) + 0.5, Y1); c.lineTo(Math.round(x2) + 0.5, Y1 + 4); c.stroke();
+      c.fillText(String(o), x2, Y1 + 7);
+    }
+    c.textAlign = "left"; c.fillText(compass(cut.pa + 180), X0, h - 13);
+    c.textAlign = "right"; c.fillText(compass(cut.pa), X1, h - 13);
+    c.textAlign = "center"; c.fillText("offset along the cut, degrees", (X0 + X1) / 2, h - 13);
+    c.textAlign = "left"; c.textBaseline = "top"; c.fillText("km/s", 4, 0);
+    $("cvCutRead").textContent = `cut PA ${cut.pa.toFixed(0)}° · ${(2 * cut.len).toFixed(1)}° long = ${(2 * cut.len * KPC_PER_DEG).toFixed(1)} kpc`;
+  }
+  pvC.addEventListener("pointermove", (e) => {
+    if (!cube || !pvGeom) return;
+    const r = pvC.getBoundingClientRect();
+    const fx = (e.clientX - r.left - PM.l) / (r.width - PM.l - PM.r), fy = 1 - (e.clientY - r.top - PM.t) / (r.height - PM.t - PM.b);
+    if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return;
+    const o = -cut.len + fx * 2 * cut.len, v = V0 - DV / 2 + fy * NV * DV;
+    $("cvCutRead").textContent = `offset ${o.toFixed(2)}° (${(o * KPC_PER_DEG).toFixed(2)} kpc) · v ${v.toFixed(0)} km/s · cut PA ${cut.pa.toFixed(0)}°`;
+  });
+  pvC.addEventListener("pointerleave", () => drawPV());
+
+  // ---- readouts ----
+  function readouts() {
+    if (!cube) return;
+    const a = vOf(ka), b = vOf(kb);
+    $("cvAo").textContent = `${a.toFixed(0)} km/s`;
+    $("cvBo").textContent = `${b.toFixed(0)} km/s`;
+    sA.setAttribute("aria-valuetext", `${a.toFixed(0)} kilometres per second`);
+    sB.setAttribute("aria-valuetext", `${b.toFixed(0)} kilometres per second`);
+    $("cvMass").textContent = `Window ${a.toFixed(0)} to ${b.toFixed(0)} km/s: M(H I) in the field ${sci(mass)} M☉ (hydrogen only, 49.59 kpc)`;
+    if (pix) {
+      const [ra, de] = pixToSky(pix[0], pix[1]), [l, bb] = toGal(ra, de);
+      $("cvRd").textContent = `${hms(ra)} ${dms(de)}`;
+      $("cvLb").textContent = `${l.toFixed(2)}° ${bb.toFixed(2)}°`;
+      const s = pixSpec();
+      let m = 0, mk = 0;
+      for (let k = 0; k < NV; k++) if (s[k] > m) { m = s[k]; mk = k; }
+      $("cvPk").textContent = `${m.toFixed(1)} K at ${vOf(mk).toFixed(0)} km/s`;
+      $("cvNh").textContent = `${sci(win[pix[1] * N + pix[0]] * NHI_C)} cm⁻²`;
+    }
+  }
+
+  function refreshAll() {
+    integrate(); drawMap(); drawSpec(); drawPV(); placeOverlay(); readouts();
+  }
+  let raf = 0, dirtyMap = false;
+  function schedule(map: boolean) {
+    dirtyMap ||= map;
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      if (dirtyMap) { integrate(); drawMap(); }
+      drawSpec(); readouts();
+      dirtyMap = false;
+    });
+  }
+
+  function setWindow(a: number, b: number) {
+    ka = clamp(Math.min(a, b), 0, NV - 1); kb = clamp(Math.max(a, b), 0, NV - 1);
+    sA.value = String(ka); sB.value = String(kb);
+    schedule(true);
+  }
+  function setPixel(i: number, j: number, fromKey = false) {
+    i = clamp(i, 0, N - 1); j = clamp(j, 0, N - 1);
+    if (pix && pix[0] === i && pix[1] === j) return;
+    pix = [i, j];
+    mark.setAttribute("x", String(i - 1)); mark.setAttribute("y", String(N - 2 - j));
+    schedule(false);
+    if (fromKey) {
+      const [ra, de] = pixToSky(i, j);
+      $("cvLive").textContent = `${hms(ra)} ${dms(de)}, peak ${peakText()}`;
+    }
+    queueSound(fromKey ? 0 : 260);
+  }
+  const peakText = () => { const s = pixSpec(); let m = 0, mk = 0; for (let k = 0; k < NV; k++) if (s[k] > m) { m = s[k]; mk = k; } return `${m.toFixed(0)} kelvin at ${vOf(mk).toFixed(0)} kilometres per second`; };
+
+  // ---- map pointer and keys ----
+  function pixelAt(e: PointerEvent): [number, number] {
+    const r = wrap.getBoundingClientRect();
+    return [Math.floor(((e.clientX - r.left) / r.width) * N), N - 1 - Math.floor(((e.clientY - r.top) / r.height) * N)];
+  }
+  wrap.addEventListener("pointermove", (e) => { if (cube) setPixel(...pixelAt(e)); });
+  wrap.addEventListener("pointerdown", (e) => {
+    if (!cube) return;
+    const p = pixelAt(e);
+    if (pix && pix[0] === p[0] && pix[1] === p[1]) queueSound(0, true); else setPixel(...p);
+    if (e.pointerType !== "mouse") queueSound(0, true);
+  });
+  wrap.addEventListener("keydown", (e) => {
+    if (!cube || e.target !== wrap) return;
+    const d = e.shiftKey ? 5 : 1;
+    const m: Record<string, [number, number]> = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, d], ArrowDown: [0, -d] };
+    if (!m[e.key]) return;
+    e.preventDefault();
+    const p = pix ?? [Math.floor(N / 2), Math.floor(N / 2)];
+    setPixel(p[0] + m[e.key][0], p[1] + m[e.key][1], true);
+  });
+
+  // ---- cut handles ----
+  function dragHandle(el: HTMLElement, move: (x: number, y: number) => void) {
+    el.addEventListener("pointerdown", (e) => { e.stopPropagation(); el.setPointerCapture(e.pointerId); });
+    el.addEventListener("pointermove", (e) => {
+      e.stopPropagation();
+      if (!el.hasPointerCapture(e.pointerId)) return;
+      const r = wrap.getBoundingClientRect();
+      move(clamp(((e.clientX - r.left) / r.width) * N - 0.5, 0, N - 1), clamp(N - 1 - ((e.clientY - r.top) / r.height) * N + 0.5, 0, N - 1));
+      placeOverlay(); drawPV();
+    });
+  }
+  dragHandle(hc, (x, y) => { cut.cx = x; cut.cy = y; });
+  dragHandle(he, (x, y) => {
+    const [ra, de] = pixToSky(cut.cx, cut.cy), [r2, d2] = pixToSky(x, y);
+    const [pa, s] = bearing(ra, de, r2, d2);
+    cut.pa = pa / D2R; cut.len = clamp(s / D2R, 0.5, 8);
+  });
+  hc.addEventListener("keydown", (e) => {
+    const d = e.shiftKey ? 5 : 1;
+    const m: Record<string, [number, number]> = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, d], ArrowDown: [0, -d] };
+    if (!m[e.key]) return;
+    e.preventDefault(); e.stopPropagation();
+    cut.cx = clamp(cut.cx + m[e.key][0], 0, N - 1); cut.cy = clamp(cut.cy + m[e.key][1], 0, N - 1);
+    placeOverlay(); drawPV();
+  });
+  he.addEventListener("keydown", (e) => {
+    const d = e.shiftKey ? 10 : 2;
+    if (e.key === "ArrowLeft") cut.pa = (cut.pa - d + 360) % 360;
+    else if (e.key === "ArrowRight") cut.pa = (cut.pa + d) % 360;
+    else if (e.key === "ArrowUp") cut.len = Math.min(8, cut.len + 0.5);
+    else if (e.key === "ArrowDown") cut.len = Math.max(0.5, cut.len - 0.5);
+    else return;
+    e.preventDefault(); e.stopPropagation();
+    placeOverlay(); drawPV();
+  });
+  $("cvCutReset").addEventListener("click", () => {
+    Object.assign(cut, { cx: DEF_CENTRE[0], cy: DEF_CENTRE[1], pa: 139.1, len: 4.5 });
+    placeOverlay(); drawPV();
+  });
+
+  // ---- window: drag on the spectrum, sliders, reset ----
+  let drag: { k0: number; x0: number; edge: 0 | 1 | 2 } | null = null;
+  specC.addEventListener("pointerdown", (e) => {
+    if (!cube) return;
+    const r = specC.getBoundingClientRect(), x = e.clientX - r.left, k = kOfX(x);
+    specC.setPointerCapture(e.pointerId);
+    const cw = (sW - SM.l - SM.r) / NV;
+    const nearA = Math.abs(x - (xOfK(ka) - cw / 2)) < 9, nearB = Math.abs(x - (xOfK(kb) + cw / 2)) < 9;
+    // grab an existing edge, otherwise start a new window
+    drag = nearA ? { k0: kb, x0: x, edge: 1 } : nearB ? { k0: ka, x0: x, edge: 2 } : { k0: k, x0: x, edge: 0 };
+    if (drag.edge === 0) setWindow(k, k);
+  });
+  specC.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const r = specC.getBoundingClientRect();
+    setWindow(drag.k0, kOfX(e.clientX - r.left));
+  });
+  const endDrag = (e: PointerEvent) => {
+    if (!drag) return;
+    const moved = Math.abs(e.clientX - specC.getBoundingClientRect().left - drag.x0) > 3;
+    // a tap without a drag selects a channel map about 8 km/s wide
+    if (!moved && drag.edge === 0) setWindow(drag.k0 - 5, drag.k0 + 4);
+    drag = null;
+  };
+  specC.addEventListener("pointerup", endDrag);
+  specC.addEventListener("pointercancel", () => { drag = null; });
+  sA.addEventListener("input", () => setWindow(+sA.value, Math.max(+sA.value, kb)));
+  sB.addEventListener("input", () => setWindow(Math.min(+sB.value, ka), +sB.value));
+  $("cvAll").addEventListener("click", () => setWindow(0, NV - 1));
+
+  // ---- sound ----
+  let soundOn = false, actx: AudioContext | null = null, timer = 0;
+  let cur: { gain: GainNode; osc: OscillatorNode } | null = null;
+  const sndBtn = $("cvSound");
+  const FLO = 220;
+  const freqOf = (k: number) => FLO * 2 ** ((2 * k) / (NV - 1)); // two octaves over the cube
+  function stopCur() {
+    if (!cur || !actx) return;
+    const { gain, osc } = cur, t = actx.currentTime;
+    gain.gain.cancelScheduledValues(t);
+    gain.gain.setTargetAtTime(0, t, 0.015);
+    osc.stop(t + 0.1);
+    cur = null; playV = null;
+  }
+  function play() {
+    if (!soundOn || !actx || !cube) return;
+    stopCur();
+    const spec = pixSpec(), dur = 1.6, pts = 80;
+    const fr = new Float32Array(pts), gn = new Float32Array(pts);
+    for (let p = 0; p < pts; p++) {
+      const k = ka + ((kb - ka) * p) / (pts - 1), k0 = Math.round(k);
+      let t = 0, c = 0;
+      for (let q = k0 - 1; q <= k0 + 1; q++) if (q >= 0 && q < NV) { t += spec[q]; c++; }
+      t /= c;
+      fr[p] = freqOf(k);
+      gn[p] = t > 0.3 ? 0.07 * clamp(t / 30, 0, 1) ** 0.6 : 0;
+    }
+    gn[0] = gn[pts - 1] = 0;
+    const osc = actx.createOscillator(), gain = actx.createGain(), t0 = actx.currentTime + 0.02;
+    osc.type = "sine";
+    gain.gain.value = 0;
+    osc.frequency.setValueCurveAtTime(fr, t0, dur);
+    gain.gain.setValueCurveAtTime(gn, t0, dur);
+    osc.connect(gain).connect(actx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.05);
+    cur = { gain, osc };
+    const mine = cur;
+    osc.onended = () => { if (cur === mine) { cur = null; playV = null; drawSpec(); } gain.disconnect(); };
+    if (!reduce) {
+      const tick = () => {
+        if (cur !== mine || !actx) return;
+        const f = clamp((actx.currentTime - t0) / dur, 0, 1);
+        playV = vOf(ka + (kb - ka) * f);
+        drawSpec();
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+  }
+  function queueSound(delay: number, force = false) {
+    if (!soundOn) return;
+    clearTimeout(timer);
+    timer = window.setTimeout(() => { if (force || !cur) play(); else { stopCur(); play(); } }, delay);
+  }
+  sndBtn.addEventListener("click", async () => {
+    soundOn = !soundOn;
+    sndBtn.setAttribute("aria-pressed", String(soundOn));
+    sndBtn.textContent = soundOn ? "Sound on" : "Sound off";
+    if (soundOn) {
+      // created inside the click so the browser allows playback
+      actx ??= new (window.AudioContext || (window as any).webkitAudioContext)();
+      await actx.resume();
+      if (!pix) setPixel(Math.round(N / 2), Math.round(N / 2));
+      play();
+    } else { clearTimeout(timer); stopCur(); drawSpec(); }
+  });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) stopCur(); });
+
+  // ---- sizing ----
+  function resize() {
+    const mw = wrap.clientWidth;
+    if (mw) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      mapC.width = mapC.height = Math.round(mw * dpr);
+    }
+    if (specC.clientWidth) { sW = specC.clientWidth; sH = specC.clientHeight; sCtx = canvasFit(specC, sW, sH); }
+    if (pvC.clientWidth) { pW = pvC.clientWidth; pH = pvC.clientHeight; pCtx = canvasFit(pvC, pW, pH); }
+    if (cube) {
+      // the map canvas is drawn in device px, so pass its full size
+      const c = mapC.getContext("2d")!;
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      drawMap(); drawSpec(); drawPV(); placeOverlay();
+    }
+  }
+  new ResizeObserver(() => resize()).observe(root);
+
+  let started = false;
+  watchVisible(root, (on) => { if (on && !started) { started = true; load(); } }, "300px");
+</script>

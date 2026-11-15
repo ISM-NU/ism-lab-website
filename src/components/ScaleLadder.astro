@@ -1,0 +1,247 @@
+---
+// Resolution ladder: a log axis of physical scale with one bar per data set,
+// from its beam to its map, in parsecs at the distance the cited paper
+// adopted. Rows are sorted by physical beam size. Wide screens put the values
+// beside the bar, phones put the name above the bar and the values below it,
+// so nothing is ever drawn through a label. Selecting a row lists its numbers
+// and papers. Bibcodes are checked against publications.json at build time.
+import { bars, type Bar } from "../data/scales";
+import { byBibcode, titleHtml, authorLine, venue, link } from "../lib/pubs";
+
+interface Props { open?: string }
+const { open = "" } = Astro.props;
+
+for (const b of bars) for (const p of b.papers) if (!byBibcode.has(p)) throw new Error(`ScaleLadder: bibcode ${p} (${b.id}) is not in publications.json`);
+if (open && !bars.some((b) => b.id === open)) throw new Error(`ScaleLadder: unknown bar ${open}`);
+
+const AS_PER_RAD = 206264.806;
+const LO = 1e-3, HI = 2e4; // pc
+const pos = (pc: number) => (Math.log10(pc / LO) / Math.log10(HI / LO)) * 100;
+
+const two = <T,>(v: T | [T, T]): [T, T] => (Array.isArray(v) ? v : [v, v]);
+const sig = (x: number, n: number) => String(Number(x.toPrecision(n)));
+const fmtAng = (as: number) => (as < 100 ? `${sig(as, 3)}″` : as < 6000 ? `${sig(as / 60, 3)}′` : `${sig(as / 3600, 3)}°`);
+const fmtPc = (pc: number) => {
+  if (pc >= 1e6) return `${sig(pc / 1e6, 3)} Mpc`;
+  if (pc >= 1e3) return `${sig(pc / 1e3, 3)} kpc`;
+  return `${sig(pc, pc < 100 ? 2 : 3)} pc`;
+};
+const range = (a: number, b: number, f: (x: number) => string) => {
+  const [x, y] = [f(a), f(b)];
+  if (x === y) return x;
+  // "0.019–0.66 pc": drop the first unit when both ends share it.
+  const ux = x.split(" ")[1], uy = y.split(" ")[1];
+  return ux && ux === uy ? `${x.split(" ")[0]}–${y}` : `${x}–${y}`;
+};
+const angRange = (a: number, b: number) => {
+  if (a === b) return fmtAng(a);
+  const [x, y] = [fmtAng(a), fmtAng(b)];
+  return x.slice(-1) === y.slice(-1) ? `${x.slice(0, -1)}–${y}` : `${x}–${y}`;
+};
+
+const rows = bars.map((b: Bar) => {
+  const [dn, df] = two(b.dist);
+  const [sa, sb] = two(b.size);
+  const beamPc: [number, number] = [(b.beam * dn) / AS_PER_RAD, (b.beam * df) / AS_PER_RAD];
+  const sizePc: [number, number] = [(sa * dn) / AS_PER_RAD, (sb * df) / AS_PER_RAD];
+  const spread = beamPc[0] !== beamPc[1] || sizePc[0] !== sizePc[1];
+  const ext: [number, number] = [pos(beamPc[0]), pos(sizePc[1])];
+  const core: [number, number] | null = beamPc[1] < sizePc[0] ? [pos(beamPc[1]), pos(sizePc[0])] : null;
+  const beams = sizePc[0] / beamPc[1];
+  return {
+    b, beamPc, sizePc, spread, ext, core,
+    str: {
+      beam: `${fmtAng(b.beam)} = ${range(beamPc[0], beamPc[1], fmtPc)}`,
+      map: `${angRange(sa, sb)} = ${range(sizePc[0], sizePc[1], fmtPc)}`,
+      dist: Array.isArray(b.dist) ? `${fmtPc(dn)} to ${fmtPc(df)}` : fmtPc(dn),
+      beams: spread ? `${Math.round(sizePc[0] / beamPc[1])}–${Math.round(sizePc[1] / beamPc[0])}` : String(Math.round(beams)),
+      short: `${fmtAng(b.beam)} · ${range(beamPc[0], beamPc[1], fmtPc)} → ${angRange(sa, sb)} · ${range(sizePc[0], sizePc[1], fmtPc)}`,
+    },
+  };
+}).sort((x, y) => x.beamPc[0] - y.beamPc[0]);
+
+const ticks: [number, string][] = [
+  [1e-3, "0.001 pc"], [1e-2, "0.01 pc"], [1e-1, "0.1 pc"], [1, "1 pc"], [10, "10 pc"], [100, "100 pc"], [1e3, "1 kpc"], [1e4, "10 kpc"],
+];
+// One hairline per decade, drawn as background layers so every row carries its
+// own gridlines and none can cross the name on the phone layout.
+const grid = ticks.map(([v]) => `linear-gradient(var(--gridc), var(--gridc)) ${pos(v).toFixed(3)}% 0 / 1px 100% no-repeat`).join(", ");
+
+const cited = [...new Set(bars.flatMap((b) => b.papers))];
+const refs = Object.fromEntries(cited.map((id) => {
+  const p = byBibcode.get(id)!;
+  return [id, { t: titleHtml(p.title), a: authorLine(p), y: p.year, v: venue(p), href: link(p) }];
+}));
+const data = Object.fromEntries(rows.map((r) => [r.b.id, {
+  name: r.b.name, target: r.b.target, beam: r.str.beam, beamNote: r.b.beamNote, map: r.str.map, mapNote: r.b.sizeNote,
+  dist: r.str.dist, distSrc: r.b.distSrc, beams: r.str.beams, papers: r.b.papers, soon: r.b.soon ?? "", note: r.b.note ?? "",
+}]));
+const pct = (n: number) => `${n.toFixed(3)}%`;
+---
+
+<div class="ladder" id="ladder" style={`--grid:${grid}`} data-open={open}>
+  <div class="axis top" aria-hidden="true">
+    <div class="scale">{ticks.map(([v, t], i) => <span class={`tk ${i % 2 === 0 ? "alt" : ""}`} style={`left:${pct(pos(v))}`}>{t}</span>)}</div>
+  </div>
+  <ul class="rows">
+    {rows.map((r) => (
+      <li>
+        <button type="button" class={`row ${r.b.soon ? "soon" : ""}`} data-id={r.b.id} aria-pressed="false"
+          aria-label={`${r.b.name}, ${r.b.target}. Beam ${r.str.beam}. Map ${r.str.map}.${r.b.soon ? " In progress." : ""}`}>
+          <span class="who"><b>{r.b.name}</b><i>{r.b.target}</i></span>
+          <span class="track" aria-hidden="true">
+            <span class={`bar ${r.core && r.spread ? "spread" : ""}`} style={`left:${pct(r.ext[0])};width:${pct(Math.max(r.ext[1] - r.ext[0], 0.4))}`}>
+              {r.core && r.spread && <span class="core" style={`left:${pct(((r.core[0] - r.ext[0]) / (r.ext[1] - r.ext[0])) * 100)};width:${pct(((r.core[1] - r.core[0]) / (r.ext[1] - r.ext[0])) * 100)}`}></span>}
+            </span>
+            <span class="val" data-a={r.ext[0].toFixed(3)} data-b={r.ext[1].toFixed(3)}>{r.str.short}</span>
+          </span>
+        </button>
+      </li>
+    ))}
+  </ul>
+  <div class="axis bottom" aria-hidden="true">
+    <div class="scale">{ticks.map(([v, t], i) => <span class={`tk ${i % 2 === 0 ? "alt" : ""}`} style={`left:${pct(pos(v))}`}>{t}</span>)}</div>
+  </div>
+</div>
+<div class="detail" id="ladderNote" aria-live="polite">
+  <p class="hint">Each bar runs from the beam of a data set to the size of the map the paper analysed, in parsecs at the distance the paper adopted. Select a bar to read the numbers and the paper behind it. Dashed bars are work in progress.</p>
+</div>
+<script type="application/json" id="ladderData" set:html={JSON.stringify({ data, refs })}></script>
+
+<style>
+  .ladder { --gridc: rgba(10, 10, 11, 0.14); --lw: clamp(190px, 21vw, 270px); margin-top: 40px; }
+  .rows { list-style: none; margin: 0; padding: 0; }
+  .row { display: grid; grid-template-columns: var(--lw) minmax(0, 1fr); align-items: center; gap: 0 20px; width: 100%; background: none; border: 0; border-top: 1px solid rgba(10, 10, 11, 0.1); padding: 0; margin: 0; cursor: pointer; color: var(--on-paper); text-align: left; font: inherit; min-height: 46px; }
+  .row:hover { background: rgba(10, 10, 11, 0.04); }
+  .row[aria-pressed="true"] { background: rgba(255, 61, 36, 0.09); }
+  .rows li:last-child .row { border-bottom: 1px solid rgba(10, 10, 11, 0.1); }
+  .who { display: grid; gap: 2px; padding: 7px 0 7px 4px; min-width: 0; }
+  .who b { font-weight: 600; font-size: 15px; line-height: 1.2; }
+  .who i { font: 400 11px/1.3 var(--mono); letter-spacing: 0.04em; color: var(--on-paper-dim); font-style: normal; }
+  .row[aria-pressed="true"] .who b { color: #c4260f; }
+
+  .track { position: relative; align-self: stretch; min-height: 46px; background: var(--grid); }
+  .bar { position: absolute; top: 50%; height: 10px; margin-top: -5px; background: var(--on-paper); transition: background 0.15s; }
+  .bar.spread { background: color-mix(in srgb, var(--on-paper) 28%, transparent); }
+  .core { position: absolute; top: 0; bottom: 0; background: var(--on-paper); transition: background 0.15s; }
+  .row.soon .bar { background: none; border: 1.5px dashed var(--on-paper); }
+  .row:hover .bar:not(.spread), .row:hover .core { background: #3a3a37; }
+  .row.soon:hover .bar { background: none; }
+  .row[aria-pressed="true"] .bar:not(.spread), .row[aria-pressed="true"] .core { background: var(--signal); }
+  .row[aria-pressed="true"].soon .bar { background: none; border-color: var(--signal); }
+  .row[aria-pressed="true"] .bar.spread { background: rgba(255, 61, 36, 0.3); }
+
+  /* Values sit beside the bar (placed by the script on the side with room) and
+     carry the paper colour so a gridline stops at the text instead of running
+     through it. */
+  .val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 11px/1.3 var(--mono); letter-spacing: 0.02em; color: var(--on-paper); background: var(--paper); padding: 2px 6px; white-space: nowrap; max-width: 100%; }
+  .row[aria-pressed="true"] .val { background: #f6e4de; }
+  .row:hover:not([aria-pressed="true"]) .val { background: #ecece8; }
+
+  .axis { position: relative; display: grid; grid-template-columns: var(--lw) minmax(0, 1fr); gap: 0 20px; }
+  .axis .scale { position: relative; grid-column: 2; height: 30px; border-top: 1px solid rgba(10, 10, 11, 0.55); }
+  .axis.top .scale { border-top: 0; border-bottom: 1px solid rgba(10, 10, 11, 0.55); }
+  .tk { position: absolute; font: 600 11px/1 var(--mono); letter-spacing: 0.04em; color: var(--on-paper-dim); white-space: nowrap; transform: translateX(-50%); }
+  .tk:first-child { transform: none; }
+  .tk::before { content: ""; position: absolute; left: 50%; width: 1px; height: 7px; background: rgba(10, 10, 11, 0.55); }
+  .tk:first-child::before { left: 0; }
+  .axis.top .tk { bottom: 12px; }
+  .axis.top .tk::before { top: 17px; }
+  .axis.bottom .tk { top: 12px; }
+  .axis.bottom .tk::before { bottom: 17px; }
+
+  .detail { margin-top: 32px; border-top: 1px solid rgba(10, 10, 11, 0.2); padding-top: 20px; min-height: 9em; max-width: 90ch; }
+  .hint { font-size: 16px; color: var(--on-paper-dim); }
+  .detail :global(h3) { font: 600 12px/1.3 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 14px; color: var(--on-paper-dim); }
+  .detail :global(dl) { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 22px; margin: 0 0 20px; }
+  .detail :global(dt) { font: 600 12px/1.5 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-paper-dim); padding-top: 2px; }
+  .detail :global(dd) { margin: 0; font-size: 16px; }
+  .detail :global(dd b) { font: 600 15px/1.4 var(--mono); }
+  .detail :global(dd span) { display: block; font-size: 14px; color: var(--on-paper-dim); }
+  .detail :global(ol) { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .detail :global(li) { display: grid; gap: 3px; }
+  .detail :global(.t) { font-weight: 600; font-size: 16px; }
+  .detail :global(.m) { font: 400 13px/1.4 var(--mono); color: var(--on-paper-dim); }
+  .detail :global(.soon) { font: 600 13px/1.4 var(--mono); color: #c4260f; margin-bottom: 14px; }
+  .detail :global(.nb) { font-size: 15px; color: var(--on-paper-dim); max-width: 70ch; margin: 0 0 16px; }
+
+  @media (max-width: 760px) {
+    .ladder { --gridc: rgba(10, 10, 11, 0.12); }
+    .row { grid-template-columns: minmax(0, 1fr); padding: 8px 0 10px; gap: 4px; }
+    .who { padding: 0; }
+    .track { min-height: 22px; align-self: auto; }
+    .val { position: static; transform: none; display: block; background: none !important; padding: 6px 0 0; white-space: normal; font-size: 11px; }
+    .track { display: grid; align-content: start; }
+    .bar { position: relative; top: auto; margin: 6px 0 0; height: 10px; min-width: 2px; }
+    .track { min-height: 0; background: none; }
+    .track::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 22px; background: var(--grid); pointer-events: none; }
+    .bar, .val { z-index: 1; }
+    .axis { grid-template-columns: minmax(0, 1fr); }
+    .axis .scale { grid-column: 1; }
+    .tk.alt { display: none; }
+    .tk:last-child { transform: translateX(-100%); }
+    .tk:last-child::before { left: 100%; }
+    .detail dl { grid-template-columns: minmax(0, 1fr); gap: 2px 0; }
+    .detail dd { margin-bottom: 10px; }
+  }
+</style>
+
+<script>
+  type Ref = { t: string; a: string; y: number; v: string; href: string };
+  type Row = { name: string; target: string; beam: string; beamNote: string; map: string; mapNote: string; dist: string; distSrc: string; beams: string; papers: string[]; soon: string; note: string };
+  const D: { data: Record<string, Row>; refs: Record<string, Ref> } = JSON.parse(document.getElementById("ladderData")!.textContent!);
+  const ladder = document.getElementById("ladder")!;
+  const note = document.getElementById("ladderNote")!;
+  const rows = [...ladder.querySelectorAll<HTMLButtonElement>(".row")];
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  const hint = note.innerHTML;
+  let sel = "";
+
+  // Wide layout: each value label goes to the right of its bar when it fits,
+  // otherwise to the left, otherwise on whichever side is roomier (wrapping).
+  const PAD = 8;
+  function place() {
+    for (const row of rows) {
+      const val = row.querySelector<HTMLElement>(".val")!;
+      const track = val.parentElement!;
+      if (getComputedStyle(val).position !== "absolute") { val.style.cssText = ""; continue; }
+      const W = track.clientWidth;
+      const a = (Number(val.dataset.a) / 100) * W, b = (Number(val.dataset.b) / 100) * W;
+      val.style.cssText = "white-space:nowrap;left:0;right:auto;max-width:none";
+      const w = val.offsetWidth;
+      if (b + PAD + w <= W) val.style.left = b + PAD + "px";
+      else if (a - PAD - w >= 0) val.style.left = a - PAD - w + "px";
+      else if (W - b >= a) Object.assign(val.style, { left: b + PAD + "px", whiteSpace: "normal", maxWidth: W - b - PAD + "px" });
+      else Object.assign(val.style, { left: "0px", whiteSpace: "normal", maxWidth: a - PAD + "px", textAlign: "right" });
+    }
+  }
+
+  function show(id: string) {
+    sel = id;
+    rows.forEach((r) => r.setAttribute("aria-pressed", String(r.dataset.id === id)));
+    const d = D.data[id];
+    const papers = d.papers
+      .map((b) => D.refs[b]).sort((x, y) => y.y - x.y)
+      .map((r) => `<li><a class="t" href="${esc(r.href)}">${r.t}</a><span class="m">${esc(r.a)} · ${r.y} · ${esc(r.v)}</span></li>`);
+    note.innerHTML =
+      `<h3>${esc(d.name)} · ${esc(d.target)}</h3>` +
+      (d.soon ? `<p class="soon">${esc(d.soon)}</p>` : "") +
+      `<dl><dt>Beam</dt><dd><b>${esc(d.beam)}</b><span>${esc(d.beamNote)}</span></dd>` +
+      `<dt>Map</dt><dd><b>${esc(d.map)}</b><span>${esc(d.mapNote)}</span></dd>` +
+      `<dt>Distance</dt><dd><b>${esc(d.dist)}</b><span>${esc(d.distSrc)}</span></dd>` +
+      `<dt>Dynamic range</dt><dd><b>${esc(d.beams)}</b> beams across the map</dd></dl>` +
+      (d.note ? `<p class="nb">${esc(d.note)}</p>` : "") +
+      (papers.length ? `<ol>${papers.join("")}</ol>` : "");
+  }
+  function clear() {
+    sel = "";
+    rows.forEach((r) => r.setAttribute("aria-pressed", "false"));
+    note.innerHTML = hint;
+  }
+  rows.forEach((r) => r.addEventListener("click", () => (sel === r.dataset.id ? clear() : show(r.dataset.id!))));
+  if (ladder.dataset.open) show(ladder.dataset.open);
+
+  place();
+  new ResizeObserver(place).observe(ladder);
+  document.fonts?.ready.then(place);
+</script>

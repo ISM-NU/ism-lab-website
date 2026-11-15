@@ -1,6 +1,9 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import publications from "./data/publications.json";
+
+const bibcodes = new Set(publications.papers.map((p) => p.bibcode));
 
 const people = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/people" }),
@@ -27,6 +30,20 @@ const projects = defineCollection({
     instruments: z.array(z.string()),
     // ADS bibcodes of the published papers behind this line of work.
     papers: z.array(z.string()).default([]),
+    // Published results, each stated as the paper states it. The bibcode must be in
+    // publications.json; the source sentence goes in a YAML comment above each item.
+    // value: the number with its uncertainty as printed, if the paper gives one.
+    // figure: a site-rendered image under /sky/, never a copy of a journal figure.
+    findings: z
+      .array(
+        z.object({
+          text: z.string(),
+          value: z.string().optional(),
+          figure: z.string().optional(),
+          bibcode: z.string().refine((b) => bibcodes.has(b), { message: "bibcode not in src/data/publications.json" }),
+        }),
+      )
+      .default([]),
     // Work in progress, shown as COMING SOON until Dana approves it.
     upcoming: z.array(z.object({ title: z.string(), note: z.string() })).default([]),
   }),

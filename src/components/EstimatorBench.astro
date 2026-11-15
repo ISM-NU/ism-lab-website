@@ -1,0 +1,557 @@
+---
+// Polarization estimator bench: why p and S are biased at low signal to noise,
+// and what the estimators studied by the group do about it. Three panels share
+// the formulas in src/lib/estimators.ts (tested by estimators.test.mjs):
+//   1. p estimators on simulated (Q, U) draws (Montier et al. 2015a,b; Plaszczynski et al. 2014)
+//   2. the angle dispersion function S in the 10-pixel setup of Alina et al. 2016
+//   3. naive and MAS polarized intensity on a Planck PR4 patch (scripts/render_bench.py)
+// Built for a dark section. Copper appears only in the map colour scale.
+import { byBibcode, link } from "../lib/pubs";
+import patchMeta from "../data/bench_patch.json";
+
+const bibs = { pma1: "2015A&A...574A.135M", pma2: "2015A&A...574A.136M", pma3: "2016A&A...595A..57A", pir19: "2015A&A...576A.104P" } as const;
+for (const b of Object.values(bibs)) if (!byBibcode.has(b)) throw new Error(`EstimatorBench: ${b} is not in publications.json`);
+const href = Object.fromEntries(Object.entries(bibs).map(([k, b]) => [k, link(byBibcode.get(b)!)])) as Record<keyof typeof bibs, string>;
+// Plaszczynski et al. 2014 is not a group paper, so it is not in publications.json.
+const p14 = "https://doi.org/10.1093/mnras/stu270";
+const m = patchMeta;
+---
+
+<div class="eb" id="eb">
+  <section class="panel" aria-labelledby="ebP-h">
+    <div class="intro">
+      <h3 class="brut" id="ebP-h">Fraction</h3>
+      <p>Noise in Q and U adds to the length of the polarization vector on average, so the measured fraction p comes out too high when the signal to noise is low. Set a true fraction and a noise level: the bench draws 2000 noisy measurements and applies four estimators to each. The red line is the true value; the triangle marks each estimator's mean.</p>
+    </div>
+    <div class="ctl" role="group" aria-label="Simulation settings">
+      <label><span>True fraction p<sub>0</sub></span> <output id="ebP0V"></output><input type="range" id="ebP0" min="1" max="30" step="0.5" value="10" /></label>
+      <label><span>Signal to noise p<sub>0</sub>/σ</span> <output id="ebSnrV"></output><input type="range" id="ebSnr" min="0" max="40" step="1" value="15" aria-describedby="ebSnrH" /></label>
+      <label><span>Noise ellipticity ε<sub>eff</sub></span> <output id="ebEpsV"></output><input type="range" id="ebEps" min="1" max="2" step="0.05" value="1" /></label>
+      <label><span>True angle ψ<sub>0</sub> to the noise ellipse</span> <output id="ebPsiV"></output><input type="range" id="ebPsi" min="-90" max="90" step="5" value="0" /></label>
+      <button type="button" id="ebRedraw">New draw</button>
+      <p class="hint" id="ebSnrH">Signal to noise runs from 0.3 to 10 on a log scale. Ellipticity 1 is equal, independent noise on Q and U; up to 1.1 is the low regime and up to 2 the extreme one (Montier et al. 2015a).</p>
+    </div>
+    <figure class="chart">
+      <canvas id="ebPc" role="img" aria-label="Histograms of the estimated fraction for four estimators against the true value"></canvas>
+      <table class="read" aria-live="polite">
+        <thead><tr><th scope="col">Estimator</th><th scope="col">Mean</th><th scope="col">Bias</th><th scope="col">At zero</th></tr></thead>
+        <tbody id="ebPt"></tbody>
+      </table>
+    </figure>
+    <div class="notes">
+      <p><b>Naive</b> is √(Q² + U²). <b>Asymptotic</b> subtracts the noise in quadrature and returns zero below it, so a large share of low signal-to-noise points end up at exactly zero. <b>MAS</b>, the modified asymptotic estimator of <a href={p14} rel="noopener">Plaszczynski et al. 2014</a>, keeps the same high signal-to-noise limit but stays positive and continuous. <b>Mean posterior</b> is the Bayesian estimator with a flat prior on p<sub>0</sub> between 0 and 1; it can never fall below about 0.8σ. With elliptical noise, asymptotic and MAS use the noise across the direction of the measured (Q, U) vector (Montier et al. 2015b, Eq. 15), and the mean posterior uses the full covariance. <a href={href.pma2} rel="noopener">Montier et al. 2015b</a> recommend MAS for maps, with the lowest bias and a near-Gaussian output above a signal to noise of 2; the mean posterior has the lowest risk between 1 and 3. Above 4 all of them agree.</p>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="ebS-h">
+    <div class="intro">
+      <h3 class="brut" id="ebS-h">Dispersion</h3>
+      <p>The angle dispersion function S measures how much the field direction changes around a point: the rms difference between the angle at the centre and its neighbours. Noise pushes it towards 52°, the value for random angles, so it is biased up when the field is ordered and down when it is tangled. The setup follows <a href={href.pma3} rel="noopener">Alina et al. 2016</a>: ten pixels, p<sub>0</sub> = 10%, and every neighbour differing from the centre by the true S<sub>0</sub>.</p>
+    </div>
+    <div class="ctl" role="group" aria-label="Dispersion settings">
+      <label><span>True dispersion S<sub>0</sub></span> <output id="ebS0V"></output><input type="range" id="ebS0" min="0" max="90" step="1" value="22" /></label>
+      <label><span>Signal to noise p<sub>0</sub>/σ</span> <output id="ebSsV"></output><input type="range" id="ebSs" min="0" max="40" step="1" value="16" /></label>
+      <div class="glyphs" aria-hidden="true">
+        <figure><canvas id="ebG0"></canvas><figcaption>True angles</figcaption></figure>
+        <figure><canvas id="ebG1"></canvas><figcaption>One noisy draw</figcaption></figure>
+      </div>
+    </div>
+    <figure class="chart">
+      <canvas id="ebSc" role="img" aria-label="Mean estimated dispersion against signal to noise for three estimators"></canvas>
+      <ul class="key" id="ebSk" aria-live="polite"></ul>
+    </figure>
+    <div class="notes">
+      <p><b>Conventional</b> is the rms of the measured angle differences (Alina et al. 2016, Eq. 5). <b>Variance subtracted</b> removes the propagated uncertainty, S² − σ<sub>S</sub>² (<a href={href.pir19} rel="noopener">Planck Collaboration Int. XIX 2015</a>, Eq. 8 and 9); that paper notes the approximation is poor at low signal to noise. <b>Dichotomic</b> multiplies angle differences from two independent halves of the data, each with √2 more noise (Alina et al. 2016, Eq. 18). Its square can be negative, so the curve shows the root of its mean. Alina et al. 2016 find it is always biased low, while the conventional estimator is biased high below 52° and low above, so the two bracket S<sub>0</sub> for an ordered field.</p>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="ebM-h">
+    <div class="intro">
+      <h3 class="brut" id="ebM-h">A Planck patch</h3>
+      <p>The same correction on real data: Planck PR4 353 GHz polarized intensity on a {m.size_deg}° field at the western edge of the LMC, smoothed to {m.resolution_arcmin}′ with the noise covariance of every pixel carried through the smoothing. MAS changes little where the signal is strong and pulls the faint pixels down.</p>
+    </div>
+    <div class="maps" id="ebMaps">
+      <figure><canvas id="ebM0" role="img" aria-label="Naive polarized intensity map"></canvas><figcaption>Naive P</figcaption></figure>
+      <figure><canvas id="ebM1" role="img" aria-label="MAS polarized intensity map"></canvas><figcaption>MAS P</figcaption></figure>
+      <figure><canvas id="ebM2" role="img" aria-label="Map of the difference between naive and MAS polarized intensity"></canvas><figcaption>Naive minus MAS</figcaption></figure>
+    </div>
+    <div class="scales">
+      <div><canvas id="ebB0" aria-hidden="true"></canvas><span class="mono" id="ebB0t"></span></div>
+      <div><canvas id="ebB1" aria-hidden="true"></canvas><span class="mono" id="ebB1t"></span></div>
+    </div>
+    <p class="read2 mono" id="ebMr" aria-live="polite"></p>
+    <div class="notes">
+      <p>North is up and east to the left; the field is centred on RA {m.center[0]}°, Dec {m.center[1]}°. The maps use a Gaussian kernel of {m.fwhm_arcmin}′ FWHM on top of the native beam of about {m.beam_arcmin}′, and the Q and U variances are summed with the squared kernel weights, which lowers σ by about a factor of nine. Pixel noise correlations are not in the Planck covariance columns, so σ here is a lower limit. The map is polarized intensity in µK<sub>CMB</sub>, not the fraction: p needs the intensity zero level (CMB and cosmic infrared background removed, as in Alina et al. 2023), and that offset matters most where the signal to noise is low. The Milky Way foreground is not removed.</p>
+    </div>
+  </section>
+</div>
+
+<style>
+  .eb { display: grid; gap: clamp(56px, 8vw, 96px); margin-top: 32px; }
+  .panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 24px 40px; align-items: start; }
+  .intro { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 16px 40px; align-items: end; border-bottom: 1px solid var(--hair); padding-bottom: 18px; }
+  .intro p { max-width: 68ch; font-size: 16px; }
+  .ctl { display: grid; gap: 16px; align-content: start; min-width: 0; }
+  .ctl label { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 14px; align-items: baseline; }
+  .ctl output { font: 500 14px/1 var(--mono); color: var(--ink); }
+  .ctl input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--signal); min-height: 32px; margin: 0; }
+  :is(input, button):focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  button { justify-self: start; font: 500 13px/1 var(--mono); color: var(--ink); background: transparent; border: 1px solid var(--hair); padding: 10px 14px; min-height: 40px; cursor: pointer; border-radius: 0; }
+  button:hover { border-color: var(--ink); }
+  .hint { font-size: 13px; line-height: 1.45; color: var(--grey); }
+  figure { margin: 0; min-width: 0; }
+  .chart { display: grid; gap: 14px; }
+  .chart canvas { width: 100%; }
+  .read { width: 100%; border-collapse: collapse; font: 400 13px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
+  .read th { text-align: left; font-weight: 600; color: var(--grey); padding: 0 8px 6px 0; border-bottom: 1px solid var(--hair); }
+  .read :global(td) { padding: 6px 8px 0 0; color: var(--ink); }
+  .read :global(td:first-child) { color: var(--grey); }
+  .notes { grid-column: 1 / -1; max-width: 86ch; font-size: 15px; color: var(--grey); }
+  .notes b { color: var(--ink); font-weight: 600; }
+  .notes a, .intro a { color: var(--ink); }
+  .glyphs { display: grid; grid-template-columns: repeat(2, minmax(0, 132px)); gap: 16px; }
+  .glyphs canvas { width: 100%; aspect-ratio: 1; border: 1px solid var(--hair); }
+  .glyphs figcaption, .maps figcaption { font: 400 12px/1.4 var(--mono); color: var(--grey); margin-top: 6px; }
+  .key { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font: 400 13px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
+  .key :global(li) { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; color: var(--grey); }
+  .key :global(li b) { color: var(--ink); font-weight: 500; }
+  .key :global(svg) { width: 28px; height: 8px; overflow: visible; }
+  .maps { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .maps canvas { width: 100%; aspect-ratio: 1; background: #000; border: 1px solid var(--hair); }
+  .scales { grid-column: 1 / -1; display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .scales div { display: grid; gap: 4px; }
+  .scales canvas { width: 100%; height: 10px; }
+  .scales span { font-size: 12px; color: var(--grey); }
+  .read2 { grid-column: 1 / -1; font-size: 13px; line-height: 1.5; color: var(--ink); }
+  @media (max-width: 900px) {
+    .panel, .intro { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .maps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .maps figure:last-child { grid-column: 1 / -1; max-width: calc(50% - 8px); }
+    .scales { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+
+<script>
+  import * as E from "../lib/estimators";
+  import { canvasFit } from "../scripts/motion";
+
+  const DEG = Math.PI / 180;
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const css = getComputedStyle(document.documentElement);
+  const C = {
+    ink: css.getPropertyValue("--ink").trim() || "#f3f3ef",
+    grey: css.getPropertyValue("--grey").trim() || "#8a8a86",
+    hair: css.getPropertyValue("--hair").trim() || "rgba(243,243,239,0.16)",
+    red: css.getPropertyValue("--signal").trim() || "#ff3d24",
+    mono: css.getPropertyValue("--mono").trim() || "monospace",
+  };
+  const font = (px: number, w = 400) => `${w} ${px}px ${C.mono}`;
+  const logSlider = (v: number, lo: number, hi: number) => lo * Math.pow(hi / lo, v / 40); // 40 keyboard steps
+  const f1 = (x: number) => (Math.abs(x) < 0.05 ? "0.0" : (x > 0 ? "+" : "") + x.toFixed(1));
+  const width = (el: HTMLElement) => Math.max(260, el.clientWidth);
+
+  // ------------------------------------------------------------ panel 1: p estimators
+  const N = 2000;
+  const p0In = $<HTMLInputElement>("ebP0"), snrIn = $<HTMLInputElement>("ebSnr"), epsIn = $<HTMLInputElement>("ebEps"), psiIn = $<HTMLInputElement>("ebPsi");
+  const pc = $<HTMLCanvasElement>("ebPc"), pt = $("ebPt");
+  let seed = 1;
+  const names = ["Naive", "Asymptotic", "MAS", "Mean posterior"];
+  const est: Float64Array[] = names.map(() => new Float64Array(N));
+  const qs = new Float64Array(N), us = new Float64Array(N);
+  let mbReady = false, mbTimer = 0;
+  let P = { p0: 0.1, sG: 0.01, eps: 1, cov: E.covFromShape(0.01, 1, 0) };
+
+  function simP() {
+    const p0 = +p0In.value / 100, snr = logSlider(+snrIn.value, 0.3, 10), eps = +epsIn.value, psi0 = +psiIn.value * DEG;
+    $("ebP0V").textContent = `${(+p0In.value).toFixed(1)}%`;
+    $("ebSnrV").textContent = snr.toFixed(2);
+    $("ebEpsV").textContent = eps.toFixed(2);
+    $("ebPsiV").textContent = `${psiIn.value}°`;
+    snrIn.setAttribute("aria-valuetext", snr.toFixed(2));
+    const sG = p0 / snr;
+    // Major axis of the noise ellipse along Q (theta = 0); psi0 is measured from it.
+    const cov = E.covFromShape(sG, eps, 0), shape = E.covShape(cov);
+    P = { p0, sG, eps, cov };
+    const g = E.gauss(E.rng(seed));
+    const q0 = p0 * Math.cos(2 * psi0), u0 = p0 * Math.sin(2 * psi0);
+    for (let k = 0; k < N; k++) {
+      const [dq, du] = E.noiseDraw(cov, g);
+      const q = q0 + dq, u = u0 + du, p = Math.hypot(q, u), b2 = E.noiseBias(q, u, cov, shape);
+      qs[k] = q; us[k] = u;
+      est[0][k] = p;
+      est[1][k] = E.asymptotic(p, b2);
+      est[2][k] = E.mas(p, b2);
+    }
+    mbReady = false;
+    drawP();
+    clearTimeout(mbTimer);
+    // The 2D posterior integral is the slow part; run it once the slider rests.
+    mbTimer = window.setTimeout(() => {
+      for (let k = 0; k < N; k++) est[3][k] = eps === 1 ? E.mbCanonical(Math.hypot(qs[k], us[k]), sG, 1) : E.mbGeneral(qs[k], us[k], cov, 1, 61, 96);
+      mbReady = true;
+      drawP();
+    }, eps === 1 ? 0 : 140);
+  }
+
+  function drawP() {
+    const W = width(pc), narrow = W < 520;
+    const rowH = narrow ? 58 : 66, gap = narrow ? 30 : 26, top = narrow ? 44 : 26, bottom = 34;
+    const labW = narrow ? 0 : 128;
+    const H = top + names.length * rowH + (names.length - 1) * gap + bottom;
+    const x = canvasFit(pc, W, H);
+    pc.style.height = `${H}px`;
+    const { p0, sG, eps } = P;
+    // Not capped at 100%: at low S/N and large p0 the naive estimates do exceed 1, while
+    // the mean posterior is held below 1 by its prior (Montier et al. 2015b, Sect. 4.2).
+    const xmax = p0 + 4.5 * sG * Math.sqrt(eps);
+    const x0 = labW, x1 = W - 8, bins = narrow ? 36 : 54, bw = xmax / bins;
+    const X = (v: number) => x0 + (v / xmax) * (x1 - x0);
+    const hists = est.map((a, r) => {
+      const h = new Float64Array(bins);
+      let zeros = 0;
+      if (r === 3 && !mbReady) return { h, zeros, mean: NaN };
+      let s = 0;
+      for (let k = 0; k < N; k++) {
+        const v = a[k];
+        s += v;
+        if (r === 1 && v === 0) { zeros++; continue; }
+        const i = Math.floor(v / bw);
+        if (i < bins) h[i]++; // draws beyond the axis are left out, not piled into the last bin
+      }
+      return { h, zeros, mean: s / N };
+    });
+    let hmax = 1;
+    for (const { h } of hists) for (const v of h) hmax = Math.max(hmax, v);
+    // ticks
+    const step = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1].find((s) => xmax / s <= (narrow ? 5 : 8)) ?? 1;
+    x.font = font(12);
+    x.textBaseline = "top";
+    x.textAlign = "center";
+    const axisY = H - bottom + 8;
+    const inRows = (px: number, w: number) => {
+      for (let r = 0; r < names.length; r++) x.fillRect(px, top + r * (rowH + gap), w, rowH);
+    };
+    for (let t = 0; t <= xmax + 1e-9; t += step) {
+      x.fillStyle = C.hair;
+      inRows(Math.round(X(t)), 1);
+      x.fillStyle = C.grey;
+      x.textAlign = t === 0 ? "left" : "center";
+      x.fillText(`${+(t * 100).toFixed(1)}%`, X(t), axisY);
+    }
+    let zeroLabel: [string, number, number] | null = null;
+    hists.forEach(({ h, zeros, mean }, r) => {
+      const y0 = top + r * (rowH + gap), yb = y0 + rowH;
+      x.fillStyle = C.ink;
+      x.font = font(13, 500);
+      x.textAlign = "left";
+      x.textBaseline = narrow ? "bottom" : "middle";
+      if (narrow) x.fillText(names[r], 0, y0 - 6);
+      else x.fillText(names[r], 0, y0 + rowH / 2);
+      x.fillStyle = C.hair;
+      x.fillRect(x0, yb, x1 - x0, 1);
+      if (r === 3 && !mbReady) {
+        x.fillStyle = C.grey;
+        x.font = font(12);
+        x.textBaseline = "middle";
+        x.fillText("computing…", x0 + 6, y0 + rowH / 2);
+        return;
+      }
+      x.fillStyle = "rgba(243,243,239,0.62)";
+      for (let i = 0; i < bins; i++) {
+        const hh = (h[i] / hmax) * (rowH - 4);
+        if (hh > 0) x.fillRect(X(i * bw) + 0.5, yb - hh, Math.max(1, X(bw) - X(0) - 1), hh);
+      }
+      if (zeros > 0) {
+        // The zero estimates form a spike far above the other bins: draw it full height and say how many.
+        x.fillStyle = C.ink;
+        x.fillRect(X(0), y0, 3, rowH);
+        zeroLabel = [`${Math.round((100 * zeros) / N)}% at 0`, X(0) + 8, y0];
+      }
+      // mean marker below the baseline
+      const mx = X(Math.min(mean, xmax));
+      x.fillStyle = C.ink;
+      x.beginPath();
+      x.moveTo(mx, yb + 2); x.lineTo(mx - 5, yb + 10); x.lineTo(mx + 5, yb + 10); x.closePath();
+      x.fill();
+    });
+    // true value through all rows, starting below its label
+    x.fillStyle = C.red;
+    if (narrow) inRows(Math.round(X(p0)) - 1, 2);
+    else x.fillRect(Math.round(X(p0)) - 1, top - 6, 2, axisY - top + 2);
+    x.font = font(12, 600);
+    x.textBaseline = "top";
+    const lab = `p0 ${(p0 * 100).toFixed(1)}%`;
+    const lw = x.measureText(lab).width;
+    x.textAlign = X(p0) + lw + 6 > x1 ? "right" : "left";
+    x.fillText(lab, X(p0) + (x.textAlign === "right" ? -6 : 6), 4);
+    const zl = zeroLabel as [string, number, number] | null; // set inside the forEach callback
+    if (zl) {
+      // on a void backing, so the p0 line and the gridlines never cross it
+      const [txt, lx, ly] = zl;
+      x.font = font(12);
+      const tw = x.measureText(txt).width;
+      x.fillStyle = "#000";
+      x.fillRect(lx - 3, ly, tw + 6, 16);
+      x.fillStyle = C.ink;
+      x.textAlign = "left";
+      x.textBaseline = "top";
+      x.fillText(txt, lx, ly + 2);
+    }
+
+    pt.innerHTML = hists.map(({ zeros, mean }, r) => {
+      if (Number.isNaN(mean)) return `<tr><td>${names[r]}</td><td>…</td><td>…</td><td></td></tr>`;
+      return `<tr><td>${names[r]}</td><td>${(mean * 100).toFixed(2)}%</td><td>${((mean - p0) / sG >= 0 ? "+" : "") + ((mean - p0) / sG).toFixed(2)} σ</td><td>${r === 1 ? Math.round((100 * zeros) / N) + "%" : ""}</td></tr>`;
+    }).join("");
+  }
+
+  for (const el of [p0In, snrIn, epsIn, psiIn]) el.addEventListener("input", simP);
+  $("ebRedraw").addEventListener("click", () => { seed++; simP(); });
+
+  // ------------------------------------------------------------ panel 2: dispersion function
+  const s0In = $<HTMLInputElement>("ebS0"), ssIn = $<HTMLInputElement>("ebSs");
+  const sc = $<HTMLCanvasElement>("ebSc"), sk = $("ebSk");
+  const SNR = Array.from({ length: 19 }, (_, i) => 0.1 * Math.pow(300, i / 18)); // 0.1 to 30
+  const P0S = 0.1; // Alina et al. 2016, Sect. 2.2
+  const series = [
+    { name: "Conventional", dash: [] as number[], color: () => C.ink },
+    { name: "Variance subtracted", dash: [6, 4], color: () => C.ink },
+    { name: "Dichotomic", dash: [], color: () => C.grey },
+  ];
+  let curves: number[][] = [];
+  let atNow: number[] = [];
+  let lastDraw: { q: number[]; u: number[] } | null = null;
+
+  function runS(S0: number, snr: number, n: number, seedS: number, keep = false) {
+    const s = P0S / snr, cov = { qq: s * s, uu: s * s, qu: 0 }, half = { qq: 2 * s * s, uu: 2 * s * s, qu: 0 };
+    const covs = Array(10).fill(cov);
+    const g = E.gauss(E.rng(seedS));
+    let a = 0, b = 0, d = 0;
+    const q = new Array(10), u = new Array(10), q1 = new Array(10), u1 = new Array(10), q2 = new Array(10), u2 = new Array(10);
+    for (let k = 0; k < n; k++) {
+      const t = E.uniformConfig(P0S, S0, (k % 9) * 10 * DEG);
+      for (let i = 0; i < 10; i++) {
+        // Two half-data draws with sqrt(2) more noise; their mean is the full-data measurement.
+        const [e1, f1_] = E.noiseDraw(half, g), [e2, f2] = E.noiseDraw(half, g);
+        q1[i] = t.q[i] + e1; u1[i] = t.u[i] + f1_;
+        q2[i] = t.q[i] + e2; u2[i] = t.u[i] + f2;
+        q[i] = t.q[i] + (e1 + e2) / 2; u[i] = t.u[i] + (f1_ + f2) / 2;
+      }
+      const c = E.sConventional(q, u);
+      a += c;
+      b += E.sDebiased(c, E.sigmaS(q, u, covs));
+      d += E.sDichotomic2(q1, u1, q2, u2);
+      if (keep && k === 0) lastDraw = { q: q.slice(), u: u.slice() };
+    }
+    return [a / n, b / n, Math.sqrt(Math.max(d / n, 0))];
+  }
+
+  function simS(full: boolean) {
+    const S0 = +s0In.value * DEG, snr = logSlider(+ssIn.value, 0.1, 30);
+    $("ebS0V").textContent = `${s0In.value}°`;
+    $("ebSsV").textContent = snr < 1 ? snr.toFixed(2) : snr.toFixed(1);
+    ssIn.setAttribute("aria-valuetext", snr.toFixed(2));
+    // One seed and one draw count for every node and the current point: the same normal
+    // deviates are rescaled with S/N, so the curves are smooth and the dots sit on them.
+    if (full) curves = SNR.map((r) => runS(S0, r, 1500, 100));
+    atNow = runS(S0, snr, 1500, 100, true);
+    drawS(S0, snr);
+    drawGlyphs(S0);
+  }
+
+  function drawS(S0: number, snr: number) {
+    const W = width(sc), narrow = W < 520, H = narrow ? 300 : 360;
+    const x = canvasFit(sc, W, H);
+    sc.style.height = `${H}px`;
+    const l = 44, r = 12, t = 14, b = 40;
+    const X = (v: number) => l + (Math.log(v / 0.1) / Math.log(300)) * (W - l - r);
+    const Y = (deg: number) => t + (1 - deg / 90) * (H - t - b);
+    x.font = font(12);
+    x.textBaseline = "middle";
+    x.textAlign = "right";
+    for (const d of [0, 30, 60, 90]) {
+      x.fillStyle = C.hair;
+      x.fillRect(l, Math.round(Y(d)), W - l - r, 1);
+      x.fillStyle = C.grey;
+      x.fillText(`${d}°`, l - 8, Y(d));
+    }
+    x.textAlign = "center";
+    x.textBaseline = "top";
+    for (const v of [0.1, 0.3, 1, 3, 10, 30]) {
+      x.fillStyle = C.grey;
+      x.fillText(String(v), X(v), H - b + 8);
+    }
+    x.fillText("p0/σ", (l + W - r) / 2, H - b + 24);
+    // random-angle level, dashed, labelled at the left above the line
+    const yr = Y(E.S_RANDOM / DEG);
+    x.strokeStyle = C.grey;
+    x.lineWidth = 1;
+    x.setLineDash([2, 4]);
+    x.beginPath(); x.moveTo(l, yr); x.lineTo(W - r, yr); x.stroke();
+    x.setLineDash([]);
+    // true value
+    x.fillStyle = C.red;
+    x.fillRect(l, Math.round(Y(S0 / DEG)) - 1, W - l - r, 2);
+    // curves
+    series.forEach((s, k) => {
+      x.strokeStyle = s.color();
+      x.lineWidth = 2;
+      x.setLineDash(s.dash);
+      x.beginPath();
+      curves.forEach((c, i) => (i ? x.lineTo(X(SNR[i]), Y(c[k] / DEG)) : x.moveTo(X(SNR[i]), Y(c[k] / DEG))));
+      x.stroke();
+    });
+    x.setLineDash([]);
+    // current S/N
+    x.fillStyle = C.hair;
+    x.fillRect(Math.round(X(snr)), t, 1, H - t - b);
+    series.forEach((s, k) => {
+      x.fillStyle = s.color();
+      x.beginPath();
+      x.arc(X(snr), Y(atNow[k] / DEG), 4, 0, 2 * Math.PI);
+      x.fill();
+    });
+    // Labels go on last, on a void backing so no curve runs through them. S0 sits at
+    // the left (curves there are near 52 deg), the 52 deg label at the right (curves
+    // there converge on S0); each on the side of its line away from the other line.
+    const s0Up = S0 / DEG >= E.S_RANDOM / DEG;
+    const tag = (txt: string, px: number, py: number, align: CanvasTextAlign, above: boolean, color: string, w = 400) => {
+      x.font = font(12, w);
+      const tw = x.measureText(txt).width, x0 = align === "left" ? px : px - tw, y0 = above ? py - 18 : py + 3;
+      x.fillStyle = "#000";
+      x.fillRect(x0 - 4, y0, tw + 8, 16);
+      x.fillStyle = color;
+      x.textAlign = "left";
+      x.textBaseline = "top";
+      x.fillText(txt, x0, y0 + 2);
+    };
+    const s0Above = S0 / DEG < 12 ? true : S0 / DEG > 80 ? false : s0Up;
+    tag(`S0 ${Math.round(S0 / DEG)}°`, l + 6, Y(S0 / DEG), "left", s0Above, C.red, 600);
+    tag("random angles 52°", W - r - 4, yr, "right", !s0Up, C.grey);
+    const swatch = (s: (typeof series)[number]) =>
+      `<svg viewBox="0 0 28 8" aria-hidden="true"><line x1="0" y1="4" x2="28" y2="4" stroke="${s.color()}" stroke-width="2" ${s.dash.length ? `stroke-dasharray="${s.dash.join(" ")}"` : ""}/></svg>`;
+    sk.innerHTML = series.map((s, k) => `<li>${swatch(s)}<span>${s.name}</span><b>${(atNow[k] / DEG).toFixed(1)}° (${f1(atNow[k] / DEG - S0 / DEG)}°)</b></li>`).join("") +
+      `<li><span></span><span>Mean of 1500 draws at p0/σ = ${snr.toFixed(2)}; bias in brackets</span><span></span></li>`;
+  }
+
+  function drawGlyphs(S0: number) {
+    const t = E.uniformConfig(P0S, S0, 0);
+    const draw = (id: string, q: number[], u: number[]) => {
+      const c = $<HTMLCanvasElement>(id), w = c.clientWidth || 120;
+      const x = canvasFit(c, w, w);
+      const R = w * 0.34, len = w * 0.075;
+      for (let i = 0; i < 10; i++) {
+        const cx = w / 2 + (i ? R * Math.cos((2 * Math.PI * (i - 1)) / 9 + Math.PI / 2) : 0);
+        const cy = w / 2 - (i ? R * Math.sin((2 * Math.PI * (i - 1)) / 9 + Math.PI / 2) : 0);
+        // polarization angle from north (up) towards east (left), as on the sky
+        const psi = 0.5 * Math.atan2(u[i], q[i]);
+        const dx = -Math.sin(psi) * len, dy = -Math.cos(psi) * len;
+        x.strokeStyle = i ? C.ink : C.red;
+        x.lineWidth = i ? 2 : 3;
+        x.beginPath(); x.moveTo(cx - dx, cy - dy); x.lineTo(cx + dx, cy + dy); x.stroke();
+      }
+    };
+    draw("ebG0", t.q, t.u);
+    if (lastDraw) draw("ebG1", lastDraw.q, lastDraw.u);
+  }
+
+  s0In.addEventListener("input", () => simS(true));
+  ssIn.addEventListener("input", () => simS(false));
+
+  // ------------------------------------------------------------ panel 3: Planck patch
+  type Patch = { n: number; q: number[]; u: number[]; qq: number[]; uu: number[]; qu: number[]; unit: string };
+  // render_lmc.DUST_STOPS, the site's dust palette
+  const STOPS: [number, number[]][] = [[0, [0, 0, 0]], [0.18, [0x1c, 0x0a, 0x06]], [0.38, [0x5a, 0x1e, 0x0e]], [0.58, [0xa8, 0x46, 0x1a]], [0.76, [0xe0, 0x8a, 0x3c]], [0.9, [0xf6, 0xc9, 0x8a]], [1, [0xff, 0xf6, 0xe6]]];
+  const dust = (v: number) => {
+    v = Math.min(1, Math.max(0, v));
+    let i = 1;
+    while (STOPS[i][0] < v) i++;
+    const [a, ca] = STOPS[i - 1], [b, cb] = STOPS[i], k = (v - a) / (b - a);
+    return ca.map((c, j) => c + (cb[j] - c) * k);
+  };
+  // Square-root stretch so the faint, low signal-to-noise pixels are not all black.
+  const dustSqrt = (v: number) => dust(Math.sqrt(Math.max(v, 0)));
+  const grey = (v: number) => { const g = 255 * Math.min(1, Math.max(0, v)); return [g, g, g]; };
+  let patch: { n: number; naive: Float64Array; mas: Float64Array; snr: Float64Array } | null = null;
+  let pmax = 1, dmax = 1;
+
+  function prepPatch(d: Patch) {
+    const n = d.n, len = n * n;
+    const naive = new Float64Array(len), masA = new Float64Array(len), snr = new Float64Array(len);
+    for (let i = 0; i < len; i++) {
+      const c = { qq: d.qq[i], uu: d.uu[i], qu: d.qu[i] };
+      const p = Math.hypot(d.q[i], d.u[i]), b2 = E.noiseBias(d.q[i], d.u[i], c);
+      naive[i] = p;
+      masA[i] = E.mas(p, b2);
+      snr[i] = p / Math.sqrt(b2);
+    }
+    const sorted = Float64Array.from(naive).sort();
+    pmax = sorted[Math.floor(0.995 * len)];
+    const diff = naive.map((v, i) => v - masA[i]).sort();
+    dmax = diff[Math.floor(0.995 * len)];
+    patch = { n, naive, mas: masA, snr };
+    const band = (lo: number, hi: number) => {
+      let k = 0, s = 0;
+      for (let i = 0; i < len; i++) if (snr[i] >= lo && snr[i] < hi) { k++; s += masA[i] / naive[i]; }
+      return k ? `${k} pixels, MAS ${Math.round(100 * (1 - s / k))}% lower` : "no pixels";
+    };
+    $("ebMr").textContent = `P/σ below 2: ${band(0, 2)}. Between 2 and 4: ${band(2, 4)}. Above 4: ${band(4, Infinity)}.`;
+  }
+
+  function drawMap(id: string, vals: Float64Array, n: number, map: (v: number) => number[], vmax: number) {
+    const c = $<HTMLCanvasElement>(id), w = c.clientWidth || 200;
+    const off = document.createElement("canvas");
+    off.width = n; off.height = n;
+    const ox = off.getContext("2d")!, img = ox.createImageData(n, n);
+    for (let r = 0; r < n; r++) for (let col = 0; col < n; col++) {
+      const rgb = map(vals[r * n + col] / vmax), o = ((n - 1 - r) * n + col) * 4; // row 0 is south
+      img.data[o] = rgb[0]; img.data[o + 1] = rgb[1]; img.data[o + 2] = rgb[2]; img.data[o + 3] = 255;
+    }
+    ox.putImageData(img, 0, 0);
+    const x = canvasFit(c, w, w);
+    x.imageSmoothingEnabled = true;
+    x.drawImage(off, 0, 0, w, w);
+  }
+
+  function drawBar(id: string, map: (v: number) => number[], textId: string, vmax: number, label: string) {
+    const c = $<HTMLCanvasElement>(id), w = c.clientWidth || 200;
+    const x = canvasFit(c, w, 10);
+    for (let i = 0; i < w; i++) { const [r, g, b] = map(i / (w - 1)); x.fillStyle = `rgb(${r},${g},${b})`; x.fillRect(i, 0, 1, 10); }
+    $(textId).textContent = `${label}: 0 to ${vmax.toFixed(0)} µK_CMB`;
+  }
+
+  function drawPatch() {
+    if (!patch) return;
+    const { n, naive, mas: m } = patch;
+    drawMap("ebM0", naive, n, dustSqrt, pmax);
+    drawMap("ebM1", m, n, dustSqrt, pmax);
+    drawMap("ebM2", naive.map((v, i) => v - m[i]), n, grey, dmax);
+    drawBar("ebB0", dustSqrt, "ebB0t", pmax, "P, both maps, square-root scale");
+    drawBar("ebB1", grey, "ebB1t", dmax, "Difference, linear");
+  }
+
+  // ------------------------------------------------------------ wiring
+  simP();
+  simS(true);
+  const mapsEl = $("ebMaps");
+  const io = new IntersectionObserver(async (es) => {
+    if (!es.some((e) => e.isIntersecting)) return;
+    io.disconnect();
+    const d = (await import("../data/bench_patch.json")).default as unknown as Patch;
+    prepPatch(d);
+    drawPatch();
+  }, { rootMargin: "400px" });
+  io.observe(mapsEl);
+
+  let rw = 0;
+  new ResizeObserver(() => {
+    const w = pc.clientWidth;
+    if (w === rw) return;
+    rw = w;
+    drawP();
+    drawS(+s0In.value * DEG, logSlider(+ssIn.value, 0.1, 30));
+    drawGlyphs(+s0In.value * DEG);
+    drawPatch();
+  }).observe($("eb"));
+</script>

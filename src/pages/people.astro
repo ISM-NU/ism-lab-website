@@ -5,12 +5,19 @@ import PageHead from "../components/PageHead.astro";
 
 const people = (await getCollection("people")).sort((a, b) => a.data.order - b.data.order);
 const rendered = await Promise.all(people.map(async (p) => ({ p, Content: (await render(p)).Content })));
-const initials = (n: string) => n.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+// Two-letter initials, widened with the next letter of the surname when two
+// people would share them (Dana Alina and Denis Andreyev are both "DA").
+const two = (n: string) => n.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+const initials = (n: string) => {
+  const clash = people.filter((q) => two(q.data.name) === two(n)).length > 1;
+  const w = n.split(/\s+/);
+  return clash ? (w[0][0] + w.at(-1)!.slice(0, 2)).toUpperCase() : two(n);
+};
 const anyMock = people.some((p) => p.data.mock);
 ---
 
 <Base title="People" description="Members of the ISM group at Nazarbayev University.">
-  <PageHead label="People" title="The group" intro={`${people.length} people working on the magnetized interstellar medium, from Planck maps to single clouds and a whole neighbouring galaxy.`}>
+  <PageHead title="The group" intro={`${people.length} people working on the magnetized interstellar medium.`}>
     {anyMock && <p class="tag soon wrap">Placeholder profiles: photos and bios are on their way</p>}
   </PageHead>
   <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
@@ -23,7 +30,7 @@ const anyMock = people.some((p) => p.data.mock);
               <i class="b tl"></i><i class="b br"></i>
             </div>
             <div class="meta">
-              <div class="row"><span class="label">{String(i + 1).padStart(2, "0")} &middot; {p.data.role}</span>{p.data.mock && <span class="tag soon">Mock</span>}</div>
+              <div class="row"><span class="label">{p.data.role}</span>{p.data.mock && <span class="tag soon">Mock</span>}</div>
               <h2 class="brut">{p.data.name}</h2>
               <span class="focus">{p.data.focus}</span>
               <div class="bio"><Content /></div>
@@ -37,7 +44,10 @@ const anyMock = people.some((p) => p.data.mock);
 </Base>
 
 <style>
-  .people { list-style: none; margin: 0; padding: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+  /* Hairlines drawn per card rather than by the grid gap, so a short last row
+     leaves blank page instead of a grey hole. */
+  .people { list-style: none; margin: 0; padding: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0; background: none; border-width: 1px 0 0 1px; }
+  .people > li { border: solid var(--hair); border-width: 0 1px 1px 0; }
   .people > li { display: grid; grid-template-rows: auto 1fr; }
   .avatar { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: radial-gradient(circle, rgba(243, 243, 239, 0.14) 1px, transparent 1.5px) 0 0 / 12px 12px, var(--panel); overflow: hidden; }
   .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.1); }

@@ -4,11 +4,11 @@ const projects = (await getCollection("projects")).sort((a, b) => a.data.order -
 ---
 
 <div class="proj cells">
-  {projects.map((p, i) => (
+  {projects.map((p) => (
     <a class="card" href={`/research/${p.id}`}>
       <figure><img src={p.data.image} alt="" loading="lazy" decoding="async" /></figure>
       <div class="meta">
-        <div class="row"><span class="dot code">{String(i + 1).padStart(2, "0")}/{p.data.code}</span>{p.data.upcoming.length > 0 && <span class="tag soon">Coming soon</span>}</div>
+        <div class="row"><span class="dot code">{p.data.code}</span>{p.data.upcoming.length > 0 && <span class="tag soon">Work in progress</span>}</div>
         <h3 class="brut">{p.data.title}</h3>
         <p>{p.data.summary}</p>
         <span class="label">{p.data.instruments.join(" · ")} &middot; {p.data.papers.length} papers</span>
@@ -29,6 +29,6 @@ const projects = (await getCollection("projects")).sort((a, b) => a.data.order -
   .row { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
   .code { font-size: 22px; line-height: 1; }
   h3 { font-size: clamp(1.7rem, 1.2rem + 1.2vw, 2.4rem); line-height: 0.9; }
-  p { font-size: 13px; color: color-mix(in srgb, currentColor 80%, transparent); }
+  p { font-size: 16px; line-height: 1.5; color: color-mix(in srgb, currentColor 82%, transparent); }
   @media (prefers-reduced-motion: reduce) { img { transition: none; } }
 </style>

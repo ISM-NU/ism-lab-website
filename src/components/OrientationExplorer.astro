@@ -1,0 +1,275 @@
+---
+// Filaments hosting Planck cold clumps, Alina et al. 2019 (MNRAS 485, 2825),
+// VizieR J/MNRAS/485/2825. One row per filament: the angle between the filament
+// and the mean magnetic field inside it, selected by the filament's column
+// density and by how much the field direction varies along it.
+//
+// This is NOT the paper's histogram. The paper uses |phi_bkg - theta| and
+// |phi_fil - theta| per pixel, split by background column density and contrast;
+// those quantities are not in the published table (see the note rendered below).
+// Built for a dark section: the colour ramp runs from red (parallel) to paper white.
+import data from "../data/orientations.json";
+import { byBibcode } from "../lib/pubs";
+
+const bib = "2019MNRAS.485.2825A";
+if (!byBibcode.has(bib)) throw new Error(`OrientationExplorer: ${bib} is not in publications.json`);
+const total = data.rows.length;
+const withField = data.rows.filter((r) => r[8] !== null).length;
+---
+
+<div class="oe" id="oe" data-rows={JSON.stringify(data.rows)}>
+  <div class="ctl">
+    <fieldset>
+      <legend>Mean column density of the filament, 10<sup>20</sup> cm<sup>-2</sup></legend>
+      <div class="pair">
+        <label>From <output id="oeLoV"></output><input type="range" id="oeLo" min="0" max="1000" value="0" /></label>
+        <label>To <output id="oeHiV"></output><input type="range" id="oeHi" min="0" max="1000" value="1000" /></label>
+      </div>
+      <div class="presets" role="group" aria-label="Column density presets">
+        <button type="button" data-p="all">All</button>
+        <button type="button" data-p="low">Below median</button>
+        <button type="button" data-p="high">Above median</button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Field angle in the filament</legend>
+      <label class="rad"><input type="radio" name="oeEst" value="1" checked /> Circular mean</label>
+      <label class="rad"><input type="radio" name="oeEst" value="2" /> Gaussian fit</label>
+    </fieldset>
+    <fieldset>
+      <legend>Field direction along the filament</legend>
+      <label class="sel">Largest spread allowed
+        <select id="oeSig">
+          <option value="999">Any</option>
+          <option value="45">45° or less</option>
+          <option value="30">30° or less</option>
+        </select>
+      </label>
+    </fieldset>
+  </div>
+
+  <div class="views">
+    <figure class="hist">
+      <svg id="oeHist" viewBox="0 0 520 305" role="img" aria-labelledby="oeHistT">
+        <title id="oeHistT">Histogram of the angle between filament and field</title>
+      </svg>
+      <figcaption id="oeStats" class="stats" aria-live="polite"></figcaption>
+    </figure>
+    <figure class="map">
+      <svg id="oeMap" viewBox="0 0 2400 1200" role="img" aria-labelledby="oeMapT">
+        <title id="oeMapT">Selected filaments on a Mollweide map of Planck 353 GHz dust in Galactic coordinates</title>
+        <image href="/sky/allsky.webp" width="2400" height="1200" />
+        <g id="oeDots"></g>
+      </svg>
+      <figcaption class="mapcap">Galactic coordinates, centre at the Galactic centre, longitude increasing to the left. Filled circles are the selected filaments, coloured by angle as in the histogram. Open grey circles are filaments outside the selection or without a field angle.</figcaption>
+    </figure>
+  </div>
+
+  <ul class="bins" id="oeBins" aria-label="Counts per bin"></ul>
+
+  <div class="notes">
+    <p>The angle is the difference between the filament position angle from the SupRHT detection and the mean Planck 353 GHz field angle inside the filament, folded to 0 to 90°. Zero is a field along the filament, 90° is a field across it. The table lists {total} filaments; {withField} have a field angle. The spread is the dispersion of the field angle in the filament, from circular statistics.</p>
+    <p>The published table does not carry what the paper binned: the field angle in the background, the column density of the environment, or the contrast. Its background column density column repeats the filament column density, so neither the environment split at 1.2 × 10<sup>21</sup> cm<sup>-2</sup> nor the contrast split at 4 × 10<sup>20</sup> cm<sup>-2</sup> can be rebuilt from it, and the paper's histograms count pixels, not filaments. This view is therefore a per-filament look at the field inside filaments, not a reproduction of Figures 5 to 8.</p>
+    <p>Data: Alina, D., Ristorcelli, I., Montier, L., et al. 2019, <a href={`https://ui.adsabs.harvard.edu/abs/${bib}`} rel="noopener">MNRAS 485, 2825</a>, <a href="https://arxiv.org/abs/1712.09325" rel="noopener">arXiv:1712.09325</a>, table A1 via <a href="https://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/MNRAS/485/2825" rel="noopener">VizieR J/MNRAS/485/2825</a>.</p>
+  </div>
+</div>
+
+<style>
+  .oe { display: grid; gap: 28px; margin-top: 32px; --par: #ff3d24; --perp: #f3f3ef; }
+  .ctl { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr)); gap: 18px 28px; }
+  fieldset { border: 0; border-top: 1px solid var(--hair); margin: 0; padding: 14px 0 0; min-width: 0; display: grid; gap: 10px; align-content: start; }
+  legend { font: 600 12px/1.3 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); padding: 0 12px 0 0; }
+  .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; }
+  .pair label, .sel { display: grid; gap: 4px; font-size: 14px; }
+  .pair output { font: 500 14px/1 var(--mono); color: var(--ink); }
+  input[type="range"] { width: 100%; accent-color: var(--par); min-height: 32px; margin: 0; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+  button, select { font: 500 13px/1 var(--mono); color: var(--ink); background: transparent; border: 1px solid var(--hair); padding: 10px 12px; min-height: 40px; cursor: pointer; border-radius: 0; }
+  select option { color: #000; }
+  button:hover, select:hover { border-color: var(--ink); }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--void); border-color: var(--ink); }
+  .rad { display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 32px; cursor: pointer; }
+  .rad input { accent-color: var(--par); width: 18px; height: 18px; margin: 0; }
+  :is(input, select, button):focus-visible { outline: 2px solid var(--par); outline-offset: 2px; }
+
+  .views { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 28px; align-items: start; }
+  figure { margin: 0; display: grid; gap: 12px; }
+  #oeHist { width: 100%; height: auto; overflow: visible; }
+  #oeHist :global(text) { font: 400 15px var(--mono); fill: var(--grey); }
+  #oeHist :global(.ax) { stroke: var(--grey); stroke-width: 1; }
+  #oeHist :global(.gr) { stroke: var(--hair); stroke-width: 1; }
+  #oeHist :global(.v) { fill: var(--ink); font-weight: 600; }
+  #oeHist :global(.xl) { fill: var(--ink); }
+  #oeHist :global(rect) { transition: y 0.18s, height 0.18s; }
+  #oeMap { width: 100%; height: auto; background: #000; border: 1px solid var(--hair); }
+  #oeDots :global(circle) { transition: opacity 0.15s; }
+  .stats { font: 400 14px/1.5 var(--mono); display: grid; gap: 2px; }
+  .stats :global(b) { font-weight: 600; color: var(--ink); }
+  .mapcap { font-size: 13px; line-height: 1.45; color: var(--grey); max-width: 70ch; }
+
+  .bins { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-top: 1px solid var(--hair); }
+  .bins :global(li) { padding: 10px 8px 0 0; font: 400 12px/1.4 var(--mono); color: var(--grey); }
+  .bins :global(b) { display: block; font-size: 18px; font-weight: 600; color: var(--ink); }
+
+  .notes { display: grid; gap: 12px; max-width: 78ch; font-size: 15px; color: var(--grey); }
+  .notes p { margin: 0; }
+  .notes a { color: var(--ink); text-underline-offset: 3px; }
+
+  @media (max-width: 900px) {
+    .ctl { grid-template-columns: minmax(0, 1fr); }
+    .views { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 520px) {
+    .bins { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #oeHist :global(rect), #oeDots :global(circle) { transition: none; }
+  }
+</style>
+
+<script>
+  // Row layout is the "columns" list in orientations.json:
+  // id, l, b, len, wid, pa, nh, nhfil, psi1, psi2, sig
+  type Row = (number | null)[];
+  const root = document.getElementById("oe")!;
+  const rows: Row[] = JSON.parse(root.dataset.rows!);
+  const $ = <T extends Element>(id: string) => document.getElementById(id) as unknown as T;
+  const lo = $<HTMLInputElement>("oeLo"), hi = $<HTMLInputElement>("oeHi");
+  const loV = $("oeLoV"), hiV = $("oeHiV");
+  const sigSel = $<HTMLSelectElement>("oeSig");
+  const hist = $<SVGSVGElement>("oeHist"), dots = $("oeDots"), stats = $("oeStats"), binsEl = $("oeBins");
+  const presetBtns = [...root.querySelectorAll<HTMLButtonElement>(".presets button")];
+
+  const nhAll = rows.map((r) => r[6] as number);
+  const lmin = Math.log10(Math.min(...nhAll)), lmax = Math.log10(Math.max(...nhAll));
+  const at = (v: number) => 10 ** (lmin + ((lmax - lmin) * v) / 1000);
+  const withField = rows.filter((r) => r[8] !== null);
+  const sortedNh = withField.map((r) => r[6] as number).sort((a, b) => a - b);
+  const median = (sortedNh[(sortedNh.length - 1) >> 1] + sortedNh[sortedNh.length >> 1]) / 2;
+  const toSlider = (v: number) => Math.round(((Math.log10(v) - lmin) / (lmax - lmin)) * 1000);
+
+  const NB = 6, W = 90 / NB;
+  const mix = (t: number) => {
+    // red (parallel) to paper white (perpendicular)
+    const a = [255, 61, 36], b = [243, 243, 239];
+    return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(",")})`;
+  };
+  const fmtNh = (v: number) => (v < 10 ? v.toFixed(1) : String(Math.round(v)));
+  const fold = (d: number) => { const x = Math.abs(d) % 180; return x > 90 ? 180 - x : x; };
+
+  // Mollweide, centre l = 0, longitude increasing to the left, same as the
+  // all-sky image: x = -(2 sqrt2 / pi) lam cos(t), y = sqrt2 sin(t), with
+  // 2t + sin 2t = pi sin(b). Returned as fractions of the image size.
+  function moll(l: number, b: number): [number, number] {
+    const lam = (((l + 180) % 360) - 180) * Math.PI / 180, ph = (b * Math.PI) / 180;
+    let t = ph;
+    for (let i = 0; i < 40; i++) {
+      const d = 2 + 2 * Math.cos(2 * t);
+      if (Math.abs(d) < 1e-9) break;
+      t -= (2 * t + Math.sin(2 * t) - Math.PI * Math.sin(ph)) / d;
+    }
+    return [0.5 - (lam * Math.cos(t)) / (2 * Math.PI), 0.5 - Math.sin(t) / 2];
+  }
+
+  // Dots exist once; later updates only change fill and opacity.
+  const NS = "http://www.w3.org/2000/svg";
+  const dotEls = rows.map((r) => {
+    const [u, v] = moll(r[1] as number, r[2] as number);
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", String(u * 2400));
+    c.setAttribute("cy", String(v * 1200));
+    dots.appendChild(c);
+    return c;
+  });
+
+  function draw() {
+    const a = Math.min(+lo.value, +hi.value), b = Math.max(+lo.value, +hi.value);
+    const nmin = a === 0 ? 0 : at(a), nmax = b === 1000 ? Infinity : at(b);
+    loV.textContent = a === 0 ? "min" : fmtNh(nmin);
+    hiV.textContent = b === 1000 ? "max" : fmtNh(nmax);
+    const est = (root.querySelector<HTMLInputElement>('input[name="oeEst"]:checked')!.value === "2") ? 9 : 8;
+    const sigMax = +sigSel.value;
+
+    const rel: (number | null)[] = rows.map((r) => {
+      if (r[est] === null) return null;
+      const nh = r[6] as number;
+      if (nh < nmin || nh > nmax || (r[10] as number) > sigMax) return null;
+      return fold((r[5] as number) - (r[est] as number));
+    });
+    const sel = rel.filter((x): x is number => x !== null);
+    const counts = new Array(NB).fill(0);
+    for (const x of sel) counts[Math.min(NB - 1, Math.floor(x / W))]++;
+    const n = sel.length;
+
+    // Map
+    rows.forEach((r, i) => {
+      const c = dotEls[i], x = rel[i];
+      if (x === null) {
+        c.setAttribute("r", "17");
+        c.setAttribute("fill", "none");
+        c.setAttribute("stroke", "#8a8a86");
+        c.setAttribute("stroke-width", "3");
+        c.setAttribute("opacity", r[est] === null ? "0.35" : "0.7");
+      } else {
+        c.setAttribute("r", "23");
+        c.setAttribute("fill", mix(x / 90));
+        c.setAttribute("stroke", "#000");
+        c.setAttribute("stroke-width", "3");
+        c.setAttribute("opacity", "1");
+      }
+    });
+
+    // Histogram
+    const L = 44, R = 510, T = 24, B = 250, w = R - L, h = B - T;
+    const top = Math.max(4, Math.ceil(Math.max(...counts, 1) / 4) * 4);
+    let s = "";
+    for (let k = 0; k <= 4; k++) {
+      const v = (top * k) / 4, y = B - (h * k) / 4;
+      s += `<line class="gr" x1="${L}" x2="${R}" y1="${y}" y2="${y}"/><text x="${L - 8}" y="${y + 4}" text-anchor="end">${v}</text>`;
+    }
+    const bw = w / NB;
+    counts.forEach((c, k) => {
+      const bh = (h * c) / top, x = L + k * bw;
+      s += `<rect x="${x + 3}" y="${B - bh}" width="${bw - 6}" height="${bh}" fill="${mix((k + 0.5) / NB)}"/>`;
+      if (c) s += `<text class="v" x="${x + bw / 2}" y="${B - bh - 6}" text-anchor="middle">${c}</text>`;
+      s += `<text x="${x}" y="${B + 16}" text-anchor="middle">${k * W}</text>`;
+    });
+    s += `<text x="${R}" y="${B + 16}" text-anchor="middle">90</text>`;
+    s += `<line class="ax" x1="${L}" x2="${R}" y1="${B}" y2="${B}"/>`;
+    s += `<text class="xl" x="${L}" y="${B + 42}">field along</text><text class="xl" x="${R}" y="${B + 42}" text-anchor="end">field across</text>`;
+    s += `<text x="${(L + R) / 2}" y="${B + 42}" text-anchor="middle">angle, deg</text>`;
+    s += `<text x="${L - 8}" y="${T - 6}" text-anchor="end">N</text>`;
+    hist.innerHTML = `<title id="oeHistT">Histogram of the angle between filament and field, ${n} filaments</title>` + s;
+
+    // Numbers
+    const par = sel.filter((x) => x < 30).length, perp = sel.filter((x) => x > 60).length;
+    const pct = (k: number) => {
+      if (!n) return "none";
+      const p = k / n, e = Math.sqrt((p * (1 - p)) / n);
+      return `<b>${Math.round(p * 100)}%</b> ± ${Math.round(e * 100)}% (${k})`;
+    };
+    const srt = [...sel].sort((x, y) => x - y);
+    const med = n ? (srt[(n - 1) >> 1] + srt[n >> 1]) / 2 : NaN;
+    stats.innerHTML =
+      `<span><b>${n}</b> of ${withField.length} filaments with a field angle</span>` +
+      `<span>Below 30° (field along): ${pct(par)}</span>` +
+      `<span>Above 60° (field across): ${pct(perp)}</span>` +
+      `<span>Median angle: <b>${n ? med.toFixed(0) + "°" : "none"}</b>. A flat histogram gives 33% in each.</span>`;
+    binsEl.innerHTML = counts.map((c, k) => `<li><b>${c}</b>${k * W}° to ${(k + 1) * W}°</li>`).join("");
+
+    presetBtns.forEach((p) => {
+      const q = p.dataset.p!;
+      const on = q === "all" ? a === 0 && b === 1000 : q === "low" ? a === 0 && b === toSlider(median) : a === toSlider(median) && b === 1000;
+      p.setAttribute("aria-pressed", String(on));
+    });
+  }
+
+  presetBtns.forEach((p) => p.addEventListener("click", () => {
+    const q = p.dataset.p;
+    lo.value = q === "high" ? String(toSlider(median)) : "0";
+    hi.value = q === "low" ? String(toSlider(median)) : "1000";
+    draw();
+  }));
+  root.addEventListener("input", draw);
+  draw();
+</script>

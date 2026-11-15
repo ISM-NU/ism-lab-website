@@ -1,23 +1,29 @@
 ---
-// Light-travel time on a log scale, from the Moon to SMACS 0723. Selecting an
-// object streams pixel "photons" from it to the observer.
-const LY = 31557600; // seconds in a Julian year
+// Light-travel time on a log scale, from the Moon to the age of the Universe.
+// Selecting an object streams pixel "photons" from it to the observer.
+// Horizontal on wide screens (labels packed into lanes so the ruler always
+// fits the width), vertical on phones. Layout runs in the script below.
+const YR = 31557600; // seconds in a Julian year
+// Distances: Pietrzynski et al. 2019 (LMC 49.6 kpc), GRAVITY 2019 (Galactic
+// centre 8.18 kpc), Kuhn et al. 2019 (M16 1.74 kpc), Ortiz-Leon et al. 2017
+// (rho Oph 139 pc). SMACS 0723: z = 0.39, lookback time 4.3 Gyr (Planck 2018).
 const objects = [
   { n: "Moon", s: 1.28, name: "The Moon", v: "1.3", unit: "seconds", text: "in transit. Moonlight is almost live." },
   { n: "Sun", s: 499, name: "The Sun", v: "8.3", unit: "minutes", text: "in transit. If the Sun went out, we would not know for eight minutes." },
-  { n: "Proxima Cen", s: 4.24 * LY, name: "Proxima Centauri", v: "4.2", unit: "years", text: "in transit. The nearest star." },
-  { n: "ρ Ophiuchi", s: 390 * LY, name: "Rho Ophiuchi", v: "390", unit: "years", img: "/webb/rhooph-960.webp", text: "in transit. The nearest star-forming cloud Webb has imaged." },
-  { n: "Pillars M16", s: 6500 * LY, name: "Pillars of Creation", v: "6 500", unit: "years", img: "/webb/pillars-960.webp", text: "in transit. Older than writing." },
-  { n: "Cosmic Cliffs", s: 7600 * LY, name: "NGC 3324 · Carina", v: "7 600", unit: "years", img: "/webb/cliffs-960.webp", text: "in transit. Light from the edge of a cavity carved by young stars.", off: true },
-  { n: "Galactic Centre", s: 26000 * LY, name: "Galactic Centre", v: "26 000", unit: "years", img: "/sky/comp-galactic_centre-960.webp", text: "in transit, through the dust the group mapped with the PILOT balloon." },
-  { n: "LMC · NGC 2070", s: 161000 * LY, name: "NGC 2070 · Large Magellanic Cloud", v: "161 000", unit: "years", img: "/webb/tarantula-960.webp", text: "in transit. This light left before the first modern humans walked out of Africa." },
-  { n: "SMC · NGC 346", s: 200000 * LY, name: "NGC 346 · Small Magellanic Cloud", v: "200 000", unit: "years", img: "/webb/ngc346-960.webp", text: "in transit. The LMC's smaller companion.", off: true },
-  { n: "Andromeda", s: 2.5e6 * LY, name: "Andromeda", v: "2.5 million", unit: "years", text: "in transit. The farthest thing you can see without a telescope." },
-  { n: "SMACS 0723", s: 4.6e9 * LY, name: "SMACS 0723 cluster", v: "4.6 billion", unit: "years", img: "/webb/deepfield-960.webp", text: "in transit. The Earth did not exist yet." },
+  { n: "Proxima Cen", s: 4.24 * YR, name: "Proxima Centauri", v: "4.2", unit: "years", text: "in transit. The nearest star." },
+  { n: "ρ Oph", s: 450 * YR, name: "ρ Ophiuchi", v: "450", unit: "years", img: "/webb/rhooph-960.webp", text: "in transit. One of the nearest star-forming clouds." },
+  { n: "M16 pillars", s: 5700 * YR, name: "Pillars of Creation · M16", v: "5 700", unit: "years", img: "/webb/pillars-960.webp", text: "in transit. Older than writing." },
+  { n: "NGC 3324", s: 7600 * YR, name: "Cosmic Cliffs · NGC 3324", v: "7 600", unit: "years", img: "/webb/cliffs-960.webp", text: "in transit. Light from the edge of a cavity carved by young stars." },
+  { n: "Galactic Centre", s: 27000 * YR, name: "Galactic Centre", v: "27 000", unit: "years", img: "/sky/comp-galactic_centre-960.webp", text: "in transit, through the dust whose polarization PILOT mapped (Mangilli et al. 2019)." },
+  { n: "LMC · 30 Dor", s: 162000 * YR, name: "30 Doradus · Large Magellanic Cloud", v: "162 000", unit: "years", img: "/webb/tarantula-960.webp", text: "in transit. It left long before modern humans spread out of Africa, about 60 000 years ago." },
+  { n: "SMC · NGC 346", s: 200000 * YR, name: "NGC 346 · Small Magellanic Cloud", v: "200 000", unit: "years", img: "/webb/ngc346-960.webp", text: "in transit. The LMC's smaller companion." },
+  { n: "Andromeda", s: 2.5e6 * YR, name: "Andromeda · M31", v: "2.5 million", unit: "years", text: "in transit. The farthest object most people can see with the naked eye." },
+  { n: "SMACS 0723", s: 4.3e9 * YR, name: "SMACS 0723 · z = 0.39", v: "4.3 billion", unit: "years", img: "/webb/deepfield-960.webp", text: "of lookback time. The Sun and the Earth were a few hundred million years old." },
 ];
-const LOG0 = -0.5, LOG1 = 18;
-const pos = (s: number) => ((Math.log10(s) - LOG0) / (LOG1 - LOG0)) * 100;
-const decades: Record<number, string> = { 0: "1 s", 2: "100 s", 4: "3 h", 6: "12 d", 8: "3 yr", 10: "320 yr", 12: "32 kyr", 14: "3 Myr", 16: "320 Myr", 18: "32 Gyr" };
+const ticks: [number, string][] = [
+  [1, "1 s"], [60, "1 min"], [3600, "1 h"], [86400, "1 d"], [YR, "1 yr"], [1e3 * YR, "1 kyr"], [1e6 * YR, "1 Myr"], [1e9 * YR, "1 Gyr"],
+];
+const AGE = 13.8e9 * YR; // the axis ends at the age of the Universe
 const sel = 7;
 const o = objects[sel];
 ---
@@ -25,24 +31,21 @@ const o = objects[sel];
 <section class="slab sec" aria-labelledby="light-h">
   <div class="gut max">
     <div class="head">
-      <span class="label">Relation 02 &middot; Time</span>
       <h2 class="brut" id="light-h" data-scramble>How old is the light</h2>
-      <p>Every image is a message sent long ago. The scale is logarithmic in light-travel time, from one second to five billion years. Pick an object.</p>
+      <p>Light from each of these objects left it long ago. The axis is logarithmic in light-travel time and ends at the age of the Universe. Select an object to read its distance.</p>
     </div>
-    <div class="ruler-wrap">
-      <div class="ruler" id="ruler" role="group" aria-label="Objects by light-travel time">
-        <canvas id="rulerCanvas" aria-hidden="true"></canvas>
-        <div class="axis"></div>
-        {Array.from({ length: 19 }, (_, d) => (
-          <div class="decade" style={`left:${pos(10 ** d)}%`} aria-hidden="true">{decades[d] && <span>{decades[d]}</span>}</div>
-        ))}
-        {objects.map((ob, i) => (
-          <button class="obj" type="button" style={`left:${pos(ob.s)}%`} aria-pressed={i === sel ? "true" : "false"} data-i={i} data-s={ob.s}
-            data-name={ob.name} data-v={ob.v} data-unit={ob.unit} data-text={ob.text} data-img={ob.img ?? ""}>
-            <span class={ob.off ? "off" : ""}>{ob.n}</span>
-          </button>
-        ))}
-      </div>
+    <div class="ruler" id="ruler" role="group" aria-label="Objects by light-travel time" data-age={AGE}>
+      <canvas id="rulerCanvas" aria-hidden="true"></canvas>
+      <svg class="leaders" id="rulerLeaders" aria-hidden="true"></svg>
+      <div class="axis" aria-hidden="true"></div>
+      <span class="you mono" aria-hidden="true">You</span>
+      {ticks.map(([s, l]) => <div class="tick" data-s={s} aria-hidden="true"><span>{l}</span></div>)}
+      <div class="tick end" data-s={AGE} aria-hidden="true"><span>13.8 Gyr · age of the Universe</span></div>
+      {objects.map((ob, i) => <i class="mark" data-s={ob.s} data-i={i} aria-hidden="true"></i>)}
+      {objects.map((ob, i) => (
+        <button class="obj" type="button" aria-pressed={i === sel ? "true" : "false"} data-i={i} data-s={ob.s}
+          data-name={ob.name} data-v={ob.v} data-unit={ob.unit} data-text={ob.text} data-img={ob.img ?? ""}>{ob.n}</button>
+      ))}
     </div>
     <div class="out" aria-live="polite">
       <div>
@@ -56,28 +59,43 @@ const o = objects[sel];
 </section>
 
 <style>
-  .ruler-wrap { overflow-x: auto; margin-top: 40px; padding-bottom: 8px; scrollbar-width: thin; }
-  .ruler { position: relative; min-width: 980px; height: 190px; }
-  canvas { position: absolute; left: 0; top: 0; height: 140px; width: 100%; }
-  .axis { position: absolute; left: 0; right: 0; top: 140px; height: 1px; background: var(--on-paper); }
-  .decade { position: absolute; top: 132px; width: 1px; height: 16px; background: var(--on-paper); }
-  .decade span { position: absolute; top: 20px; left: 0; translate: -50% 0; font: 400 10px/1 var(--mono); color: var(--on-paper-dim); white-space: nowrap; }
-  .obj { position: absolute; top: 0; height: 140px; width: 1px; background: rgba(10, 10, 11, 0.25); cursor: pointer; border: 0; padding: 0; }
-  .obj::before { content: ""; position: absolute; inset: 0 -10px; }
-  .obj::after { content: ""; position: absolute; bottom: -4px; left: -4px; width: 9px; height: 9px; background: var(--on-paper); }
-  .obj span { position: absolute; top: 8px; left: 6px; font: 600 10px/1.15 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; color: var(--on-paper); writing-mode: vertical-rl; rotate: 180deg; }
-  .obj span.off { left: -18px; }
-  .obj:hover span, .obj[aria-pressed="true"] span { color: #d42a12; }
-  .obj[aria-pressed="true"] { background: var(--signal); width: 2px; }
-  .obj[aria-pressed="true"]::after { background: var(--signal); box-shadow: 0 0 10px var(--signal); }
-  .out { margin-top: 28px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: center; }
+  .ruler { position: relative; margin-top: 56px; height: 260px; }
+  canvas, .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .leaders :global(path) { fill: none; stroke: rgba(10, 10, 11, 0.28); stroke-width: 1; }
+  .leaders :global(path.on) { stroke: var(--signal); stroke-width: 1.5; }
+  .axis { position: absolute; background: var(--on-paper); }
+  .tick { position: absolute; background: var(--on-paper); }
+  .tick span { position: absolute; font: 500 12px/1 var(--mono); color: var(--on-paper-dim); white-space: nowrap; }
+  .tick.end { background: var(--on-paper); }
+  .mark { position: absolute; width: 9px; height: 9px; margin: -4px 0 0 -4px; background: var(--on-paper); }
+  .mark.on { background: var(--signal); box-shadow: 0 0 10px var(--signal); }
+  .you { position: absolute; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-paper); }
+  .obj { position: absolute; padding: 5px 4px; margin: 0; border: 0; background: var(--paper); cursor: pointer; font: 600 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; color: var(--on-paper); }
+  .obj:hover, .obj[aria-pressed="true"] { color: #c4260f; }
+  .obj[aria-pressed="true"] { text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: 4px; }
+
+  /* Horizontal: axis near the bottom, tick labels under it. */
+  .ruler:not(.v) .axis { left: 0; right: 0; height: 1px; top: var(--ax); }
+  .ruler:not(.v) .tick { top: calc(var(--ax) - 6px); width: 1px; height: 12px; }
+  .ruler:not(.v) .tick span { top: 18px; left: 0; translate: -50% 0; }
+  /* The age of the Universe gets its own row so it never meets the 1 Gyr label. */
+  .ruler:not(.v) .tick.end span { top: 40px; translate: -100% 0; color: var(--on-paper); }
+  .ruler:not(.v) .you { left: 0; top: calc(var(--ax) - 34px); }
+  /* Vertical: axis down the left, tick labels to its left, names to its right. */
+  .ruler.v .axis { top: 0; bottom: 0; width: 1px; left: var(--ax); }
+  .ruler.v .tick { left: calc(var(--ax) - 6px); height: 1px; width: 12px; }
+  .ruler.v .tick span { right: 20px; top: 0; translate: 0 -50%; text-align: right; }
+  .ruler.v .tick.end span { white-space: normal; width: 9ch; translate: 0 -100%; line-height: 1.2; }
+  .ruler.v .you { left: calc(var(--ax) + 10px); top: -4px; }
+
+  .out { margin-top: 36px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: center; }
   .val { font-size: clamp(2.6rem, 1rem + 6vw, 6.6rem); line-height: 0.9; margin-top: 10px; }
-  .txt { margin-top: 12px; max-width: 40ch; }
+  .txt { margin-top: 14px; max-width: 42ch; font-size: 17px; }
   figure { margin: 0; aspect-ratio: 4 / 3; background: var(--on-paper); overflow: hidden; position: relative; }
   figure img { width: 100%; height: 100%; object-fit: cover; }
   figure.empty { visibility: hidden; }
-  figcaption { position: absolute; left: 0; bottom: 0; padding: 4px 8px; background: var(--on-paper); color: var(--paper); font: 600 10px/1.2 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
-  @media (max-width: 760px) { .out { grid-template-columns: minmax(0, 1fr); } }
+  figcaption { position: absolute; left: 0; bottom: 0; padding: 5px 8px; background: var(--on-paper); color: var(--paper); font: 600 11px/1.2 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+  @media (max-width: 760px) { .out { grid-template-columns: minmax(0, 1fr); } figure.empty { display: none; } }
 </style>
 
 <script>
@@ -85,15 +103,96 @@ const o = objects[sel];
 
   const ruler = document.getElementById("ruler")!;
   const canvas = document.getElementById("rulerCanvas") as HTMLCanvasElement;
+  const svg = document.getElementById("rulerLeaders")!;
   const buttons = [...ruler.querySelectorAll<HTMLButtonElement>(".obj")];
+  const marks = [...ruler.querySelectorAll<HTMLElement>(".mark")];
+  const ticks = [...ruler.querySelectorAll<HTMLElement>(".tick")];
   const $ = (id: string) => document.getElementById(id)!;
-  let ctx: CanvasRenderingContext2D, w = 0, visible = false, target = 0;
-  const photons: { x: number; y: number; v: number }[] = [];
+  const LOG0 = -0.6, LOG1 = Math.log10(Number(ruler.dataset.age));
+  const frac = (s: number) => (Math.log10(s) - LOG0) / (LOG1 - LOG0);
 
-  function size() { w = canvas.clientWidth; ctx = canvasFit(canvas, w, 140); setTarget(); }
-  function setTarget() {
-    const b = buttons.find((x) => x.getAttribute("aria-pressed") === "true")!;
-    target = b.offsetLeft;
+  let ctx: CanvasRenderingContext2D, W = 0, H = 0, vertical = false, ax = 0, visible = false;
+  let target = 0; // position of the selected object along the axis, px
+  const photons: { u: number; o: number; v: number }[] = [];
+  // Horizontal name lanes are roomier than the vertical minimum spacing.
+  const LANE = 26, HLANE = 38, GAP = 28, LIFT = 40;
+
+  function layout() {
+    vertical = ruler.clientWidth < 700;
+    ruler.classList.toggle("v", vertical);
+    const sel = Number(buttons.find((b) => b.getAttribute("aria-pressed") === "true")!.dataset.i);
+    let paths = "";
+    if (!vertical) {
+      W = ruler.clientWidth;
+      // Each name takes the lowest lane where it overlaps no other name and
+      // no leader line runs behind a name (a leader from the axis crosses
+      // every lane below its own). Rightmost first, since names extend right.
+      type P = { b: HTMLButtonElement; x: number; w: number; left: number; right: number; lane: number };
+      const placed: P[] = [];
+      const items = buttons.map((b) => ({ b, x: frac(Number(b.dataset.s)) * W, w: b.offsetWidth, left: 0, right: 0, lane: 0 }))
+        .sort((p, q) => q.x - p.x);
+      const fits = (it: P, L: number, left: number, strict: boolean) => {
+        const right = left + it.w;
+        if (left < 0 || right > W) return false;
+        return !placed.some((p) =>
+          (p.lane === L && left < p.right + GAP && p.left < right + GAP) ||
+          (strict && p.lane < L && it.x > p.left - 6 && it.x < p.right + 6) ||
+          (strict && p.lane > L && p.x > left - 6 && p.x < right + 6));
+      };
+      for (const it of items) {
+        // Name to the right of its leader, or to the left when that fits better.
+        const anchors = [it.x - 4, it.x - it.w + 4];
+        let done = false;
+        for (const strict of [true, false]) {
+          for (let L = 0; L < 12 && !done; L++) {
+            const left = anchors.find((a) => fits(it, L, a, strict));
+            if (left !== undefined) { Object.assign(it, { lane: L, left, right: left + it.w }); done = true; }
+          }
+          if (done) break;
+        }
+        if (!done) Object.assign(it, { lane: 0, left: Math.min(it.x - 4, W - it.w), right: Math.min(it.x - 4, W - it.w) + it.w });
+        placed.push(it);
+      }
+      const lanes = Math.max(...placed.map((p) => p.lane)) + 1;
+      ax = lanes * HLANE + LIFT;
+      H = ax + 64;
+      ruler.style.height = H + "px";
+      placed.forEach(({ b, x, left, lane }) => {
+        const top = ax - LIFT - 18 - lane * HLANE;
+        Object.assign(b.style, { left: left + "px", top: top + "px" });
+        paths += `<path data-i="${b.dataset.i}" d="M${x} ${ax} V${top + 22}" />`;
+      });
+      marks.forEach((m) => Object.assign(m.style, { left: frac(Number(m.dataset.s)) * W + "px", top: ax + "px" }));
+      ticks.forEach((t) => (t.style.left = frac(Number(t.dataset.s)) * W + "px"));
+      target = frac(Number(buttons[sel].dataset.s)) * W;
+    } else {
+      H = 620;
+      W = ruler.clientWidth;
+      ax = 62;
+      ruler.style.height = H + "px";
+      // Names sit beside their mark, nudged apart where marks crowd.
+      const ys = buttons.map((b) => frac(Number(b.dataset.s)) * H);
+      const out = ys.slice();
+      for (let i = 1; i < out.length; i++) out[i] = Math.max(out[i], out[i - 1] + LANE);
+      for (let i = out.length - 2; i >= 0; i--) out[i] = Math.min(out[i], out[i + 1] - LANE);
+      const lx = ax + 34;
+      buttons.forEach((b, i) => {
+        Object.assign(b.style, { left: lx + "px", top: out[i] - 11 + "px" });
+        paths += `<path data-i="${i}" d="M${ax} ${ys[i]} H${ax + 14} L${lx - 2} ${out[i]}" />`;
+      });
+      marks.forEach((m) => Object.assign(m.style, { top: frac(Number(m.dataset.s)) * H + "px", left: ax + "px" }));
+      ticks.forEach((t) => (t.style.top = frac(Number(t.dataset.s)) * H + "px"));
+      target = ys[sel];
+    }
+    ruler.style.setProperty("--ax", ax + "px");
+    svg.innerHTML = paths;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    ctx = canvasFit(canvas, W, H);
+    highlight(sel);
+  }
+  function highlight(i: number) {
+    marks.forEach((m) => m.classList.toggle("on", Number(m.dataset.i) === i));
+    svg.querySelectorAll("path").forEach((p) => p.classList.toggle("on", Number(p.dataset.i) === i));
   }
   function select(b: HTMLButtonElement) {
     buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
@@ -106,35 +205,39 @@ const o = objects[sel];
     const fig = $("loFig"), img = $("loImg") as HTMLImageElement;
     fig.classList.toggle("empty", !d.img);
     if (d.img) { img.src = d.img; img.alt = d.name!; $("loCap").textContent = d.name!; }
-    setTarget();
+    photons.length = 0;
+    layout();
   }
   buttons.forEach((b) => b.addEventListener("click", () => select(b)));
   ruler.addEventListener("keydown", (e) => {
     const i = buttons.indexOf(document.activeElement as HTMLButtonElement);
-    if (i < 0 || (e.key !== "ArrowRight" && e.key !== "ArrowLeft")) return;
+    const next = vertical ? "ArrowDown" : "ArrowRight", prev = vertical ? "ArrowUp" : "ArrowLeft";
+    if (i < 0 || (e.key !== next && e.key !== prev)) return;
     e.preventDefault();
-    const n = buttons[(i + (e.key === "ArrowRight" ? 1 : buttons.length - 1)) % buttons.length];
+    const n = buttons[(i + (e.key === next ? 1 : buttons.length - 1)) % buttons.length];
     n.focus();
     select(n);
   });
 
-  size();
-  addEventListener("resize", size);
+  layout();
+  new ResizeObserver(layout).observe(ruler.parentElement!);
   watchVisible(ruler, (on) => (visible = on));
   onFrame(() => {
-    if (!visible) return;
-    ctx.clearRect(0, 0, w, 140);
-    if (!reduce && Math.random() < 0.7) photons.push({ x: target, y: 20 + Math.random() * 110, v: 2 + Math.random() * 6 });
+    if (!visible || reduce) return;
+    ctx.clearRect(0, 0, W, H);
+    // Photons run in a thin band beside the axis, from the object to "you".
+    if (Math.random() < 0.6) photons.push({ u: target, o: 2 + Math.random() * 7, v: 1.5 + Math.random() * 4 });
     ctx.fillStyle = "#ff3d24";
     for (let i = photons.length - 1; i >= 0; i--) {
       const p = photons[i];
-      p.x -= p.v;
-      for (let j = 0; j < 6; j++) ctx.fillRect(Math.round((p.x + j * 5) / 5) * 5, Math.round(p.y / 5) * 5, 3, 3);
-      if (p.x < 0) photons.splice(i, 1);
+      p.u -= p.v;
+      for (let j = 0; j < 5; j++) {
+        const u = Math.round((p.u + j * 4) / 4) * 4;
+        if (u > target) continue;
+        if (vertical) ctx.fillRect(ax - 4 - p.o - 1, u, 2, 2);
+        else ctx.fillRect(u, ax - 4 - p.o, 2, 2);
+      }
+      if (p.u < 0) photons.splice(i, 1);
     }
-    ctx.fillStyle = "rgba(10,10,11,.85)";
-    ctx.fillRect(0, 128, 6, 12);
-    ctx.font = "600 10px 'JetBrains Mono Variable', monospace";
-    ctx.fillText("YOU", 10, 136);
   });
 </script>

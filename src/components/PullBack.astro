@@ -1,17 +1,17 @@
 ---
-// Scroll-driven zoom out: the Tarantula (340 ly) -> the whole LMC -> the whole
+// Scroll-driven zoom out: the Tarantula (264 ly) -> the whole LMC -> the whole
 // sky. World units are LMC widths; sizes and positions are real.
 ---
 
-<section class="pull" id="pull" aria-labelledby="pull-cap">
+<section class="pull" id="pull" aria-labelledby="pull-cap" data-console>
   <div class="stage" id="pullStage">
     <canvas id="pullCanvas" aria-hidden="true"></canvas>
-    <div class="frame red" id="fT"><span>NGC 2070 &middot; Tarantula &middot; 340 ly</span></div>
-    <div class="frame" id="fL"><span>Large Magellanic Cloud &middot; 34 000 ly</span></div>
+    <div class="frame red" id="fT"><span>NGC 2070 &middot; JWST field &middot; 264 ly</span></div>
+    <div class="frame" id="fL"><span>LMC field &middot; 12&deg; &asymp; 34 000 ly</span></div>
     <div id="tgts" aria-hidden="true"></div>
     <div class="hud">
-      <div class="readout" aria-hidden="true"><span class="label red" id="rLabel">Field width</span><span class="dot" id="rVal">340 LY</span><span class="label" id="rSub">across the screen</span></div>
-      <p class="cap" id="pull-cap" aria-live="polite">This is one cluster in another galaxy. Keep scrolling to see where it sits.</p>
+      <div class="readout" aria-hidden="true"><span class="label red" id="rLabel">Field width</span><span class="dot" id="rVal">264 LY</span><span class="label" id="rSub">across the screen</span></div>
+      <p class="cap" id="pull-cap" aria-live="polite">This is one star-forming region in another galaxy. Keep scrolling to see where it sits.</p>
     </div>
   </div>
 </section>
@@ -38,6 +38,7 @@
 
 <script>
   import sky from "../data/sky.json";
+  import det from "../data/detections.json";
   import { onFrame, canvasFit, loadImage, clamp, seg, ease, fmt, reduce } from "../scripts/motion";
 
   const pull = document.getElementById("pull")!;
@@ -47,17 +48,29 @@
   const rVal = document.getElementById("rVal")!, rLabel = document.getElementById("rLabel")!, rSub = document.getElementById("rSub")!;
   const cap = document.getElementById("pull-cap")!;
 
-  const LY_PER_L = 34200; // LMC width used as the world unit
-  const TW = 340 / LY_PER_L, TH = TW * 0.75; // Tarantula frame, 4:3
+  // World unit: the width of the 12.08 deg LMC map grid at 49.6 kpc
+  // (Pietrzynski et al. 2019), about 34 100 ly.
+  const LY_PER_L = 34100, GRID_DEG = 12.08;
+  // The site shows ESA's centred 4:3 crop of the weic2212a NIRCam mosaic:
+  // 11 224 of its 14 557 px. Fitting the mosaic to Spitzer IRAC 3.6 um gives
+  // 0.0300"/px and north 13.5 deg left of vertical (294 Gaia DR3 stars agree
+  // to 0.1 deg and 0.24"), so the crop spans 337" =
+  // 264 ly at 49.6 kpc (ESA's "340 light-years" is the full mosaic). The
+  // image turns to north-up as the view zooms out (TROT, about R136).
+  const TW = 264 / LY_PER_L, TH = TW * 0.75; // Tarantula frame, 4:3
+  const TROT = (13.5 * Math.PI) / 180;
   const FL = 0.0373; // LMC width as a fraction of the all-sky map width
   const T_C = sky.lmc_targets["30 Doradus"];
   const SKY_LMC = sky.lmc_in_allsky;
   const ROT = sky.lmc_rot_deg;
+  // R136 sits off the centre of the Webb frame; shift the frame so R136
+  // lands on the 30 Dor position.
+  const CORE = det.tarantula.core;
   const caps = [
-    "This is one cluster in another galaxy. Keep scrolling to see where it sits.",
-    "The Tarantula is a bright knot in the Large Magellanic Cloud's dust.",
-    "The galaxy the group maps. The streaks follow its magnetic field, measured by Planck.",
-    "And the LMC is a small patch below the Milky Way's plane.",
+    "This is one star-forming region in another galaxy. Keep scrolling to see where it sits.",
+    "30 Doradus is the brightest star-forming region in the Large Magellanic Cloud.",
+    "The LMC in public infrared and Hα surveys. Streaks trace the plane-of-sky field orientation from Planck 353 GHz polarization at about 25′, Milky Way foreground included.",
+    "On the whole sky the LMC sits 33° below the Galactic plane. Streaks show the Milky Way's own field.",
   ];
 
   let ctx: CanvasRenderingContext2D, W = 0, H = 0, lastP = -1, capI = -1;
@@ -92,7 +105,7 @@
     const k0 = Math.max(W / TW, H / TH);
     const k1 = wide ? Math.min(W * 0.62, H * 0.98) : Math.min(W, H) * 1.02;
     const k2 = Math.min(W / skyW, H / skyH) * 0.96;
-    const c0 = T_C, c1 = [0.5, 0.5], c2 = [skyX + skyW / 2, skyY + skyH / 2];
+    const c0 = [T_C[0] + TW * (0.5 - CORE[0]), T_C[1] + TH * (0.5 - CORE[1])], c1 = [0.5, 0.5], c2 = [skyX + skyW / 2, skyY + skyH / 2];
     // Screen anchor of the view centre: the LMC sits left of the readout on
     // wide screens and below it on tall ones.
     const a0 = [W / 2, H / 2], a1 = wide ? [W * 0.42, H / 2] : [W / 2, H * 0.56];
@@ -100,8 +113,18 @@
     const rot = ((ROT * e2) * Math.PI) / 180;
     const lerp = (a: number[], b: number[], t: number) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
     let k: number, c: number[], an: number[];
-    if (p < 0.6) { k = Math.exp(Math.log(k0) + (Math.log(k1) - Math.log(k0)) * e1); c = lerp(c0, c1, e1); an = lerp(a0, a1, e1); }
-    else { k = Math.exp(Math.log(k1) + (Math.log(k2) - Math.log(k1)) * e2); c = lerp(c1, c2, e2); an = lerp(a1, a0, e2); }
+    // The zoom is logarithmic, so the view centre is solved from the screen
+    // path instead of interpolated in world units: the Tarantula (then the
+    // LMC) moves in a straight line on screen and never leaves the view.
+    if (p < 0.6) {
+      k = Math.exp(Math.log(k0) + (Math.log(k1) - Math.log(k0)) * e1);
+      an = lerp(a0, a1, e1);
+      c = [c0[0] - (e1 * (c0[0] - c1[0]) * k1) / k, c0[1] - (e1 * (c0[1] - c1[1]) * k1) / k];
+    } else {
+      k = Math.exp(Math.log(k1) + (Math.log(k2) - Math.log(k1)) * e2);
+      an = lerp(a1, a0, e2);
+      c = [c1[0] - (e2 * (c1[0] - c2[0]) * k2) / k, c1[1] - (e2 * (c1[1] - c2[1]) * k2) / k];
+    }
     const S = (wx: number, wy: number) => [(wx - c[0]) * k + an[0], (wy - c[1]) * k + an[1]];
 
     ctx.clearRect(0, 0, W, H);
@@ -125,21 +148,30 @@
       const s0 = ((v0 + half) / k) * iw, sw = ((v1 - v0) / k) * iw;
       if (sw > 0.5) { ctx.globalAlpha = aL; ctx.drawImage(L, s0, s0, sw, sw, v0, v0, v1 - v0, v1 - v0); ctx.globalAlpha = 1; }
     }
-    if (imgs.tar?.naturalWidth) ctx.drawImage(imgs.tar, (T_C[0] - TW / 2 - 0.5) * k, (T_C[1] - TH / 2 - 0.5) * k, TW * k, TH * k);
+    const tr = TROT * e1;
+    if (imgs.tar?.naturalWidth) {
+      ctx.save();
+      ctx.translate((T_C[0] - 0.5) * k, (T_C[1] - 0.5) * k);
+      ctx.rotate(tr);
+      ctx.drawImage(imgs.tar, -TW * CORE[0] * k, -TH * CORE[1] * k, TW * k, TH * k);
+      ctx.restore();
+    }
     ctx.restore();
 
-    const tw = TW * k, th = TH * k, tc = S(T_C[0], T_C[1]);
+    // Frame centre: the image centre, turned by tr about R136, then by rot about the LMC centre.
+    const ox = TW * (0.5 - CORE[0]), oy = TH * (0.5 - CORE[1]);
+    const tw = TW * k, th = TH * k, tc = S(T_C[0] + ox * Math.cos(tr) - oy * Math.sin(tr), T_C[1] + ox * Math.sin(tr) + oy * Math.cos(tr));
     const dx = tc[0] - lc[0], dy = tc[1] - lc[1], cs = Math.cos(rot), sn = Math.sin(rot);
     const tcx = lc[0] + dx * cs - dy * sn, tcy = lc[1] + dx * sn + dy * cs;
     const showT = tw < W * 0.85 && tw > 6;
     fT.style.display = showT ? "block" : "none";
     if (showT) {
-      Object.assign(fT.style, { left: tcx - tw / 2 + "px", top: tcy - th / 2 + "px", width: tw + "px", height: th + "px", rotate: rot + "rad" });
+      Object.assign(fT.style, { left: tcx - tw / 2 + "px", top: tcy - th / 2 + "px", width: tw + "px", height: th + "px", rotate: rot + tr + "rad" });
       fT.classList.toggle("mini", tw < 90 && p > 0.3 && p < 0.62);
     }
     const showL = p > 0.62 && k < W * 0.8;
     fL.style.display = showL ? "block" : "none";
-    if (showL) Object.assign(fL.style, { left: lc[0] - k / 2 + "px", top: lc[1] - k / 2 + "px", width: k + "px", height: k + "px" });
+    if (showL) Object.assign(fL.style, { left: lc[0] - k / 2 + "px", top: lc[1] - k / 2 + "px", width: k + "px", height: k + "px", rotate: rot + "rad" });
     const showTg = p > 0.44 && p < 0.62;
     targets.forEach((t, i) => {
       const on = showTg && (reduce || seg(p, 0.44, 0.5) * targets.length > i);
@@ -150,7 +182,7 @@
     const widthL = W / k;
     if (p < 0.6) { rLabel.textContent = "Field width"; rVal.textContent = fmt(widthL * LY_PER_L) + " LY"; rSub.textContent = "across the screen"; }
     else {
-      const deg = widthL * 12;
+      const deg = widthL * GRID_DEG;
       rLabel.textContent = "Field of view";
       rVal.textContent = deg > 300 ? "360°" : (deg >= 100 ? Math.round(deg) : deg.toFixed(1)) + "°";
       rSub.textContent = deg > 300 ? "the whole sky" : "of sky";

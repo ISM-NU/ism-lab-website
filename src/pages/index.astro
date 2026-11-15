@@ -6,7 +6,6 @@ import PullBack from "../components/PullBack.astro";
 import LightRuler from "../components/LightRuler.astro";
 import FieldDots from "../components/FieldDots.astro";
 import Archive from "../components/Archive.astro";
-import ResearchGraph from "../components/ResearchGraph.astro";
 import ProjectCards from "../components/ProjectCards.astro";
 import PaperList from "../components/PaperList.astro";
 import { papers } from "../lib/pubs";
@@ -19,57 +18,34 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
 <Base title="Home" description="The interstellar medium group at Nazarbayev University studies magnetic fields, dust and gas between the stars, from Galactic clouds to the Large Magellanic Cloud.">
   <Hero />
   <PullBack />
-  <LightRuler />
-  <FieldDots />
 
-  <section class="sec tight" aria-labelledby="work-h">
+  <section class="sec" aria-labelledby="work-h">
     <div class="gut max">
       <div class="head">
-        <span class="label">Relation 04 &middot; Work</span>
         <h2 class="brut" id="work-h" data-scramble>What the group measures</h2>
-        <p>Four lines of work, from the methods under the maps to one whole galaxy.</p>
+        <p>The group works on four research lines. Each card links to its papers and data.</p>
       </div>
       <ProjectCards />
     </div>
   </section>
 
-  <section class="slab sec" aria-labelledby="graph-h">
-    <div class="gut max">
-      <div class="head">
-        <span class="label">Relation 05 &middot; Instruments</span>
-        <h2 class="brut" id="graph-h" data-scramble>One sky, many instruments</h2>
-        <p>Regions the group has published on, joined to the telescopes and methods behind each paper.</p>
-      </div>
-      <ResearchGraph />
-    </div>
-  </section>
-
-  <section class="sec" aria-labelledby="arch-h">
-    <div class="gut max">
-      <div class="head">
-        <span class="label">Archive</span>
-        <h2 class="brut" id="arch-h" data-scramble>Look closer</h2>
-        <p>Webb images of star-forming clouds and distant galaxies. Hover or tap a frame to run the source finder on it.</p>
-      </div>
-      <Archive set="webb" />
-    </div>
-  </section>
+  <FieldDots />
 
   <section class="sec" aria-labelledby="ours-h">
     <div class="gut max">
       <div class="head">
-        <span class="label red">Our maps</span>
-        <h2 class="brut" id="ours-h" data-scramble>What Webb cannot see</h2>
-        <p>The magnetic field. Herschel, Spitzer and H&alpha; surveys give the dust and gas their detail; Planck gives the field direction. Hover or tap a map to weave the field in.</p>
+        <h2 class="brut" id="ours-h" data-scramble>Our regions in several bands</h2>
+        <p>Each composite combines dust and gas from Herschel, Spitzer, WISE and SHASSA H&alpha; with the plane-of-sky field orientation from Planck 353 GHz polarization. Hover over a map, or tap it, to show the field.</p>
       </div>
-      <Archive set="ours" />
+      <Archive />
     </div>
   </section>
 
-  <section class="slab sec" aria-labelledby="pub-h">
+  <LightRuler />
+
+  <section class="sec" aria-labelledby="pub-h">
     <div class="gut max split">
       <div class="head">
-        <span class="label">Output</span>
         <h2 class="brut" id="pub-h">Latest papers</h2>
         <p><a href="/publications">All {papers.length} publications &rarr;</a></p>
       </div>
@@ -77,12 +53,11 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
     </div>
   </section>
 
-  <section class="sec" aria-labelledby="news-h">
+  <section class="sec slab" aria-labelledby="news-h">
     <div class="gut max">
       <div class="head">
-        <span class="label">Log</span>
         <h2 class="brut" id="news-h">News and events</h2>
-        <p><a href="/news">Everything &rarr;</a></p>
+        <p><a href="/news">All news &rarr;</a></p>
       </div>
       <ul class="log-list">
         {news.map((n) => (
@@ -101,7 +76,7 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
 <style>
   .split { display: grid; gap: 32px; }
   .log-list { list-style: none; margin: 32px 0 0; padding: 0; }
-  .log-list li { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--hair); }
+  .log-list li { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
   .log-list .dot { font-size: 20px; min-width: 9ch; }
-  .log-list a { font-weight: 600; }
+  .log-list a { font-weight: 600; font-size: 18px; }
 </style>

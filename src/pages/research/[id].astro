@@ -4,6 +4,16 @@ import Base from "../../layouts/Base.astro";
 import PageHead from "../../components/PageHead.astro";
 import PaperList from "../../components/PaperList.astro";
 import LayerLens from "../../components/LayerLens.astro";
+import Findings from "../../components/Findings.astro";
+import MonOB1 from "../../components/MonOB1.astro";
+import GalacticCentre from "../../components/GalacticCentre.astro";
+import CubeViewer from "../../components/CubeViewer.astro";
+import FieldGL from "../../components/FieldGL.astro";
+import ForegroundWipe from "../../components/ForegroundWipe.astro";
+import FilamentNet from "../../components/FilamentNet.astro";
+import OrientationExplorer from "../../components/OrientationExplorer.astro";
+import EstimatorBench from "../../components/EstimatorBench.astro";
+import { flags } from "../../data/flags";
 import { byBibcode, type Paper } from "../../lib/pubs";
 
 export async function getStaticPaths() {
@@ -18,7 +28,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
 ---
 
 <Base title={p.data.title} description={p.data.summary}>
-  <PageHead label={`Research · ${p.data.code}`} title={p.data.title} intro={p.data.summary} image={p.data.image} caption={p.data.instruments.join(" · ")} />
+  <PageHead title={p.data.title} intro={p.data.summary} image={p.data.image} caption={p.data.instruments.join(" · ")} />
 
   <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
     <div class="gut max">
@@ -26,15 +36,126 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
     </div>
   </section>
 
+  {p.data.findings.length > 0 && (
+    <section class="sec tight" aria-labelledby="results-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="results-h" data-scramble>Results</h2>
+          <p>What the papers report, in their own terms. Each item links to its source.</p>
+        </div>
+        <Findings items={p.data.findings} />
+      </div>
+    </section>
+  )}
+
+  {/* Extra sections for one research line go below, one block per project id,
+      each a <section class="sec tight"> with a .head. Keep them after Results
+      and before "In progress". */}
+
   {p.id === "lmc" && (
     <section class="sec tight" aria-labelledby="lens-h">
       <div class="gut max">
         <div class="head">
-          <span class="label red">Instrument</span>
           <h2 class="brut" id="lens-h" data-scramble>Look through the layers</h2>
-          <p>Every layer below is public survey data on one 12° grid. Swap the base, swap the lens, scrub through the hydrogen's velocity.</p>
+          <p>Every layer below is public survey data on one 12° grid. Choose a base map and a lens layer.</p>
         </div>
         <LayerLens />
+      </div>
+    </section>
+  )}
+
+  {p.id === "lmc" && (
+    <section class="sec tight" aria-labelledby="cube-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="cube-h" data-scramble>H I under the pointer</h2>
+          <p>Move over the map to see the 21 cm spectrum there. Drag on the spectrum to choose a velocity window. Move the red cut to see the rotation of the disc.</p>
+        </div>
+        <CubeViewer />
+      </div>
+    </section>
+  )}
+
+  {p.id === "lmc" && (
+    <section class="sec tight" aria-labelledby="res-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="res-h" data-scramble>Resolution and noise</h2>
+          <p>The field drawn live from Planck Q and U. Smoothing more lowers the noise and blurs the structure; streaks fade where the polarized signal is weak.</p>
+        </div>
+        <div style="max-width:760px;margin-top:32px"><FieldGL view="observed" scale={15} /></div>
+      </div>
+    </section>
+  )}
+
+  {p.id === "lmc" && flags.foregroundWipe && (
+    <section class="sec tight" aria-labelledby="fg-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="fg-h" data-scramble>Without the Milky Way</h2>
+          <p>Left of the handle, the Planck field as observed. Right of it, the same data after subtracting the Milky Way foreground.</p>
+        </div>
+        <ForegroundWipe />
+      </div>
+    </section>
+  )}
+
+  {p.id === "filaments" && (
+    <section class="sec tight" aria-labelledby="fn-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="fn-h" data-scramble>The U-Net on a real filament field</h2>
+          <p>The group's network run on Herschel 250 µm in Mon OB1, with the Planck field for comparison.</p>
+        </div>
+        <FilamentNet preview />
+      </div>
+    </section>
+  )}
+
+  {p.id === "filaments" && (
+    <section class="sec tight" aria-labelledby="or-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="or-h" data-scramble>Filaments and the field inside them</h2>
+          <p>The public catalogue of Alina et al. 2019: 138 Planck filaments, 93 with a field angle.</p>
+        </div>
+        <OrientationExplorer />
+      </div>
+    </section>
+  )}
+
+  {p.id === "dust-polarization" && (
+    <section class="sec tight" aria-labelledby="bench-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="bench-h" data-scramble>Bias at low signal to noise</h2>
+          <p>Noise biases the polarization fraction and the angle dispersion function. Try the estimators the group has studied.</p>
+        </div>
+        <EstimatorBench />
+      </div>
+    </section>
+  )}
+
+  {p.id === "star-formation" && (
+    <section class="sec tight" aria-labelledby="mon-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="mon-h" data-scramble>Monoceros OB1 East</h2>
+          <p>The Planck field over the cloud and the regions where Alina et al. 2022 measured its strength and traced the gas motions.</p>
+        </div>
+        <MonOB1 />
+      </div>
+    </section>
+  )}
+
+  {p.id === "dust-polarization" && (
+    <section class="sec tight" aria-labelledby="gc-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="gc-h" data-scramble>The Galactic centre</h2>
+          <p>Planck at 5′ against the mean orientation from PILOT at 2.2′.</p>
+        </div>
+        <GalacticCentre />
       </div>
     </section>
   )}
@@ -43,15 +164,13 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
     <section class="sec tight" aria-labelledby="soon-h">
       <div class="gut max">
         <div class="head">
-          <span class="label red">In progress</span>
-          <h2 class="brut" id="soon-h">Coming soon</h2>
+          <h2 class="brut" id="soon-h">In progress</h2>
           <p>Results appear here once they are published.</p>
         </div>
         <div class="soon cells">
-          {p.data.upcoming.map((u, i) => (
+          {p.data.upcoming.map((u) => (
             <div>
-              <span class="dot n">{String(i + 1).padStart(2, "0")}</span>
-              <span class="tag soon rec">Coming soon</span>
+              <span class="tag soon rec">In progress</span>
               <h3 class="brut">{u.title}</h3>
               <p>{u.note}</p>
             </div>
@@ -64,7 +183,6 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
   <section class="slab sec" aria-labelledby="papers-h">
     <div class="gut max">
       <div class="head">
-        <span class="label">Published</span>
         <h2 class="brut" id="papers-h">Papers</h2>
         <p>{items.length} entries from NASA ADS. <a href="/publications">All publications &rarr;</a></p>
       </div>
@@ -76,7 +194,6 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
 <style>
   .soon { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); margin-top: 40px; }
   .soon > div { padding: 22px 18px 26px; display: grid; gap: 12px; align-content: start; background-image: repeating-linear-gradient(-45deg, transparent 0 10px, rgba(243, 243, 239, 0.03) 10px 11px); }
-  .soon .n { font-size: 34px; line-height: 1; color: var(--grey); }
   .soon .tag { justify-self: start; }
   .soon p { font-size: 13px; color: var(--grey); }
 </style>

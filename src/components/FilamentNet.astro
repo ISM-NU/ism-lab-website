@@ -1,0 +1,306 @@
+---
+// The group's U-Net run on a real Herschel 250 micron field. Overlays can be
+// switched on and off: the ridge filter the site already draws, the position
+// angles the network returns, and the Planck 353 GHz field at beam spacing. The
+// histogram is the angle between the network's filament angle and the Planck
+// field, for the pixels inside a movable square.
+//
+// Everything is produced offline by scripts/unet_filaments.py:
+//   public/sky/unet-herschel.webp  the cutout, north up, east left
+//   public/sky/unet-data.png       R: U-Net class (1..180 = position angle, 0 = none),
+//                                  G: Planck field angle on the grid, B: ridge strength
+//   src/data/unet.json             grid, parameters, field samples, filament pieces
+import u from "../data/unet.json";
+import { byBibcode, link } from "../lib/pubs";
+
+const { preview = false } = Astro.props as { preview?: boolean };
+const paper = byBibcode.get("2025AJ....170..207U");
+const alina = byBibcode.get("2022A&A...658A..90A");
+if (!paper || !alina) throw new Error("FilamentNet: a cited bibcode is missing from publications.json");
+const arcmin = (u.width_deg * 60).toFixed(0);
+const wheel = [0, 30, 60, 90, 120, 150];
+---
+
+<div class="fn" id="fn">
+  <div class="stagecol">
+    <div class="stage" id="fnStage" tabindex="0" role="group" aria-label="Herschel 250 micron map with the selection square. Arrow keys move the square, plus and minus resize it." style="--sx:50%;--sy:50%;--ss:100%">
+      <img class="base" src="/sky/unet-herschel.webp" alt="Herschel SPIRE 250 micron map of G202.3+2.5 in Monoceros OB 1, north up, east left" width="1024" height="1024" />
+      <canvas class="ov" id="fnOv" width="512" height="512" aria-hidden="true"></canvas>
+      <svg class="segs" id="fnSegs" viewBox="0 0 512 512" aria-hidden="true"></svg>
+      <span class="sel" id="fnSel" aria-hidden="true"></span>
+    </div>
+    <div class="scale label">
+      <span>N up, E left</span>
+      <span class="bar" aria-hidden="true"></span>
+      <span>{arcmin}' across</span>
+    </div>
+  </div>
+
+  <div class="ctl">
+    <fieldset>
+      <legend class="label">Overlays</legend>
+      <label><input type="checkbox" id="fnRidge" /><span>Ridge filter</span></label>
+      <label><input type="checkbox" id="fnNet" checked /><span>U-Net filaments</span></label>
+      <label><input type="checkbox" id="fnField" checked /><span>Planck field</span></label>
+    </fieldset>
+    <fieldset id="fnModes">
+      <legend class="label">U-Net drawn as</legend>
+      <label><input type="radio" name="fnMode" value="px" checked /><span>Pixels</span></label>
+      <label><input type="radio" name="fnMode" value="seg" /><span>Segments</span></label>
+    </fieldset>
+    <div class="wheel" aria-label="Colour scale for the U-Net position angle, which repeats every 180 degrees">
+      <span class="label">U-Net position angle</span>
+      <i class="ramp" aria-hidden="true"></i>
+      <span class="ticks label">{wheel.map((a) => <span>{a}°</span>)}<span>180°</span></span>
+    </div>
+    <div class="rng">
+      <label class="label" for="fnSize">Selection <b class="dot" id="fnSizeOut">100%</b></label>
+      <input type="range" id="fnSize" min="15" max="100" step="5" value="100" />
+      <label class="label" for="fnMin">Smallest piece <b class="dot" id="fnMinOut">40</b> px</label>
+      <input type="range" id="fnMin" min="1" max="400" step="1" value="40" />
+    </div>
+  </div>
+
+  <div class="histcol">
+    <svg id="fnHist" class="hist" viewBox="0 0 360 190" role="img" aria-labelledby="fnHistTitle">
+      <title id="fnHistTitle">Histogram of the angle between U-Net filament pixels and the Planck field</title>
+    </svg>
+    <p class="read" id="fnRead" aria-live="polite"></p>
+  </div>
+
+  <div class="notes">
+    <p>
+      The network is the U-Net of <a href={link(paper)}>Umetaliev, Alina and Salmenova (2025)</a>, code and weights from the authors
+      (<a href="https://doi.org/10.5281/zenodo.16647869">Zenodo</a>, MIT licence). It was trained only on synthetic images of rotated
+      rectangles, so every piece it returns is a guess at an orientation in a shape it has not seen. Input: Herschel SPIRE 250 µm
+      (ESA HiPS), top-hat filter with a {u.tophat_px} px element and Otsu threshold (Otsu level {u.otsu}), as in section 3.2 of the paper.
+      The element size is our choice. Angles are measured from north through east, like the Planck field.
+    </p>
+    <p>
+      The field is Planck PR4 353 GHz, Q and U smoothed with a {u.smooth_fwhm_arcmin}' Gaussian on top of the 4.8' beam, drawn every {u.beam_arcmin}'.
+      The region is G202.3+2.5 in Monoceros OB 1; <a href={link(alina)}>Alina et al. (2022)</a> mapped the large-scale field of the cloud with Planck.
+      Ridge filter: multiscale Hessian of the log intensity. Histogram bins are 5°, counted in pixels, which are not independent: a long piece counts as many times as it has pixels.
+    </p>
+    {preview && <p class="prev">Preview. The authors have not reviewed this region or the output.</p>}
+  </div>
+</div>
+<script type="application/json" id="fnData" set:html={JSON.stringify({ field: u.field, segments: u.segments, size: u.size_px, bin: u.bin_deg })}></script>
+
+<style>
+  .fn { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px clamp(24px, 4vw, 56px); margin-top: 40px; }
+  .stagecol { grid-row: span 2; display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .stage { position: relative; aspect-ratio: 1; background: var(--void); border: 1px solid var(--hair); overflow: hidden; touch-action: pan-y; cursor: crosshair; }
+  .stage img, .stage canvas, .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ov { image-rendering: pixelated; pointer-events: none; }
+  .segs { pointer-events: none; }
+  .sel { position: absolute; left: calc(var(--sx) - var(--ss) / 2); top: calc(var(--sy) - var(--ss) / 2); width: var(--ss); height: var(--ss); border: 1px solid var(--ink); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7); pointer-events: none; }
+  .stage[data-all="1"] .sel { border-color: transparent; box-shadow: none; }
+  .scale { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+  .scale .bar { flex: 1; height: 1px; background: var(--hair); }
+  .ctl { display: grid; gap: 20px; align-content: start; }
+  fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  legend { margin: 0 0 8px; padding: 0; float: left; width: 100%; }
+  fieldset label { cursor: pointer; }
+  fieldset input { position: absolute; opacity: 0; pointer-events: none; }
+  fieldset span { display: inline-block; padding: 6px 9px; border: 1px solid var(--hair); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+  fieldset input:checked + span { background: var(--ink); color: var(--void); border-color: var(--ink); }
+  fieldset input:focus-visible + span { outline: 1px solid var(--signal); outline-offset: 2px; }
+  fieldset:disabled { opacity: 0.4; }
+  .wheel { display: grid; gap: 6px; }
+  .ramp { display: block; height: 10px; background: linear-gradient(90deg, hsl(0 90% 58%), hsl(60 90% 58%), hsl(120 90% 58%), hsl(180 90% 58%), hsl(240 90% 58%), hsl(300 90% 58%), hsl(360 90% 58%)); }
+  .ticks { display: flex; justify-content: space-between; font-size: 10px; }
+  .rng { display: grid; gap: 8px; }
+  .rng b { color: var(--ink); font-size: 16px; margin-left: 6px; }
+  .rng label + input { margin-bottom: 8px; }
+  input[type="range"] { width: 100%; accent-color: var(--signal); }
+  .histcol { display: grid; gap: 12px; align-content: start; }
+  .hist { width: 100%; height: auto; overflow: visible; }
+  :global(.hist .bar) { fill: var(--ink); }
+  :global(.hist text) { fill: var(--grey); font: 600 9px var(--mono); letter-spacing: 0.08em; }
+  :global(.hist .ax) { stroke: var(--hair); }
+  :global(.hist .ref) { stroke: var(--signal); stroke-dasharray: 3 3; }
+  .read { font: 400 12px/1.6 var(--mono); color: var(--grey); min-height: 4.8em; }
+  .read :global(b) { color: var(--ink); font-weight: 600; }
+  .notes { grid-column: 1 / -1; display: grid; gap: 10px; max-width: 78ch; font-size: 14px; color: var(--grey); }
+  .notes .prev { color: var(--signal); font-family: var(--mono); font-size: 12px; }
+  @media (max-width: 800px) {
+    .fn { grid-template-columns: minmax(0, 1fr); }
+    .stagecol { grid-row: auto; }
+  }
+</style>
+
+<script>
+  const data = JSON.parse(document.getElementById("fnData")!.textContent!) as {
+    field: [number, number, number][]; segments: [number, number, number, number, number][]; size: number; bin: number;
+  };
+  const N = data.size;
+  const stage = document.getElementById("fnStage") as HTMLDivElement;
+  const ov = document.getElementById("fnOv") as HTMLCanvasElement;
+  const svg = document.getElementById("fnSegs") as unknown as SVGSVGElement;
+  const hist = document.getElementById("fnHist") as unknown as SVGSVGElement;
+  const read = document.getElementById("fnRead")!;
+  const el = (id: string) => document.getElementById(id) as HTMLInputElement;
+  const cRidge = el("fnRidge"), cNet = el("fnNet"), cField = el("fnField"), sSize = el("fnSize"), sMin = el("fnMin");
+  const modes = document.getElementById("fnModes") as HTMLFieldSetElement;
+  const ns = "http://www.w3.org/2000/svg";
+
+  let cls = new Uint8Array(N * N), fld = new Uint8Array(N * N), rdg = new Uint8Array(N * N);
+  let area = new Uint32Array(N * N); // size of the connected piece each pixel belongs to
+  let ready = false;
+  let cx = 0.5, cy = 0.5; // selection centre, fraction of the stage
+
+  const hue = (pa: number) => `hsl(${(pa % 180) * 2} 90% 58%)`;
+  const rgbOf = (pa: number): [number, number, number] => {
+    const h = ((pa % 180) * 2) / 60, c = 0.9 * (1 - Math.abs(2 * 0.58 - 1)), x = c * (1 - Math.abs((h % 2) - 1)), m = 0.58 - c / 2;
+    const [r, g, b] = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][Math.floor(h) % 6];
+    return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
+  };
+  const lut = Array.from({ length: 181 }, (_, i) => rgbOf(i));
+
+  function label() {
+    // 8-connected pieces of the mask, so "smallest piece" can drop specks.
+    const seen = new Uint8Array(N * N), stack: number[] = [];
+    for (let s = 0; s < N * N; s++) {
+      if (!cls[s] || seen[s]) continue;
+      const members: number[] = [];
+      stack.push(s); seen[s] = 1;
+      while (stack.length) {
+        const p = stack.pop()!; members.push(p);
+        const x = p % N, y = (p / N) | 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx, yy = y + dy;
+          if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue;
+          const q = yy * N + xx;
+          if (cls[q] && !seen[q]) { seen[q] = 1; stack.push(q); }
+        }
+      }
+      for (const p of members) area[p] = members.length;
+    }
+  }
+
+  function drawPixels() {
+    const ctx = ov.getContext("2d")!;
+    const img = ctx.createImageData(N, N), d = img.data, min = +sMin.value;
+    const px = (modes.querySelector("input:checked") as HTMLInputElement).value === "px" && cNet.checked;
+    for (let i = 0; i < N * N; i++) {
+      let r = 0, g = 0, b = 0, a = 0;
+      if (cRidge.checked && rdg[i] > 8) { r = 255; g = 61; b = 36; a = Math.min(255, rdg[i] * 1.1); }
+      if (px && cls[i] && area[i] >= min) { [r, g, b] = lut[cls[i]]; a = 215; }
+      d[i * 4] = r; d[i * 4 + 1] = g; d[i * 4 + 2] = b; d[i * 4 + 3] = a;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  function line(parent: Element, x: number, y: number, pa: number, len: number, stroke: string, w: number) {
+    const a = (pa * Math.PI) / 180, dx = (-Math.sin(a) * len) / 2, dy = (-Math.cos(a) * len) / 2;
+    const l = document.createElementNS(ns, "line");
+    for (const [k, v] of Object.entries({ x1: x - dx, y1: y - dy, x2: x + dx, y2: y + dy, stroke, "stroke-width": w, "stroke-linecap": "round" })) l.setAttribute(k, String(v));
+    parent.appendChild(l);
+  }
+
+  function drawSegments() {
+    svg.replaceChildren();
+    const min = +sMin.value;
+    const segMode = (modes.querySelector("input:checked") as HTMLInputElement).value === "seg" && cNet.checked;
+    if (segMode) {
+      for (const [x, y, pa, len, m] of data.segments) if (m >= min) {
+        line(svg, x, y, pa, Math.min(Math.max(len, 14), 90), "#000", 6);
+        line(svg, x, y, pa, Math.min(Math.max(len, 14), 90), hue(pa), 3.5);
+      }
+    }
+    if (cField.checked) {
+      for (const [x, y, pa] of data.field) {
+        line(svg, x, y, pa, 34, "#000", 3.6);
+        line(svg, x, y, pa, 34, "#f3f3ef", 1.6);
+      }
+    }
+  }
+
+  function box() {
+    const s = +sSize.value / 100;
+    // The square stays inside the map: clamp the centre.
+    cx = Math.min(1 - s / 2, Math.max(s / 2, cx)); cy = Math.min(1 - s / 2, Math.max(s / 2, cy));
+    stage.style.setProperty("--sx", `${cx * 100}%`); stage.style.setProperty("--sy", `${cy * 100}%`); stage.style.setProperty("--ss", `${s * 100}%`);
+    stage.dataset.all = s >= 1 ? "1" : "0";
+    document.getElementById("fnSizeOut")!.textContent = `${Math.round(s * 100)}%`;
+    return s;
+  }
+
+  function histogram() {
+    const s = box(), nb = 180 / 2 / data.bin;
+    const x0 = Math.round((cx - s / 2) * N), x1 = Math.round((cx + s / 2) * N), y0 = Math.round((cy - s / 2) * N), y1 = Math.round((cy + s / 2) * N);
+    const min = +sMin.value, h = new Array(nb).fill(0), rel: number[] = [];
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+      const i = y * N + x;
+      if (!cls[i] || area[i] < min) continue;
+      const d = Math.abs((((cls[i] % 180) - fld[i] + 90) % 180 + 180) % 180 - 90); // 0 = parallel to the field
+      h[Math.min(nb - 1, Math.floor(d / data.bin))]++; rel.push(d);
+    }
+    const n = rel.length, W = 360, H = 190, L = 34, R = 6, T = 8, B = 36, pw = (W - L - R) / nb;
+    const max = Math.max(1, ...h), top = Math.ceil(max / (max > 100 ? 100 : 10)) * (max > 100 ? 100 : 10);
+    hist.replaceChildren(hist.querySelector("title")!);
+    const add = (tag: string, attrs: Record<string, string | number>, text?: string) => {
+      const e = document.createElementNS(ns, tag);
+      for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+      if (text) e.textContent = text;
+      hist.appendChild(e); return e;
+    };
+    const yy = (v: number) => T + (H - T - B) * (1 - v / top);
+    add("line", { class: "ax", x1: L, y1: yy(0), x2: W - R, y2: yy(0) });
+    add("line", { class: "ax", x1: L, y1: yy(top), x2: W - R, y2: yy(top) });
+    add("text", { x: L - 5, y: yy(top) + 3, "text-anchor": "end" }, String(top));
+    add("text", { x: L - 5, y: yy(0) + 3, "text-anchor": "end" }, "0");
+    h.forEach((v, k) => v && add("rect", { class: "bar", x: L + k * pw + 1, y: yy(v), width: pw - 2, height: yy(0) - yy(v) }));
+    if (n) add("line", { class: "ref", x1: L, y1: yy(n / nb), x2: W - R, y2: yy(n / nb) });
+    for (const [a, anchor] of [[0, "start"], [45, "middle"], [90, "end"]] as const) add("text", { x: L + ((W - L - R) * a) / 90, y: H - 20, "text-anchor": anchor }, `${a}°`);
+    add("text", { x: L, y: H - 4, "text-anchor": "start" }, "ALONG THE FIELD");
+    add("text", { x: W - R, y: H - 4, "text-anchor": "end" }, "ACROSS THE FIELD");
+    rel.sort((a, b) => a - b);
+    const med = n ? rel[n >> 1] : NaN, par = n ? rel.filter((d) => d < 30).length / n : NaN, perp = n ? rel.filter((d) => d > 60).length / n : NaN;
+    const pct = (v: number) => `${Math.round(v * 100)}%`;
+    read.innerHTML = n
+      ? `<b>${n.toLocaleString("en")}</b> filament pixels in the square. Median angle to the field <b>${med.toFixed(0)}°</b>. Within 30° of the field <b>${pct(par)}</b>, more than 60° from it <b>${pct(perp)}</b>. Dashed line: equal counts in every bin, as for random angles.`
+      : "No filament pixels in the square at this piece size.";
+    hist.setAttribute("aria-label", n ? `Histogram of ${n} pixels, median angle ${med.toFixed(0)} degrees to the field, ${pct(par)} within 30 degrees, ${pct(perp)} beyond 60 degrees` : "Empty histogram");
+  }
+
+  const redraw = () => { if (!ready) return; drawPixels(); drawSegments(); histogram(); };
+  document.getElementById("fnMinOut")!.textContent = sMin.value;
+  sMin.addEventListener("input", () => { document.getElementById("fnMinOut")!.textContent = sMin.value; redraw(); });
+  for (const c of [cRidge, cNet, cField, sSize]) c.addEventListener("input", redraw);
+  modes.addEventListener("change", redraw);
+  cNet.addEventListener("input", () => { modes.disabled = !cNet.checked; });
+
+  // Mouse and pen drag the square; a touch only places it, so the page can still scroll.
+  const place = (e: PointerEvent) => {
+    const r = stage.getBoundingClientRect();
+    cx = (e.clientX - r.left) / r.width; cy = (e.clientY - r.top) / r.height; redraw();
+  };
+  let drag = false;
+  stage.addEventListener("pointerdown", (e) => { drag = e.pointerType !== "touch"; if (+sSize.value === 100) { sSize.value = "40"; } place(e); if (drag) stage.setPointerCapture(e.pointerId); });
+  stage.addEventListener("pointermove", (e) => { if (drag) place(e); });
+  stage.addEventListener("pointerup", () => { drag = false; });
+  stage.addEventListener("keydown", (e) => {
+    const step = 0.04;
+    const k: Record<string, () => void> = {
+      ArrowLeft: () => (cx -= step), ArrowRight: () => (cx += step), ArrowUp: () => (cy -= step), ArrowDown: () => (cy += step),
+      "+": () => (sSize.value = String(Math.min(100, +sSize.value + 5))), "=": () => (sSize.value = String(Math.min(100, +sSize.value + 5))),
+      "-": () => (sSize.value = String(Math.max(15, +sSize.value - 5))), Escape: () => (sSize.value = "100"),
+    };
+    if (!k[e.key]) return;
+    e.preventDefault();
+    if (+sSize.value === 100 && e.key.startsWith("Arrow")) sSize.value = "40";
+    k[e.key](); redraw();
+  });
+
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement("canvas"); c.width = c.height = N;
+    const g = c.getContext("2d", { willReadFrequently: true })!; g.drawImage(img, 0, 0);
+    const px = g.getImageData(0, 0, N, N).data;
+    for (let i = 0; i < N * N; i++) { cls[i] = px[i * 4]; fld[i] = px[i * 4 + 1]; rdg[i] = px[i * 4 + 2]; }
+    label(); ready = true; redraw();
+  };
+  img.src = "/sky/unet-data.png";
+  box();
+</script>

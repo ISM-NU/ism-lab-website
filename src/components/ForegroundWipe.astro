@@ -1,0 +1,103 @@
+---
+// The LMC field before and after removing the Milky Way foreground, following
+// Alina et al. 2023 (2023MNRAS.518.4466A). The foreground is re-derived for
+// this site by scripts/render_stokes.py (Planck PR4, HI4PI, GASS; a uniform
+// foreground angle where the paper used velocity gradients), not taken from
+// the paper's maps. Numbers below come from src/data/stokes.json.
+import stokes from "../data/stokes.json";
+import FieldGL from "./FieldGL.astro";
+
+const fg = stokes.foreground;
+const hi = stokes.hi_contours;
+// Contour weight rises with column, one ink colour (levels from the paper's Fig. 1).
+const op = [0.45, 0.6, 0.8, 1];
+const used = stokes.stars.filter((s) => s.used);
+const other = stokes.stars.filter((s) => !s.used);
+// Field direction as a segment on the 0..1000 panel; grid angle from up towards left.
+const seg = (x: number, y: number, deg: number, len: number) => {
+  const a = (deg * Math.PI) / 180, dx = -Math.sin(a) * len, dy = -Math.cos(a) * len;
+  return `M${(x * 1000 - dx).toFixed(1)},${(y * 1000 - dy).toFixed(1)}L${(x * 1000 + dx).toFixed(1)},${(y * 1000 + dy).toFixed(1)}`;
+};
+const bGrid = (fg.psi_fg_grid_deg + 90 + 180) % 180;
+// Uniform foreground field drawn on a coarse lattice under the stars.
+const lattice: string[] = [];
+for (let y = 1; y < 8; y++) for (let x = 1; x < 8; x++) lattice.push(seg(x / 8, y / 8, bGrid, 34));
+const pct = (x: number, d = 1) => (x * 100).toFixed(d);
+const ads = "https://ui.adsabs.harvard.edu/abs/2023MNRAS.518.4466A";
+---
+
+<div class="fw">
+  <div class="main">
+    <FieldGL wipe scale={15} label="LMC magnetic field: Planck as observed (left of the handle) and after Milky Way foreground subtraction (right)">
+      <g class="hi" data-hi>
+        {hi.levels_K_kms.map((lev, i) => hi.paths[String(lev) as keyof typeof hi.paths].map((d) => <path d={d} style={`opacity:${op[i]}`} />))}
+      </g>
+    </FieldGL>
+    <label class="toggle"><input type="checkbox" data-hi-toggle /><span>H I column contours</span></label>
+    <p class="cap">
+      Planck PR4 (NPIPE) 353 GHz; the paper used the PR3 release at 16′. Streaks show the plane-of-sky field (polarization angle plus 90°) over dust emission. After subtraction they are drawn only where the observed 353 GHz intensity is above its median over the map, as in the paper; outside, what remains is Milky Way structure that a uniform foreground does not model. Contours: GASS H I at LMC velocities (182 to 366 km/s), {hi.levels_K_kms.join(", ")} K km/s, the levels of the paper's figures. The foreground was re-derived for this site following <a href={ads}>Alina et al. 2023</a>; it is not the paper's published map.
+    </p>
+  </div>
+
+  <aside class="panel" aria-label="The Milky Way foreground">
+    <h3 class="ph">The foreground</h3>
+    <svg class="fgmap" viewBox="0 0 1000 1000" role="img" aria-label={`Foreground field direction, uniform at position angle ${fg.b_fg_pa_deg_centre.toFixed(0)} degrees, with starlight polarization of ${used.length} foreground stars`}>
+      <rect width="1000" height="1000" class="bg" />
+      <g class="lat">{lattice.map((d) => <path d={d} />)}</g>
+      <g class="oth">{other.map((s) => <path d={seg(s.x, s.y, s.grid, 22)} />)}</g>
+      <g class="use">{used.map((s) => <path d={seg(s.x, s.y, s.grid, 30)} />)}</g>
+    </svg>
+    <ul class="key">
+      <li><i class="k lat"></i>Assumed foreground field, uniform</li>
+      <li><i class="k use"></i>Starlight, {used.length} stars beyond 500 pc, σ<sub>θ</sub> &lt; 20°</li>
+      <li><i class="k oth"></i>Other foreground stars</li>
+    </ul>
+    <dl class="nums">
+      <div><dt>Field PA, foreground</dt><dd>{fg.b_fg_pa_deg_centre.toFixed(0)}°</dd></div>
+      <div><dt>Field PA, starlight mean</dt><dd>{stokes.star_mean_pa_deg.toFixed(0)}°</dd></div>
+      <div><dt>Polarization fraction p<sub>fg</sub></dt><dd>{pct(fg.p_fg)}%</dd></div>
+      <div><dt>Mean I<sub>fg</sub> on the LMC</dt><dd>{stokes.validation.site_grid.I_fg_mean_in_mask.toFixed(2)} MJy/sr</dd></div>
+    </dl>
+    <p class="how">
+      Foreground intensity is the Milky Way H I column (HI4PI minus the LMC velocities in GASS) times the dust-to-gas ratio measured more than 5° from the LMC centre. Its polarization fraction is the mean measured in the same region. The paper took the foreground angle from H I velocity gradients; here it is the mean angle of that region, which lies {Math.abs(fg.b_fg_pa_deg_centre - stokes.star_mean_pa_deg).toFixed(0)}° from the mean of the stars. Starlight: Schmidt 1976 and Mathewson &amp; Ford 1970, with Gaia distances compiled in the paper. Angles east of north at the map centre.
+    </p>
+  </aside>
+</div>
+
+<style>
+  .fw { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 320px); gap: 28px; align-items: start; }
+  .main { display: grid; gap: 14px; }
+  .hi path { fill: none; stroke: var(--ink); stroke-width: 1.3; vector-effect: non-scaling-stroke; }
+  .hi { display: none; }
+  .hi.on { display: inline; }
+  .toggle { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; font: 600 12px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); justify-self: start; }
+  .toggle input { accent-color: var(--signal); width: 16px; height: 16px; margin: 0; }
+  .cap { font-size: 14px; color: var(--grey); max-width: 70ch; }
+  .panel { display: grid; gap: 14px; border: 1px solid var(--hair); padding: 16px; }
+  .ph { margin: 0; font: 700 20px/1.1 var(--brut); }
+  .fgmap { width: 100%; aspect-ratio: 1; }
+  .fgmap .bg { fill: var(--panel); stroke: var(--hair); stroke-width: 2; }
+  .fgmap path { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .lat path { stroke: #a8461a; stroke-width: 2; }
+  .use path { stroke: var(--ink); stroke-width: 1.6; }
+  .oth path { stroke: var(--grey); stroke-width: 1; opacity: 0.6; }
+  .key { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; color: var(--grey); }
+  .k { display: inline-block; width: 18px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 8px; }
+  .k.lat { border-color: #a8461a; }
+  .k.use { border-color: var(--ink); }
+  .k.oth { border-color: var(--grey); border-top-width: 1px; }
+  .nums { margin: 0; display: grid; gap: 4px; }
+  .nums div { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--hair); padding-top: 4px; }
+  .nums dt { font-size: 13px; color: var(--grey); }
+  .nums dd { margin: 0; font: 600 13px/1.4 var(--mono); color: var(--ink); white-space: nowrap; }
+  .how { font-size: 13px; color: var(--grey); }
+  @media (max-width: 860px) { .fw { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>(".fw").forEach((fw) => {
+    const g = fw.querySelector<SVGGElement>("[data-hi]")!;
+    const t = fw.querySelector<HTMLInputElement>("[data-hi-toggle]")!;
+    t.addEventListener("change", () => g.classList.toggle("on", t.checked));
+  });
+</script>

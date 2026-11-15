@@ -1,21 +1,21 @@
 ---
 // Header band for inner pages: a big condensed title next to a framed sky
 // image with its catalogue line, like a target readout.
-interface Props { label: string; title: string; intro?: string; image?: string; caption?: string }
-const { label, title, intro, image, caption } = Astro.props;
+import MapFrame from "./MapFrame.astro";
+interface Props { title: string; intro?: string; image?: string; caption?: string }
+const { title, intro, image, caption } = Astro.props;
 ---
 
 <header class="ph gut">
   <div class="max grid">
     <div class="txt">
-      <span class="label red">{label}</span>
       <h1 class="brut page" data-scramble>{title}</h1>
       {intro && <p class="intro">{intro}</p>}
       <slot />
     </div>
     {image && (
       <figure class="frame">
-        <img src={image} alt="" decoding="async" fetchpriority="high" />
+        <MapFrame ids={[image]} compact><img src={image} alt="" decoding="async" fetchpriority="high" /></MapFrame>
         <span class="b tl"></span><span class="b tr"></span><span class="b bl"></span><span class="b br"></span>
         {caption && <figcaption class="label">{caption}</figcaption>}
       </figure>
@@ -35,7 +35,7 @@ const { label, title, intro, image, caption } = Astro.props;
   .tr { top: 0; right: 0; border-width: 1px 1px 0 0; }
   .bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
   .br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
-  figcaption { position: absolute; left: 14px; bottom: -22px; color: var(--grey); }
+  figcaption { position: absolute; left: 14px; bottom: -24px; color: var(--grey); }
   @media (max-width: 800px) {
     .grid { grid-template-columns: minmax(0, 1fr); }
     .frame { max-width: 420px; }

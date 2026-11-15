@@ -1,0 +1,116 @@
+---
+// Altitude of the LMC centre now and over the next 24 hours at the group's
+// home and at the telescopes whose data it uses. Computed in the browser from
+// src/lib/sky.ts; the server only renders the rows.
+import { LMC, SITES, maxAltitude, minAltitude } from "../lib/sky";
+const rows = SITES.map((s) => ({ ...s, max: maxAltitude(s.lat, LMC.dec), min: minAltitude(s.lat, LMC.dec) }));
+const maxText = (m: number, lo: number) =>
+  lo > 0 ? `Never sets: between ${lo.toFixed(0)}° and ${m.toFixed(0)}°.` : m <= 0 ? `Never above the horizon: the highest the centre gets is ${m.toFixed(0)}°.` : m < 5 ? `Never above ${m.toFixed(1)}°, too low to observe.` : `Highest altitude ${m.toFixed(0)}°.`;
+const fmtLat = (v: number) => `${Math.abs(v).toFixed(2)}° ${v < 0 ? "S" : "N"}`;
+const fmtLon = (v: number) => `${Math.abs(v).toFixed(2)}° ${v < 0 ? "W" : "E"}`;
+---
+
+<div class="lmcsky" id="lmcsky" data-ra={LMC.ra} data-dec={LMC.dec}>
+  <div class="axis" aria-hidden="true"><span></span><span></span><div class="ticks" id="ticks"></div></div>
+  <ul>
+    {rows.map((r) => (
+      <li data-lat={r.lat} data-lon={r.lon} data-site={r.id}>
+        <div class="who">
+          <b>{r.name}</b>
+          <span>{r.note}<br /><span class="co">{fmtLat(r.lat)} {fmtLon(r.lon)}</span></span>
+        </div>
+        <div class="now dot" data-now>--</div>
+        <div class="strip">
+          <svg viewBox="0 0 144 1" preserveAspectRatio="none" role="img" aria-label={`${r.name}: altitude of the LMC over the next 24 hours`} data-svg></svg>
+          <p class="when" data-when data-max={maxText(r.max, r.min)}>{maxText(r.max, r.min)}</p>
+        </div>
+      </li>
+    ))}
+  </ul>
+  <p class="key"><i class="k"></i> Altitude above the horizon, darker to brighter up to 60°. Time runs from now to 24 hours ahead, in UTC. Centre of the LMC (RA 80.894°, Dec −69.756°).</p>
+</div>
+
+<style>
+  .lmcsky { color: var(--ink); border: 1px solid var(--hair); background: var(--panel); }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li, .axis { display: grid; grid-template-columns: 13rem 7.5rem minmax(0, 1fr); gap: 8px 20px; align-items: center; padding: 14px clamp(14px, 2vw, 24px); }
+  li { border-top: 1px solid var(--hair); }
+  .axis { padding-bottom: 0; }
+  .ticks { position: relative; height: 18px; font: 600 11px/1 var(--mono); color: var(--grey); font-variant-numeric: tabular-nums; }
+  .ticks :global(span) { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+  .ticks :global(span:first-child) { transform: none; }
+  .ticks :global(span:last-child) { transform: translateX(-100%); }
+  .who { display: grid; gap: 4px; font-size: 13px; }
+  .who b { font: 600 14px/1.1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+  .who span { color: var(--grey); line-height: 1.4; }
+  .co { font: 400 11px/1.4 var(--mono); }
+  .now { font-size: 22px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .now.up { color: var(--signal); }
+  .strip { min-width: 0; }
+  svg { display: block; width: 100%; height: 26px; border-bottom: 1px solid var(--hair); background: repeating-linear-gradient(to right, transparent 0 calc(25% - 1px), var(--hair) calc(25% - 1px) 25%); }
+  .when { margin: 6px 0 0; font: 400 12px/1.4 var(--mono); color: var(--grey); }
+  .key { margin: 0; padding: 12px clamp(14px, 2vw, 24px); border-top: 1px solid var(--hair); font: 400 12px/1.5 var(--mono); color: var(--grey); }
+  .k { display: inline-block; width: 40px; height: 8px; vertical-align: 0; margin-right: 6px; background: linear-gradient(to right, rgba(255, 61, 36, 0.15), var(--signal)); }
+  @media (max-width: 760px) {
+    li, .axis { grid-template-columns: minmax(0, 1fr) auto; }
+    .axis span { display: none; }
+    .axis .ticks { grid-column: 1 / -1; }
+    .strip { grid-column: 1 / -1; }
+  }
+</style>
+
+<script>
+  import { altitude } from "../lib/sky";
+
+  const root = document.getElementById("lmcsky")!;
+  const ra = Number(root.dataset.ra), dec = Number(root.dataset.dec);
+  const NS = "http://www.w3.org/2000/svg";
+  const N = 144; // 10-minute cells over 24 h
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const hhmm = (d: Date) => `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  const MAX = 60;
+
+  function draw() {
+    const t0 = Date.now();
+    const ticks = document.getElementById("ticks")!;
+    ticks.replaceChildren();
+    for (const h of [0, 6, 12, 18, 24]) {
+      const s = document.createElement("span");
+      s.style.left = `${(h / 24) * 100}%`;
+      s.textContent = h === 0 ? "now" : `${hhmm(new Date(t0 + h * 3600e3))}`;
+      ticks.append(s);
+    }
+    root.querySelectorAll<HTMLLIElement>("li").forEach((li) => {
+      const lat = Number(li.dataset.lat), lon = Number(li.dataset.lon);
+      const at = (ms: number) => altitude(new Date(ms), lat, lon, ra, dec);
+      const now = at(t0);
+      const el = li.querySelector<HTMLElement>("[data-now]")!;
+      el.textContent = `${now >= 0 ? "+" : "−"}${Math.abs(now).toFixed(1)}°`;
+      el.classList.toggle("up", now > 0);
+      const svg = li.querySelector("svg")!;
+      svg.replaceChildren();
+      let first = -1, upCells = 0, wasUp = now > 0, change: number | null = null;
+      for (let i = 0; i < N; i++) {
+        const a = at(t0 + (i + 0.5) * 600e3);
+        if (a > 0) {
+          upCells++;
+          const r = document.createElementNS(NS, "rect");
+          r.setAttribute("x", String(i)); r.setAttribute("y", "0");
+          r.setAttribute("width", "1.02"); r.setAttribute("height", "1");
+          r.setAttribute("fill", "#ff3d24");
+          r.setAttribute("fill-opacity", (0.15 + 0.85 * Math.min(a / MAX, 1)).toFixed(2));
+          svg.append(r);
+        }
+        if (change === null && (a > 0) !== wasUp) change = t0 + i * 600e3;
+        if (first < 0 && a > 0) first = i;
+      }
+      const when = li.querySelector<HTMLElement>("[data-when]")!;
+      const max = when.dataset.max!;
+      const next = change === null ? "" : wasUp ? ` Sets at ${hhmm(new Date(change))} UTC.` : ` Rises at ${hhmm(new Date(change))} UTC.`;
+      when.textContent = upCells === 0 || max.startsWith("Never") || change === null ? max : `${max}${next}`;
+      svg.setAttribute("aria-label", `${li.querySelector("b")!.textContent}: LMC above the horizon for ${(upCells / 6).toFixed(0)} of the next 24 hours`);
+    });
+  }
+  draw();
+  setInterval(draw, 60000);
+</script>

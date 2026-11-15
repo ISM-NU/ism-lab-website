@@ -1,0 +1,58 @@
+---
+// Published results of one research line, from the project's `findings`
+// front matter. Each item is a sentence restating what the paper says, an
+// optional number as printed there, and the paper it comes from. The research
+// page has already checked every bibcode against publications.json.
+import { byBibcode, link } from "../lib/pubs";
+
+interface Finding { text: string; value?: string; figure?: string; bibcode: string }
+interface Props { items: Finding[] }
+const { items } = Astro.props;
+
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+// Plain-text exponents and subscripts from the front matter: 10^3, cm^-3, n_H, N_H2, B_POS.
+const fmt = (s: string) =>
+  esc(s)
+    .replace(/\^(-?[0-9.]+)/g, "<sup>$1</sup>")
+    .replace(/\b([A-Za-z])_([A-Za-z0-9]+)/g, "$1<sub>$2</sub>");
+const cite = (b: string) => {
+  const p = byBibcode.get(b)!;
+  const first = p.authors[0].split(",")[0];
+  const n = p.authors.length;
+  return { text: `${first}${n > 2 ? " et al." : n === 2 ? ` & ${p.authors[1].split(",")[0]}` : ""} ${p.year}`, href: link(p) };
+};
+---
+
+{items.length > 0 && (
+  <ol class="fd cells">
+    {items.map((f, i) => {
+      const c = cite(f.bibcode);
+      return (
+        <li>
+          <span class="n dot" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+          <p class="t" set:html={fmt(f.text)} />
+          {f.value && <p class="v" set:html={fmt(f.value)} />}
+          {f.figure && <img class="fig" src={f.figure} alt="" loading="lazy" decoding="async" />}
+          <a class="src" href={c.href} rel="noopener">{c.text}</a>
+        </li>
+      );
+    })}
+  </ol>
+)}
+
+<style>
+  .fd { list-style: none; margin: 40px 0 0; padding: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); }
+  .fd li { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 10px 14px; align-content: start; padding: 22px 20px 24px 16px; }
+  .n { grid-row: span 3; font-size: 22px; line-height: 1.1; color: var(--grey); }
+  .t { margin: 0; font-size: 16px; line-height: 1.55; max-width: 62ch; }
+  .v { margin: 0; font: 500 13px/1.5 var(--mono); color: var(--ink); }
+  .fig { grid-column: 2; width: 100%; height: auto; }
+  .src { grid-column: 2; justify-self: start; font: 600 12px/1.3 var(--mono); letter-spacing: 0.04em; color: var(--grey); text-decoration: underline; text-decoration-color: var(--hair); text-underline-offset: 3px; }
+  .src:hover, .src:focus-visible { color: var(--ink); text-decoration-color: var(--signal); }
+  sup, sub { font-size: 0.72em; line-height: 0; }
+  @media (max-width: 640px) {
+    .fd li { grid-template-columns: minmax(0, 1fr); padding: 18px 14px 20px; }
+    .n { grid-row: auto; font-size: 18px; }
+    .fig, .src { grid-column: 1; }
+  }
+</style>

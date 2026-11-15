@@ -1,17 +1,26 @@
 ---
-import { authorLine, link, titleHtml, venue, type Paper } from "../lib/pubs";
-interface Props { items: Paper[]; dense?: boolean }
-const { items, dense = false } = Astro.props;
+import { authorLine, instrumentsOf, link, resultOf, titleHtml, venue, type Paper } from "../lib/pubs";
+// `meta` switches on the publications page extras: filter attributes, the
+// one-line result, the group-led marker on the year, and a BibTeX button.
+// `lines` maps bibcode -> research line slugs.
+interface Props { items: Paper[]; dense?: boolean; meta?: boolean; lines?: Map<string, string[]> }
+const { items, dense = false, meta = false, lines } = Astro.props;
 ---
 
 <ol class:list={["papers", { dense }]}>
   {items.map((p) => (
-    <li>
+    <li
+      class:list={{ led: meta && p.led }}
+      data-line={meta ? (lines?.get(p.bibcode) ?? []).join(" ") : undefined}
+      data-inst={meta ? instrumentsOf(p).map((n) => n.toLowerCase().replace(/[^a-z]+/g, "-")).join(" ") : undefined}
+      data-role={meta ? p.role : undefined}
+    >
       <span class="yr dot">{p.year}</span>
       <div class="body">
         <a class="ttl" href={link(p)} rel="noopener" set:html={titleHtml(p.title)} />
         <span class="by">{authorLine(p)}</span>
-        <span class="ven">{venue(p)}{p.arxiv && <> · <a href={`https://arxiv.org/abs/${p.arxiv}`} rel="noopener">arXiv:{p.arxiv}</a></>}</span>
+        <span class="ven">{venue(p)}{p.arxiv && <> · <a href={`https://arxiv.org/abs/${p.arxiv}`} rel="noopener">arXiv:{p.arxiv}</a></>}{meta && p.bibtex && <> · <button type="button" class="bib" data-bib={p.bibcode}>Copy BibTeX</button></>}</span>
+        {meta && p.led && resultOf(p) && <q class="res">{resultOf(p)}</q>}
       </div>
       <span class="cit" title="Citations in ADS">{p.citations > 0 ? `${p.citations} cit.` : ""}</span>
     </li>
@@ -27,6 +36,11 @@ const { items, dense = false } = Astro.props;
   .ttl:hover { text-decoration: underline; text-decoration-color: var(--signal); }
   .by, .ven { font-size: 12px; opacity: 0.72; }
   .cit { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; white-space: nowrap; }
+  .res { font-size: 13.5px; line-height: 1.45; quotes: "“" "”"; max-width: 70ch; }
+  .led .yr { color: var(--signal); }
+  :global(.slab) .led .yr { color: #d42a12; }
+  .bib { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .bib:hover, .bib:focus-visible { color: var(--signal); }
   .dense li { padding: 12px 0; }
   .dense .ttl { font-size: 14px; }
   @media (max-width: 640px) {

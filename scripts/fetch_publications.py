@@ -9,15 +9,17 @@ Run: python3 scripts/fetch_publications.py
 
 import json
 import os
+import re
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "src" / "data" / "publications.json"
+PUB = ROOT / "public" / "publications.bib"
 
 QUERY = 'author:"Alina, D" collection:astronomy'
-FIELDS = "bibcode,title,author,year,pub,volume,page,doi,identifier,doctype,citation_count,orcid_pub,aff,pubdate"
+FIELDS = "bibcode,title,author,year,pub,volume,page,doi,identifier,doctype,citation_count,orcid_pub,aff,pubdate,abstract"
 # Name forms that are Dana Alina. Anything else matching "Alina, D" is a
 # namesake and is dropped.
 NAMES = {"alina, d.", "alina, dana", "alina, d"}
@@ -52,6 +54,62 @@ def search():
         return json.load(r)["response"]["docs"]
 
 
+def bibtex(bibcodes):
+    """BibTeX from the ADS export endpoint, author lists cut at 10 ("and others")
+    so the 200-author collaboration papers stay short. Returns {bibcode: entry}."""
+    req = urllib.request.Request(
+        "https://api.adsabs.harvard.edu/v1/export/bibtex",
+        data=json.dumps({"bibcode": bibcodes, "maxauthor": 10, "authorlimit": 10}).encode(),
+        headers={"Authorization": f"Bearer {token()}", "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=120) as r:
+        text = json.load(r)["export"]
+    out = {}
+    for entry in re.split(r"\n(?=@)", text.strip()):
+        m = re.match(r"@\w+\{([^,]+),", entry)
+        if m:
+            out[m.group(1)] = entry.strip()
+    return out
+
+
+def norm(name):
+    """'Umetaliev, Temirkul' and 'Umetaliev, T.' both become 'umetaliev t'."""
+    last, _, first = name.partition(",")
+    return f"{last.strip().lower()} {first.strip()[:1].lower()}"
+
+
+def nu_members(docs):
+    """Authors that ADS places at Nazarbayev University on at least one paper.
+
+    ADS has no member list, and records such as Zenodo deposits or fresh arXiv
+    preprints carry no affiliations, so an author seen at Nazarbayev anywhere
+    in the set counts as a member everywhere. Dana Alina (PI) always counts.
+    """
+    members = {norm("Alina, D.")}
+    for d in docs:
+        for a, f in zip(d.get("author", []), d.get("aff") or []):
+            if "nazarbayev" in f.lower():
+                members.add(norm(a))
+    return members
+
+
+def role_of(authors, members):
+    """'first' (member first author), 'led' (member last author), else 'collab'."""
+    if norm(authors[0]) in members:
+        return "first"
+    return "led" if norm(authors[-1]) in members else "collab"
+
+
+def is_group_led(authors, members):
+    """Group-led means a group member is first or last author.
+
+    Group = the PI and the authors that nu_members() finds. A middle-author
+    position never counts, so papers where Alina is one of 40 co-authors stay
+    collaboration papers.
+    """
+    return norm(authors[0]) in members or norm(authors[-1]) in members
+
+
 def arxiv_id(doc):
     for ident in doc.get("identifier", []):
         if ident.startswith("arXiv:"):
@@ -61,7 +119,9 @@ def arxiv_id(doc):
 
 def main():
     papers = []
-    for d in search():
+    docs = search()
+    members = nu_members(docs)
+    for d in docs:
         authors = d.get("author", [])
         idx = next((i for i, a in enumerate(authors) if a.lower() in NAMES), None)
         if idx is None:
@@ -83,7 +143,20 @@ def main():
             "citations": d.get("citation_count", 0),
             "group": group,
             "doctype": d.get("doctype"),
+            "led": is_group_led(authors, members),
+            "role": role_of(authors, members),
+            "abstract": d.get("abstract", ""),
         })
+    try:
+        bib = bibtex([p["bibcode"] for p in papers])
+    except (OSError, KeyError) as e:
+        print("BibTeX export failed, keeping any earlier entries:", e)
+        bib = {}
+    old = json.loads(OUT.read_text())["papers"] if OUT.exists() else []
+    keep = {p["bibcode"]: p.get("bibtex") for p in old}
+    for p in papers:
+        p["bibtex"] = bib.get(p["bibcode"]) or keep.get(p["bibcode"]) or ""
+    PUB.write_text("\n\n".join(p["bibtex"] for p in papers if p["bibtex"]) + "\n")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"query": QUERY, "groups": list(dict.fromkeys(GROUPS.values())), "papers": papers}, indent=1, ensure_ascii=False))
     by = {}

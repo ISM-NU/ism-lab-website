@@ -2,35 +2,39 @@
 import Base from "../layouts/Base.astro";
 import PageHead from "../components/PageHead.astro";
 
+// CDS catalogue DOIs checked against DataCite (api.datacite.org) on 2026-11-15.
+// J/A+A/711/A157 has none registered yet, so it links to the VizieR mirror at
+// CfA; switch it to the DOI once DataCite lists it.
 const products = [
-  { kind: "Catalogue", t: "Filaments hosting Planck Galactic cold clumps", ref: "Alina et al. 2019, MNRAS 485, 2825", href: "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J/MNRAS/485/2825" },
-  { kind: "Cubes", t: "MBM 12 CO cubes and H2 map (B-FROST)", ref: "Vorster et al. 2026, A&A 711, A157", href: "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J/A+A/711/A157" },
-  { kind: "Cubes", t: "G202.3+2.5 position-position-velocity cubes", ref: "Montillaud et al. 2019, A&A 631, A3", href: "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J/A+A/631/A3" },
-  { kind: "Catalogue", t: "SCOPE 850 µm compact source catalogue", ref: "Eden et al. 2019, MNRAS 485, 2895", href: "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J/MNRAS/485/2895" },
-  { kind: "Catalogue", t: "CO and 850 µm observations of Planck cold clumps", ref: "Zhang et al. 2018, ApJS 236, 49", href: "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J/ApJS/236/49" },
+  { kind: "Catalogue", t: "Filaments hosting Planck Galactic cold clumps", ref: "Alina et al. 2019, MNRAS 485, 2825", href: "https://doi.org/10.26093/cds/vizier.74852825" },
+  { kind: "Cubes", t: "MBM 12 CO cubes and H2 map (B-FROST)", ref: "Vorster et al. 2026, A&A 711, A157", href: "https://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/A+A/711/A157" },
+  { kind: "Cubes", t: "G202.3+2.5 position-position-velocity cubes", ref: "Montillaud et al. 2019, A&A 631, A3", href: "https://doi.org/10.26093/cds/vizier.36310003" },
+  { kind: "Catalogue", t: "SCOPE 850 µm compact source catalogue", ref: "Eden et al. 2019, MNRAS 485, 2895", href: "https://doi.org/10.26093/cds/vizier.74852895" },
+  { kind: "Catalogue", t: "CO and 850 µm observations of Planck cold clumps", ref: "Zhang et al. 2018, ApJS 236, 49", href: "https://doi.org/10.26093/cds/vizier.22360049" },
   { kind: "Code", t: "U-Net for position angles of filamentary structures", ref: "Zenodo, 2025", href: "https://doi.org/10.5281/zenodo.16647869" },
   { kind: "Code", t: "VGT.jl: velocity gradient technique in Julia", ref: "GitHub, ISM-NU", href: "https://github.com/ISM-NU/VGT.jl" },
   { kind: "Code", t: "ROHSA-LMC: Gaussian decomposition of LMC H I", ref: "GitHub, ISM-NU (wraps ROHSA by A. Marchal)", href: "https://github.com/ISM-NU/ROHSA-LMC" },
+  { kind: "Code", t: "LMC-shells: supergiant shell rims against VGT and Planck field directions", ref: "GitHub, ISM-NU", href: "https://github.com/ISM-NU/LMC-shells" },
 ];
 const surveys = [
-  { t: "Planck HFI 353 GHz, PR3", use: "Dust intensity and magnetic field on every map", href: "https://pla.esac.esa.int/" },
-  { t: "GASS: Galactic All-Sky Survey (Parkes H I)", use: "LMC hydrogen column, rotation and velocity channels", href: "https://www.astro.uni-bonn.de/hisurvey/gass/" },
+  { t: "Planck HFI 353 GHz, PR4 (NPIPE)", use: "Dust intensity and field orientation (polarization angle + 90°) in the sky maps", href: "https://pla.esac.esa.int/" },
+  { t: "GASS: Galactic All-Sky Survey (Parkes H I)", use: "LMC H I column, mean velocity and velocity channels", href: "https://www.astro.uni-bonn.de/hisurvey/gass/" },
   { t: "MAGMA CO(1-0), Mopra", use: "LMC molecular clouds", href: "https://mmwave.astro.illinois.edu/magma/" },
-  { t: "ESA/Webb image releases", use: "Hero, archive and light-travel ruler", href: "https://esawebb.org/images/" },
+  { t: "Herschel, Spitzer, WISE, SHASSA", use: "Bands of the multi-band composites" },
+  { t: "ESA/Webb image releases", use: "Hero image and light-travel ruler", href: "https://esawebb.org/images/" },
 ];
 ---
 
 <Base title="Data" description="Public catalogues, cubes and code from the ISM group, and the survey data used on this site.">
-  <PageHead label="Data" title="Open data and code" intro="Catalogues and cubes that came out of the group's papers, the code we publish, and the public surveys behind every image on this site."
-    image="/sky/lmc-lic.webp" caption="LMC · Planck field texture (LIC)" />
+  <PageHead title="Open data and code" intro="Catalogues and cubes that came out of the group's papers, the code we publish, and the public surveys behind every image on this site."
+    image="/sky/lmc-bfield.webp" caption="LMC · Planck 353 GHz dust, field orientation as texture" />
 
   <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
     <div class="gut max">
-      <div class="head"><span class="label">From the group</span><h2 class="brut">Products</h2><p>{products.length} public releases.</p></div>
+      <div class="head"><h2 class="brut">Products</h2><p>{products.length} public releases.</p></div>
       <ul class="rows">
-        {products.map((p, i) => (
+        {products.map((p) => (
           <li>
-            <span class="dot n">{String(i + 1).padStart(2, "0")}</span>
             <span class="tag">{p.kind}</span>
             <a href={p.href} rel="noopener" class="t">{p.t}</a>
             <span class="ref">{p.ref}</span>
@@ -42,11 +46,10 @@ const surveys = [
 
   <section class="slab sec">
     <div class="gut max">
-      <div class="head"><span class="label">On this site</span><h2 class="brut">Surveys used</h2><p>Every image here is public data, rendered by scripts in the site's repository.</p></div>
+      <div class="head"><h2 class="brut">Surveys used</h2><p>Every image here is public data, rendered by scripts in the site's repository.</p></div>
       <ul class="rows">
-        {surveys.map((s, i) => (
+        {surveys.map((s) => (
           <li>
-            <span class="dot n">{String(i + 1).padStart(2, "0")}</span>
             <a href={s.href} rel="noopener" class="t">{s.t}</a>
             <span class="ref">{s.use}</span>
           </li>
@@ -58,14 +61,12 @@ const surveys = [
 
 <style>
   .rows { list-style: none; margin: 24px 0 0; padding: 0; }
-  .rows li { display: grid; grid-template-columns: 3.5rem auto minmax(0, 1fr) minmax(0, 0.8fr); gap: 8px 18px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
-  .slab .rows li { grid-template-columns: 3.5rem minmax(0, 1fr) minmax(0, 1fr); }
-  .n { font-size: 22px; line-height: 1; }
+  .rows li { display: grid; grid-template-columns: 7rem minmax(0, 1fr) minmax(0, 0.8fr); gap: 8px 18px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
+  .slab .rows li { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .t { font-weight: 600; }
-  .ref { font-size: 12px; opacity: 0.7; }
+  .ref { font: 400 13px/1.45 var(--mono); opacity: 0.75; }
   @media (max-width: 760px) {
-    .rows li, .slab .rows li { grid-template-columns: 3rem minmax(0, 1fr); }
-    .rows .tag { grid-column: 2; justify-self: start; }
-    .t, .ref { grid-column: 2; }
+    .rows li, .slab .rows li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .rows .tag { justify-self: start; }
   }
 </style>

@@ -1,0 +1,211 @@
+---
+// Map furniture for a square sky image (or the cover-fitted canvas in
+// FieldDots): scale bar in angle and parsecs, N/E compass at the true
+// orientation, beam circles at true size, a colour bar for single-quantity
+// layers, and a "Method" drawer (bands, stretch, smoothing, script, FITS).
+// Everything is read from src/data/maps.json (scripts/map_meta.py).
+//
+// ids     image keys or /sky/ paths; every id gets its own beams, bar and
+//         drawer section, shown when listed in `active`
+// zoom    the image is shown magnified by this factor about its centre
+// fill    the slot is not square: the image covers it (side = longer edge)
+// compact compass, scale bar and beam only, no drawer
+// box     "block" (fills a sized parent) or "abs" (absolute, inset 0)
+// inset   distance of the bottom row from the edge
+import maps from "../data/maps.json";
+import { tiltAt } from "../scripts/mapframe";
+
+interface Props { ids: string[]; active?: string[]; zoom?: number; fill?: boolean; compact?: boolean; box?: "block" | "abs"; inset?: string; drawer?: boolean }
+const { ids, active, zoom = 1, fill = false, compact = false, box = "block", inset = "3%", drawer = !compact } = Astro.props;
+
+const keyOf = (s: string) => s.replace(/^.*\/sky\//, "").replace(/\.webp$/, "").replace(/-(960|1920)$/, "");
+type Img = (typeof maps.images)[keyof typeof maps.images];
+const imgs = ids.map((id) => ({ id: keyOf(id), m: (maps.images as Record<string, Img>)[keyOf(id)] })).filter((x) => x.m);
+const on = new Set((active ?? ids).map(keyOf));
+const frame = imgs.length ? (maps.frames as any)[imgs[0].m.frame] : null;
+const uid = Math.random().toString(36).slice(2, 7);
+
+// Scale bar: the largest round angle that fits in about 30% of the width.
+const widthArcmin = frame ? (frame.fov_deg / zoom) * 60 : 1;
+const ANGLES = [0.5, 1, 2, 5, 10, 20, 30, 60, 120, 180, 300, 600, 1200];
+const bar = ANGLES.filter((a) => a <= widthArcmin * 0.3).pop() ?? ANGLES[0];
+const angleText = bar >= 60 ? `${bar / 60}°` : `${bar}′`;
+const sig2 = (x: number) => Number(x.toPrecision(2));
+const pc = frame ? frame.dist_pc * Math.tan((bar / 60) * (Math.PI / 180)) : 0;
+const lenText = pc >= 1000 ? `${sig2(pc / 1000)} kpc` : `${sig2(pc)} pc`;
+const barFrac = bar / widthArcmin;
+
+// Compass sits near the top right; local north is rotated by the projection.
+const gal = frame?.frame === "galactic";
+const cu = 0.5 + (fill ? 0.42 : 0.41) / zoom, cv = 0.5 - (fill ? 0.3 : 0.41) / zoom;
+const rot = frame ? tiltAt(frame.tilt, cu, cv) : 0;
+const tiltJson = frame ? JSON.stringify(frame.tilt) : "";
+
+const ref = (k: string) => (maps.refs as any)[k];
+const ads = (k: string) => `https://ui.adsabs.harvard.edu/abs/${encodeURIComponent(ref(k).bib)}`;
+const mb = (b: number) => (b / 1e6).toFixed(1) + " MB";
+const beamFrac = (arcmin: number) => arcmin / widthArcmin;
+const fmtBeam = (arcsec: number) => (arcsec >= 60 ? `${+(arcsec / 60).toFixed(1)}′` : `${+arcsec.toFixed(arcsec < 10 ? 1 : 0)}″`);
+---
+
+{!frame && <slot />}
+{frame && (
+  <div class:list={["mf", box === "abs" && "abs"]} data-ids={imgs.map((i) => i.id).join(" ")} data-active={[...on].join(" ")} data-fill={fill ? "" : undefined} data-tilt={tiltJson} data-zoom={zoom}>
+    <slot />
+    <div class="ov" style={`--b:${inset}`}>
+      <div class="in" data-fill={fill ? "" : undefined}>
+        <svg class="compass" width="58" height="58" viewBox="-29 -29 58 58" aria-hidden="true">
+          <g class="rot" transform={`rotate(${(-rot).toFixed(1)})`}>
+            <path d="M0 0V-19M-3.5 -14.5L0 -20 3.5 -14.5" />
+            <path d="M0 0H-19M-14.5 -3.5L-20 0-14.5 3.5" />
+            <text x="0" y="-23.5" text-anchor="middle">{gal ? "b" : "N"}</text>
+            <text x="-23.5" y="3.4" text-anchor="end">{gal ? "l" : "E"}</text>
+          </g>
+        </svg>
+        <div class="row">
+          <div class="scale">
+            <svg style={`width:calc(var(--side) * ${barFrac.toFixed(4)})`} height="7" viewBox="0 0 100 7" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 0V6.5H99.5V0" vector-effect="non-scaling-stroke" /></svg>
+            <span class="t">{angleText} &middot; {lenText}</span>
+          </div>
+          {!compact && imgs.some((i) => i.m.bar) && (
+            <div class="bars hide-s">
+              {imgs.filter((i) => i.m.bar).map((i) => {
+                const b = i.m.bar!;
+                const x = (v: number) => ((v - b.lo) / (b.hi - b.lo)) * 100;
+                return (
+                  <div class="cbar" data-for={i.id} hidden={!on.has(i.id)}>
+                    <svg width="100%" height="7" viewBox="0 0 100 7" preserveAspectRatio="none" aria-hidden="true">
+                      <defs><linearGradient id={`g${uid}${i.id}`}>{b.colors.map((c: string, k: number) => <stop offset={`${(k / (b.colors.length - 1)) * 100}%`} stop-color={c} />)}</linearGradient></defs>
+                      <rect width="100" height="7" fill="#000" />
+                      <rect width="100" height="7" fill={`url(#g${uid}${i.id})`} />
+                      {b.ticks.map((t: number) => <path d={`M${x(t)} 4.5V7`} stroke="#f3f3ef" stroke-width="1" vector-effect="non-scaling-stroke" />)}
+                    </svg>
+                    <span class="ticks">{b.ticks.map((t: number) => <i style={`left:${x(t)}%`}>{+t.toPrecision(3)}</i>)}</span>
+                    <span class="t">{b.label} {b.unit}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div class="beams hide-s">
+            {imgs.map((i) => i.m.beams.map((bm: { label: string; arcmin: number }) => {
+              const f = beamFrac(bm.arcmin);
+              return (
+                <div class="beam" data-for={i.id} hidden={!on.has(i.id)}>
+                  {f < 0.012
+                    ? <svg width="7" height="7" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4.5" /></svg>
+                    : <svg style={`width:calc(var(--side) * ${f.toFixed(4)})`} viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4.9" vector-effect="non-scaling-stroke" /></svg>}
+                  <span class="t">{bm.label}</span>
+                </div>
+              );
+            }))}
+          </div>
+        </div>
+      </div>
+    </div>
+    {drawer && (
+      <>
+        <button type="button" class="btn" aria-expanded="false" aria-controls={`d${uid}`}>Method</button>
+        <div class="drawer" id={`d${uid}`} role="region" aria-label="How this image was made" hidden>
+          {imgs.map((i) => {
+            const m = i.m;
+            const fr = (maps.frames as any)[m.frame];
+            const sn = m.snr ? (maps.snr_stats as any)[m.snr] : null;
+            return (
+              <section data-for={i.id} hidden={!on.has(i.id)}>
+                <h3>{m.title}</h3>
+                <dl>
+                  {m.bands.length > 0 && <><dt>Data</dt><dd>{m.bands.map((b: any) => <span class="ln">{b.name}, beam {fmtBeam(b.fwhm_arcsec)}{b.note ? ` (${b.note})` : ""} &middot; <a href={ads(b.ref)}>{ref(b.ref).label}</a></span>)}</dd></>}
+                  <dt>Stretch</dt><dd>{m.stretch}</dd>
+                  {m.smoothing && <><dt>Smoothing</dt><dd>{m.smoothing}</dd></>}
+                  {sn && <><dt>Polarized S/N</dt><dd>Above 3 over {Math.round(sn.frac_gt3 * 100)}% of the field (median {sn.median}). Noise from the PR4 covariances, white between pixels; a lower bound.</dd></>}
+                  <dt>Scale</dt><dd>{fr.name}, width {+fr.fov_deg.toFixed(1)}° at {fr.dist_text} (<a href={ads(fr.dist_ref)}>{ref(fr.dist_ref).label}</a>)</dd>
+                  <dt>Script</dt><dd>{m.script}, scripts at {maps.commit}</dd>
+                  {m.fits.length > 0 && <><dt>Download</dt><dd>{m.fits.map((f: any) => <span class="ln"><a href={f.href} download>{f.href.split("/").pop()}</a> {mb(f.bytes)} &middot; {f.what}</span>)}<span class="ln">Credits and licence are in the FITS header.</span></dd></>}
+                </dl>
+              </section>
+            );
+          })}
+        </div>
+      </>
+    )}
+  </div>
+)}
+
+<style>
+  .mf { position: relative; display: block; width: 100%; height: 100%; }
+  .mf.abs { position: absolute; inset: 0; }
+  .ov { position: absolute; inset: 0; container-type: size; pointer-events: none; }
+  .in { position: absolute; inset: 0; --side: 100cqw; }
+  .in[data-fill] { --side: max(100cqw, 100cqh); }
+  svg { overflow: visible; }
+  .compass { position: absolute; right: 4%; top: 4%; stroke: #f3f3ef; fill: none; stroke-width: 1; filter: drop-shadow(0 0 1.5px #000) drop-shadow(0 0 1px #000); }
+  .compass text { fill: #f3f3ef; stroke: none; font: 600 10px var(--mono); }
+  .row { position: absolute; left: 3.5%; right: 3.5%; bottom: var(--b); display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
+  .scale, .beam, .cbar { display: grid; gap: 3px; justify-items: start; filter: drop-shadow(0 0 1.5px #000) drop-shadow(0 0 1px #000); }
+  .scale path, .beam circle { stroke: #f3f3ef; fill: none; stroke-width: 1.2; }
+  .beam { justify-items: center; }
+  .beam circle { fill: rgba(243, 243, 239, 0.1); }
+  .beams { display: flex; align-items: flex-end; gap: 12px; margin-left: auto; }
+  .bars { display: grid; gap: 8px; width: clamp(96px, 20%, 150px); align-self: end; }
+  .cbar { width: 100%; justify-items: stretch; }
+  .ticks { position: relative; height: 10px; font: 500 8.5px/10px var(--mono); color: #f3f3ef; }
+  .ticks i { position: absolute; transform: translateX(-50%); font-style: normal; }
+  .ticks i:first-child { transform: none; }
+  .ticks i:last-child { transform: translateX(-100%); }
+  .t { font: 600 9.5px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: #f3f3ef; white-space: nowrap; text-shadow: 0 0 3px #000, 0 0 6px #000; }
+  @container (max-width: 430px) { .hide-s { display: none; } .compass { width: 44px; height: 44px; } }
+  .btn { position: absolute; left: 12px; top: 12px; z-index: 2; font: 600 10px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 8px; background: rgba(0, 0, 0, 0.6); color: var(--ink); border: 1px solid var(--hair); cursor: pointer; }
+  .btn:hover, .btn[aria-expanded="true"] { border-color: var(--signal); }
+  .btn[aria-expanded="true"] { background: #000; z-index: 4; }
+  .drawer { position: absolute; inset: 0; z-index: 3; overflow: auto; background: rgba(0, 0, 0, 0.93); padding: 48px 16px 16px; font: 500 11px/1.5 var(--mono); color: var(--ink); cursor: auto; overscroll-behavior: contain; }
+  .drawer section + section { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--hair); }
+  .drawer h3 { margin: 0 0 10px; font: 600 12px/1.3 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+  dl { margin: 0; display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: 8px 12px; }
+  dt { color: var(--grey); text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; padding-top: 1px; }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  .ln { display: block; }
+  @media (max-width: 520px) { dl { grid-template-columns: minmax(0, 1fr); gap: 2px; } dd { margin-bottom: 8px; } }
+</style>
+
+<script>
+  import { tiltAt } from "../scripts/mapframe";
+
+  document.querySelectorAll<HTMLElement>(".mf").forEach((mf) => {
+    const btn = mf.querySelector<HTMLButtonElement>(":scope > .btn");
+    const dr = mf.querySelector<HTMLElement>(":scope > .drawer");
+    const toggle = (open: boolean) => {
+      if (!btn || !dr) return;
+      dr.hidden = !open;
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = open ? "Close" : "Method";
+    };
+    btn?.addEventListener("click", () => toggle(dr!.hidden));
+    mf.addEventListener("keydown", (e) => { if (e.key === "Escape" && dr && !dr.hidden) { toggle(false); btn?.focus(); } });
+    // Layer switch: show only the beams, bars and drawer sections of these ids.
+    const apply = (ids: string[]) => {
+      const seen = new Set<string>();
+      mf.querySelectorAll<HTMLElement>("[data-for]").forEach((el) => {
+        // Two layers can share a beam (same survey); draw it once.
+        const key = el.classList.contains("beam") ? el.textContent!.trim() : "";
+        const dup = key !== "" && ids.includes(el.dataset.for!) && seen.has(key);
+        if (key && !dup && ids.includes(el.dataset.for!)) seen.add(key);
+        el.hidden = !ids.includes(el.dataset.for!) || dup;
+      });
+    };
+    mf.addEventListener("mf:set", (e) => apply((e as CustomEvent).detail));
+    if (mf.dataset.ids!.split(" ").length > 1) apply(mf.dataset.active!.split(" "));
+    // Cover-fitted canvas: the compass position on the square image depends on the viewport.
+    if (mf.hasAttribute("data-fill") && mf.dataset.tilt) {
+      const tilt = JSON.parse(mf.dataset.tilt);
+      const g = mf.querySelector<SVGGElement>(".compass .rot")!;
+      const place = () => {
+        const w = mf.clientWidth, h = mf.clientHeight, side = Math.max(w, h);
+        const u = 0.5 + (w * 0.96 - 29 - w / 2) / side, v = 0.5 + (h * 0.04 + 29 - h / 2) / side;
+        g.setAttribute("transform", `rotate(${(-tiltAt(tilt, u, v)).toFixed(1)})`);
+      };
+      place();
+      addEventListener("resize", place);
+    }
+  });
+</script>

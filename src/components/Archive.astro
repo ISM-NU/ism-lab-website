@@ -1,56 +1,45 @@
 ---
-// Image grid, in two sets. Webb: hover, focus or tap runs the source finder's
-// detections over the frame. Ours: the same gesture weaves the Planck magnetic
-// field into the multi-band composite (scripts/composites.py).
-import det from "../data/detections.json";
+// The group's multi-band composites (scripts/composites.py). Hover, focus or
+// tap weaves the Planck field-orientation texture into the image; on touch
+// screens, which have no hover, the field layer shows from the start.
 import compCredits from "../data/composites.json";
+import maps from "../data/maps.json";
+import MapFrame from "./MapFrame.astro";
 
-interface Props { set: "webb" | "ours" }
-const { set } = Astro.props;
-type Card = { id: string; t: string; sub: string; d: string; ins: string; ours?: boolean; src: string; srcset?: string; field?: string; aspect: number; href?: string; zoom?: number };
+type Card = { id: keyof typeof compCredits; t: string; sub: string; d: string; href: string; zoom?: number };
 // Instruments come from the bands the pipeline actually used (it falls back,
 // e.g. to WISE where Spitzer does not cover the field), first word of each credit.
 const instruments = (id: keyof typeof compCredits) => [...new Set(compCredits[id].map((c) => c.split(" ")[0]))].join(" · ");
-// zoom: the LMC composite shares the 12 degree analysis grid; the card crops in.
-const comp = (id: keyof typeof compCredits, t: string, sub: string, d: string, href: string, zoom = 1): Card => ({
-  id, t, sub, d, ins: instruments(id), href, ours: true, aspect: 1, zoom,
-  src: `/sky/comp-${id}-960.webp`, srcset: `/sky/comp-${id}-960.webp 960w, /sky/comp-${id}-1920.webp 1920w`,
-  field: `/sky/comp-${id}-field-960.webp 960w, /sky/comp-${id}-field-1920.webp 1920w`,
-});
-const webb = (id: keyof typeof det, t: string, sub: string, d: string, ins: string): Card => ({
-  id, t, sub, d, ins, aspect: det[id].aspect,
-  src: `/webb/${id}-960.webp`, srcset: `/webb/${id}-960.webp 960w, /webb/${id}-1920.webp 1920w`,
-  href: `https://esawebb.org/images/${det[id].release}/`,
-});
+// Scale, compass, beams and the Method drawer come from maps.json (distances
+// and their references are cited there). zoom: the LMC composite shares the
+// 12 degree analysis grid; the card crops in, and the scale bar accounts for it.
+// The field layer is faded where the polarized S/N is below 3 (mask from map_meta.py).
+const mask = (id: string) => {
+  const k = (maps.images as any)[`comp-${id}-field`]?.snr as string | undefined;
+  return k && (maps.snr_stats as any)[k].frac_gt3 < 0.99 ? `mask-image:url(/sky/snr-${k}.webp);mask-size:100% 100%;mask-mode:luminance;-webkit-mask-image:url(/sky/snr-${k}.webp);-webkit-mask-size:100% 100%;` : "";
+};
 const cards: Card[] = [
-  webb("tarantula", "NGC 2070", "Tarantula · LMC", "161 000 ly", "JWST NIRCam"),
-  webb("deepfield", "SMACS 0723", "Galaxy cluster", "4.6 Gyr light time", "JWST NIRCam"),
-  webb("cliffs", "NGC 3324", "Cosmic Cliffs · Carina", "7 600 ly", "JWST NIRCam"),
-  webb("pillars", "M16", "Pillars of Creation", "6 500 ly", "JWST NIRCam"),
-  webb("rhooph", "ρ OPH", "Rho Ophiuchi", "390 ly", "JWST NIRCam"),
-  webb("ngc346", "NGC 346", "Small Magellanic Cloud", "200 000 ly", "JWST NIRCam"),
-];
-const ours: Card[] = [
-  comp("lmc", "LMC", "Large Magellanic Cloud", "160 000 ly", "/research/lmc", 1.45),
-  comp("galactic_centre", "GAL. CENTRE", "Central molecular zone", "26 000 ly", "/research/dust-polarization"),
-  comp("monoceros_ob1", "MON OB1", "Star-forming cloud", "2 500 ly", "/research/star-formation"),
+  { id: "lmc", t: "LMC", sub: "Large Magellanic Cloud", d: "162 000 ly", href: "/research/lmc", zoom: 1.45 },
+  { id: "galactic_centre", t: "Gal. Centre", sub: "Central molecular zone", d: "27 000 ly", href: "/research/dust-polarization" },
+  { id: "monoceros_ob1", t: "Mon OB1", sub: "Star-forming cloud", d: "2 400 ly", href: "/research/star-formation" },
 ];
 ---
 
-<div class={`archive cells ${set}`}>
-  {(set === "ours" ? ours : cards).map((c) => (
-    <article class="card" data-id={c.id} tabindex="0" aria-label={`${c.t}, ${c.sub}`}>
-      <figure style={`aspect-ratio:${c.aspect};--z:${c.zoom ?? 1}`}>
-        <img loading="lazy" decoding="async" src={c.src} srcset={c.srcset} sizes={set === "ours" ? "(max-width: 800px) 100vw, 880px" : "(max-width: 800px) 100vw, 440px"} alt={c.sub} />
-        {c.field && <img class="field" loading="lazy" decoding="async" srcset={c.field} sizes="(max-width: 800px) 100vw, 880px" alt="" />}
-        <div class="dets"></div>
+<div class="archive cells">
+  {cards.map((c) => (
+    <article class="card" tabindex="0" aria-label={`${c.sub}: composite of ${instruments(c.id)}, with the Planck field orientation`}>
+      <figure style={`--z:${c.zoom ?? 1}`}>
+        <MapFrame ids={[`comp-${c.id}`, `comp-${c.id}-field`]} active={[`comp-${c.id}`]} zoom={c.zoom ?? 1}>
+        <img loading="lazy" decoding="async" src={`/sky/comp-${c.id}-960.webp`} srcset={`/sky/comp-${c.id}-960.webp 960w, /sky/comp-${c.id}-1920.webp 1920w`} sizes="(max-width: 800px) 100vw, 880px" alt={`${c.sub}, multi-band composite`} />
+        <img class="field" loading="lazy" decoding="async" srcset={`/sky/comp-${c.id}-field-960.webp 960w, /sky/comp-${c.id}-field-1920.webp 1920w`} sizes="(max-width: 800px) 100vw, 880px" alt="" style={mask(c.id)} />
+        </MapFrame>
         <i class="scan"></i>
       </figure>
       <div class="meta">
-        <div class="row"><span class="dot name">{c.t}</span><span class={c.ours ? "tag fill" : "tag"}>{c.ours ? "Our maps" : "Webb"}</span></div>
-        <div class="row"><span>{c.sub}</span><b>{c.d}</b></div>
-        <div class="row"><span>{c.ins}</span><span class="count">&nbsp;</span></div>
-        {c.href && <a class="more" href={c.href}>{c.ours ? "Research" : "Release"} &rarr;</a>}
+        <div class="row"><span class="dot name">{c.t}</span><b>{c.d}</b></div>
+        <div class="row"><span>{c.sub}</span></div>
+        <div class="row"><span>{instruments(c.id)} &middot; field: Planck 353 GHz</span></div>
+        <a class="more" href={c.href}>Research &rarr;</a>
       </div>
     </article>
   ))}
@@ -59,61 +48,37 @@ const ours: Card[] = [
 <style>
   .archive { grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); margin-top: 40px; }
   .card { display: grid; grid-template-rows: auto 1fr; }
-  figure { margin: 0; position: relative; overflow: hidden; background: var(--panel); }
-  img { width: 100%; height: 100%; object-fit: cover; transform: scale(var(--z)); transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
-  .card:hover img, .card:focus-within img { transform: scale(calc(var(--z) * 1.04)); }
-  .field { position: absolute; inset: 0; opacity: 0; transition: opacity 0.9s ease, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
+  figure { margin: 0; position: relative; overflow: hidden; background: var(--panel); aspect-ratio: 1; }
+  /* No hover zoom: the scale bar is a measurement and must stay true. */
+  img { width: 100%; height: 100%; object-fit: cover; transform: scale(var(--z)); }
+  .field { position: absolute; inset: 0; opacity: 0; transition: opacity 0.9s ease; }
   .card.on .field { opacity: 1; }
-  @media (min-width: 900px) { .ours .card:first-child { grid-column: span 2; grid-row: span 2; } .ours .card:first-child .name { font-size: 40px; } }
-  .dets { position: absolute; inset: 0; pointer-events: none; }
-  .dets :global(.det span) { font-size: 8px; }
+  @media (hover: none) { .field { opacity: 1; } }
+  @media (min-width: 900px) { .card:first-child { grid-column: span 2; grid-row: span 2; } .card:first-child .name { font-size: 40px; } }
   .scan { position: absolute; left: 0; right: 0; height: 2px; background: var(--signal); box-shadow: 0 0 12px var(--signal); top: -4px; opacity: 0; }
   .card.on .scan { animation: scan 0.7s cubic-bezier(0.6, 0, 0.2, 1) both; }
   @keyframes scan { 0% { top: 0; opacity: 1; } 100% { top: 100%; opacity: 0.2; } }
-  .meta { padding: 14px 16px 18px; display: grid; gap: 6px; border-top: 1px solid var(--hair); align-content: start; }
+  .meta { padding: 14px 16px 18px; display: grid; gap: 8px; border-top: 1px solid var(--hair); align-content: start; }
   .name { font-size: 26px; line-height: 1; }
-  .row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--grey); letter-spacing: 0.06em; text-transform: uppercase; }
+  .row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font: 500 12px/1.4 var(--mono); color: var(--grey); letter-spacing: 0.06em; text-transform: uppercase; }
   .row b { color: var(--ink); font-weight: 600; }
-  .more { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; justify-self: start; margin-top: 4px; }
-  @media (prefers-reduced-motion: reduce) { img, .field { transition: none; } .card.on .scan { animation: none; } }
+  .more { font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; justify-self: start; padding: 8px 0; }
+  @media (prefers-reduced-motion: reduce) { .field { transition: none; } .card.on .scan { animation: none; } }
 </style>
 
 <script>
-  import det from "../data/detections.json";
-  import { reduce } from "../scripts/motion";
-
-  type D = { aspect: number; src: number[][]; core: number[] };
-  const all = det as unknown as Record<string, D>;
   document.querySelectorAll<HTMLElement>(".archive .card").forEach((card) => {
-    const d = all[card.dataset.id!];
-    const box = card.querySelector<HTMLElement>(".dets")!;
-    const count = card.querySelector<HTMLElement>(".count")!;
-    let timers: number[] = [];
-    const clear = () => { timers.forEach(clearTimeout); timers = []; box.textContent = ""; card.classList.remove("on"); count.innerHTML = "&nbsp;"; };
-    const run = () => {
-      clear();
-      void card.offsetWidth;
-      card.classList.add("on");
-      if (!d) { count.textContent = "field on"; return; }
-      const fw = box.clientWidth, fh = box.clientHeight, list = d.src.slice(0, 34);
-      list.forEach((n, i) => {
-        const b = document.createElement("div");
-        b.className = "det";
-        if (i < 6) { const s = document.createElement("span"); s.textContent = `${(i + 1).toString(16).toUpperCase().padStart(2, "0")} ${n[3].toFixed(2)}`; b.appendChild(s); }
-        b.style.left = n[0] * fw + "px";
-        b.style.top = n[1] * fh + "px";
-        b.style.width = b.style.height = Math.max(10, n[2] * fw * 2.2) + "px";
-        box.appendChild(b);
-        if (reduce) return;
-        b.style.opacity = "0";
-        timers.push(window.setTimeout(() => { b.style.opacity = ""; b.classList.add("pop"); count.textContent = `${i + 1} sources`; }, 60 + i * 14));
-      });
-      if (reduce) count.textContent = `${list.length} sources`;
-    };
-    card.addEventListener("mouseenter", run);
-    card.addEventListener("focus", run);
-    card.addEventListener("click", (e) => { if (!(e.target as HTMLElement).closest("a")) run(); });
-    card.addEventListener("mouseleave", clear);
-    card.addEventListener("blur", (e) => { if (!card.contains(e.relatedTarget as Node)) clear(); });
+    const mf = card.querySelector<HTMLElement>(".mf");
+    const base = mf?.dataset.ids?.split(" ") ?? [];
+    // The beams and bar follow what is visible: the field layer shows on hover, always on touch.
+    const show = (field: boolean) => mf?.dispatchEvent(new CustomEvent("mf:set", { detail: field ? base.slice(1) : base.slice(0, 1) }));
+    const touch = matchMedia("(hover: none)").matches;
+    if (touch) show(true);
+    const on = () => { card.classList.remove("on"); void card.offsetWidth; card.classList.add("on"); show(true); };
+    const off = () => { card.classList.remove("on"); show(touch); };
+    card.addEventListener("mouseenter", on);
+    card.addEventListener("focus", on);
+    card.addEventListener("mouseleave", off);
+    card.addEventListener("blur", (e) => { if (!card.contains(e.relatedTarget as Node)) off(); });
   });
 </script>
