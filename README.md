@@ -58,6 +58,14 @@ internal to the collaboration. Single GASKAP fields are public in CASDA, but
 the site uses GASS until Dana and the collaboration agree to show GASKAP
 images.
 
+## Deploy
+
+`deploy/deploy.sh` runs the checks and tests, builds `dist/`, rsyncs it with
+`deploy/` to `~/ism-website` on musicroombot and (re)starts a Caddy container
+on `127.0.0.1:8796` (`deploy/compose.yml`). The host Caddy serves the public
+hostname from `deploy/Caddyfile.snippet`; adding that block needs sudo on the
+server and a DNS A record for the hostname.
+
 ## Credits
 
 Webb images: NASA, ESA, CSA, STScI via ESA/Webb (CC BY 4.0). Planck HFI

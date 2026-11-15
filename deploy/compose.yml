@@ -1,0 +1,11 @@
+# Production on musicroombot. The site is static: deploy.sh builds dist/ locally
+# and rsyncs it to ~/ism-website/dist on the server; this container serves it on
+# 127.0.0.1:8796 and the host Caddy terminates TLS (see Caddyfile.snippet).
+services:
+  web:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports: ["127.0.0.1:8796:8080"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../dist:/srv:ro

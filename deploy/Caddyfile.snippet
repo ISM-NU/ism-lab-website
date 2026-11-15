@@ -1,0 +1,7 @@
+# Append to /etc/caddy/Caddyfile on musicroombot, then:
+#   caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy
+# Needs a DNS A record for the hostname pointing at 46.62.161.228.
+ism.unsoundmint.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8796
+}

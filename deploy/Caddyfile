@@ -1,0 +1,20 @@
+# Inside the container: serve the built site. TLS and compression for the
+# public hostname happen in the host Caddy.
+{
+	admin off
+	auto_https off
+}
+:8080 {
+	root * /srv
+	# Astro puts hashed bundles under /_astro; they never change.
+	header /_astro/* Cache-Control "public, max-age=31536000, immutable"
+	header /sky/* Cache-Control "public, max-age=86400"
+	# The H I cube is stored gzipped; serve it as bytes, the viewer inflates it.
+	header /sky/cube/*.gz Content-Type application/octet-stream
+	header /publications.bib Content-Type "text/plain; charset=utf-8"
+	file_server
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+}
