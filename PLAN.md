@@ -174,3 +174,10 @@ before the site goes public.
 - brand/ism-nu-github-avatar.png (1024 px), made by brand/make_avatar.py from
   public/sky/lmc-bfield.webp and the Doto font. Upload by hand in the ISM-NU
   organisation settings (the API cannot set an org avatar).
+
+## Deploy (2026-11-15)
+- [x] Static site served on musicroombot from a Caddy container on
+      127.0.0.1:8796 (deploy/deploy.sh).
+- [ ] Public hostname: DNS A record for ism.unsoundmint.com -> 46.62.161.228
+      and the deploy/Caddyfile.snippet block in /etc/caddy/Caddyfile (sudo).
+      Until Dana has approved the findings and join page, consider holding this.
