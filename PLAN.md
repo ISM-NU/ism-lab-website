@@ -193,5 +193,10 @@ before the site goes public.
       composite's grid and levels; 2048 px LMC base; 2880 px Tarantula
 - [x] VGT.jl is private (2026-11-16): no links to it; the Join direction cites
       Alina et al. 2023 instead of a repository
+- [x] Spacing and type scale (global.css head comment), enforced by
+      scripts/check_scale.py inside npm run check; display headings reduced
+      (hero 128, page 96, section 64 px max)
+- [x] Zoom target markers: signal red with dark outline, lock-on animation
+- [x] Redundant intros and head paragraphs removed across pages
 - [ ] Students: real roles, photos and bios (Denis is listed as "Student")
 - [ ] Dana's photo; her bio uses only her thesis and the ADS record

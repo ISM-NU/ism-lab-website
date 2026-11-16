@@ -11,13 +11,13 @@ const soon = projects.flatMap((p) => p.data.upcoming.map((u) => ({ ...u, line: p
 ---
 
 <Base title="Join or visit" description="Directions in interstellar magnetic fields where a student or visitor could contribute, with the open code and public data behind each.">
-  <PageHead title="Join or visit" intro="Students and visitors are welcome to write to Dana Alina. Below are directions where the group has open code and public data and where a new person could contribute. None of them is an advertised position.">
+  <PageHead title="Join or visit" intro="Students and visitors are welcome to write to Dana Alina. None of the directions below is an advertised position.">
     <p class="cta"><a class="tag fill" href="mailto:dana.alina@nu.edu.kz">dana.alina@nu.edu.kz</a></p>
   </PageHead>
 
-  <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
+  <section class="sec" style="padding-top: clamp(32px,6vw,64px)">
     <div class="gut max">
-      <div class="head"><h2 class="brut">Open code and data</h2><p>{directions.length} directions, each with a public repository or record.</p></div>
+      <div class="head"><h2 class="brut">Open code and data</h2></div>
       <ol class="dirs">
         {directions.map((d, i) => (
           <li>
@@ -38,7 +38,7 @@ const soon = projects.flatMap((p) => p.data.upcoming.map((u) => ({ ...u, line: p
   {soon.length > 0 && (
     <section class="slab sec" aria-labelledby="soon-h">
       <div class="gut max">
-        <div class="head"><h2 class="brut" id="soon-h">In progress</h2><p>Work under way. Details follow on publication.</p></div>
+        <div class="head"><h2 class="brut" id="soon-h">In progress</h2><p>Details follow on publication.</p></div>
         <ul class="soon">
           {soon.map((u) => (
             <li>
@@ -58,29 +58,29 @@ const soon = projects.flatMap((p) => p.data.upcoming.map((u) => ({ ...u, line: p
   <section class="sec">
     <div class="gut max narrow">
       <h2 class="brut">How to apply</h2>
-      <p>Write to Dana Alina at <a href="mailto:dana.alina@nu.edu.kz">dana.alina@nu.edu.kz</a>. Say which direction interests you and what data or code you have worked with. Positions, funding and computing are discussed individually.</p>
+      <p>Say which direction interests you and what data or code you have worked with. Positions, funding and computing are discussed individually.</p>
     </div>
   </section>
 </Base>
 
 <style>
   .cta { margin: 0; }
-  .cta a { text-decoration: none; padding: 10px 14px; font-size: 12px; }
+  .cta a { text-decoration: none; padding: 12px 16px; font-size: 12px; }
   .dirs, .soon { list-style: none; margin: 24px 0 0; padding: 0; }
-  .dirs li { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 8px 20px; padding: 24px 0; border-bottom: 1px solid var(--hair); }
-  .n { font-size: 28px; line-height: 1; color: var(--signal); }
-  .body { display: grid; gap: 10px; max-width: 70ch; }
+  .dirs li { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 8px 24px; padding: 24px 0; border-bottom: 1px solid var(--hair); }
+  .n { font-size: 24px; line-height: 1; color: var(--signal); }
+  .body { display: grid; gap: 12px; max-width: 70ch; }
   .body > * { margin: 0; }
-  h3 { font-size: clamp(1.4rem, 1rem + 1vw, 2rem); margin: 0; }
+  h3 { font-size: clamp(24px, 1rem + 1vw, 32px); margin: 0; }
   .open b { font-weight: 600; }
-  .meta { font: 400 13px/1.5 var(--mono); color: var(--grey); }
-  .soon li { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 8px 20px; padding: 22px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
+  .meta { font: 400 14px/1.5 var(--mono); color: var(--grey); }
+  .soon li { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 8px 24px; padding: 24px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
   .soon li > div { display: grid; gap: 8px; max-width: 70ch; }
   .soon li p { margin: 0; }
   .slab .meta { color: var(--on-paper-dim); }
   .slab .tag.soon { color: #d42a12; align-self: start; justify-self: start; }
-  .narrow { max-width: 78ch; display: grid; gap: 14px; }
-  .narrow h2 { font-size: clamp(2rem, 1rem + 2.6vw, 3.2rem); margin: 0; }
+  .narrow { max-width: 78ch; display: grid; gap: 16px; }
+  .narrow h2 { font-size: clamp(32px, 1rem + 2vw, 48px); margin: 0; }
   .narrow p { margin: 0; }
   @media (max-width: 640px) {
     .dirs li, .soon li { grid-template-columns: minmax(0, 1fr); }

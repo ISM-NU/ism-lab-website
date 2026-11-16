@@ -30,7 +30,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
 <Base title={p.data.title} description={p.data.summary}>
   <PageHead title={p.data.title} intro={p.data.summary} image={p.data.image} caption={p.data.instruments.join(" · ")} />
 
-  <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
+  <section class="sec" style="padding-top: clamp(32px,6vw,64px)">
     <div class="gut max">
       <div class="prose"><Content /></div>
     </div>
@@ -41,7 +41,6 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
       <div class="gut max">
         <div class="head">
           <h2 class="brut" id="results-h" data-scramble>Results</h2>
-          <p>What the papers report, in their own terms. Each item links to its source.</p>
         </div>
         <Findings items={p.data.findings} />
       </div>
@@ -57,7 +56,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
       <div class="gut max">
         <div class="head">
           <h2 class="brut" id="lens-h" data-scramble>Survey layers of the LMC</h2>
-          <p>Every layer below is public survey data on one 12° grid. Choose a base map and a lens layer.</p>
+          <p>Every layer below is public survey data on one 12° grid.</p>
         </div>
         <LayerLens />
       </div>
@@ -81,9 +80,9 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
       <div class="gut max">
         <div class="head">
           <h2 class="brut" id="res-h" data-scramble>Resolution and noise</h2>
-          <p>The field drawn live from Planck Q and U. Smoothing more lowers the noise and blurs the structure; streaks fade where the polarized signal is weak.</p>
+          <p>The field drawn live from Planck Q and U.</p>
         </div>
-        <div style="max-width:760px;margin-top:32px"><FieldGL view="observed" scale={15} /></div>
+        <div style="max-width:760px;margin-top: 32px"><FieldGL view="observed" scale={15} /></div>
       </div>
     </section>
   )}
@@ -165,7 +164,6 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
       <div class="gut max">
         <div class="head">
           <h2 class="brut" id="soon-h">In progress</h2>
-          <p>Results appear here once they are published.</p>
         </div>
         <div class="soon cells">
           {p.data.upcoming.map((u) => (
@@ -184,16 +182,16 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
     <div class="gut max">
       <div class="head">
         <h2 class="brut" id="papers-h">Papers</h2>
-        <p>{items.length} entries from NASA ADS. <a href="/publications">All publications &rarr;</a></p>
+        <p><a href="/publications">All publications &rarr;</a></p>
       </div>
-      <div style="margin-top:32px"><PaperList items={items} /></div>
+      <div style="margin-top: 32px"><PaperList items={items} /></div>
     </div>
   </section>
 </Base>
 
 <style>
-  .soon { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); margin-top: 40px; }
-  .soon > div { padding: 22px 18px 26px; display: grid; gap: 12px; align-content: start; background-image: repeating-linear-gradient(-45deg, transparent 0 10px, rgba(243, 243, 239, 0.03) 10px 11px); }
+  .soon { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); margin-top: 32px; }
+  .soon > div { padding: 24px 16px 24px; display: grid; gap: 12px; align-content: start; background-image: repeating-linear-gradient(-45deg, transparent 0 10px, rgba(243, 243, 239, 0.03) 10px 11px); }
   .soon .tag { justify-self: start; }
-  .soon p { font-size: 13px; color: var(--grey); }
+  .soon p { font-size: 14px; color: var(--grey); }
 </style>

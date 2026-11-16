@@ -24,11 +24,11 @@ const { title, intro, image, caption } = Astro.props;
 </header>
 
 <style>
-  .ph { padding-top: calc(var(--bar-h) + clamp(48px, 9vw, 120px)); padding-bottom: clamp(40px, 6vw, 80px); border-bottom: 1px solid var(--hair); }
-  .grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); align-items: end; }
-  .txt { display: grid; gap: 22px; }
-  .intro { max-width: 52ch; font-size: clamp(14px, 0.8rem + 0.3vw, 17px); }
-  .frame { margin: 0; position: relative; aspect-ratio: 1; padding: 14px; }
+  .ph { padding-top: calc(var(--bar-h) + clamp(48px, 9vw, 128px)); padding-bottom: clamp(32px, 6vw, 64px); border-bottom: 1px solid var(--hair); }
+  .grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); align-items: end; }
+  .txt { display: grid; gap: 24px; }
+  .intro { max-width: 52ch; font-size: 16px; }
+  .frame { margin: 0; position: relative; aspect-ratio: 1; padding: 16px; }
   .frame img { width: 100%; height: 100%; object-fit: cover; }
   .b { position: absolute; width: 16px; height: 16px; border: 0 solid var(--signal); }
   .tl { top: 0; left: 0; border-width: 1px 0 0 1px; }

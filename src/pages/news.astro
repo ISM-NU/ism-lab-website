@@ -10,8 +10,8 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
 ---
 
 <Base title="News and events" description="News, seminars and events of the ISM group.">
-  <PageHead title="News and events" intro="Group news and events. Upcoming events carry a registration link." />
-  <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
+  <PageHead title="News and events" />
+  <section class="sec" style="padding-top: clamp(32px,6vw,64px)">
     <div class="gut max">
       <ol class="feed">
         {rendered.map(({ n, Content }) => {
@@ -40,11 +40,11 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
 
 <style>
   .feed { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--hair); }
-  .feed li { display: grid; grid-template-columns: minmax(180px, 260px) minmax(0, 1fr); gap: 18px 40px; padding: 32px 0; border-bottom: 1px solid var(--hair); scroll-margin-top: 80px; }
-  .when { display: grid; gap: 10px; align-content: start; justify-items: start; }
-  .when .dot { font-size: 28px; line-height: 1; }
+  .feed li { display: grid; grid-template-columns: minmax(180px, 260px) minmax(0, 1fr); gap: 16px 32px; padding: 32px 0; border-bottom: 1px solid var(--hair); scroll-margin-top: 80px; }
+  .when { display: grid; gap: 12px; align-content: start; justify-items: start; }
+  .when .dot { font-size: 24px; line-height: 1; }
   .what { display: grid; gap: 12px; justify-items: start; }
-  h2 { font-size: clamp(2rem, 1.2rem + 2vw, 3.2rem); }
+  h2 { font-size: clamp(32px, 1rem + 2vw, 48px); }
   .reg { text-decoration: none; padding: 8px 12px; }
   @media (max-width: 700px) { .feed li { grid-template-columns: minmax(0, 1fr); } }
 </style>

@@ -22,18 +22,29 @@
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   .frame { position: absolute; border: 1px solid var(--ink); pointer-events: none; transform-origin: 50% 50%; display: none; }
   .frame.red { border-color: var(--signal); box-shadow: 0 0 0 1px rgba(255, 61, 36, 0.25), 0 0 18px rgba(255, 61, 36, 0.35); }
-  .frame span { position: absolute; left: -1px; bottom: 100%; padding: 3px 6px; font: 600 10px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; background: var(--ink); color: var(--void); white-space: nowrap; }
+  .frame span { position: absolute; left: -1px; bottom: 100%; padding: 4px 8px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; background: var(--ink); color: var(--void); white-space: nowrap; }
   .frame.red span { background: var(--signal); }
   .frame.mini span { display: none; }
-  #tgts :global(.tgt) { position: absolute; width: 22px; height: 22px; translate: -50% -50%; border: 1px solid var(--ink); border-radius: 50%; pointer-events: none; display: none; }
-  #tgts :global(.tgt)::before, #tgts :global(.tgt)::after { content: ""; position: absolute; background: var(--ink); }
-  #tgts :global(.tgt)::before { left: 50%; top: -6px; bottom: -6px; width: 1px; }
-  #tgts :global(.tgt)::after { top: 50%; left: -6px; right: -6px; height: 1px; }
-  #tgts :global(.tgt span) { position: absolute; left: 18px; top: -16px; font: 600 10px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; text-shadow: 0 0 6px #000; }
-  .hud { position: absolute; inset: 0; pointer-events: none; display: grid; grid-template-rows: 1fr auto; padding: calc(var(--bar-h) + 24px + env(safe-area-inset-top, 0px)) var(--gut-r) calc(52px + env(safe-area-inset-bottom, 0px)) var(--gut); }
+  /* Target markers: signal red with a dark outline, so they read on white
+     nebula as well as on black. Each locks on when it appears (it switches
+     from display none, which restarts the animations): the ring closes in,
+     then the cross hairs grow and the name tag wipes in. */
+  #tgts :global(.tgt) { position: absolute; width: 24px; height: 24px; translate: -50% -50%; border: 1.5px solid var(--signal); border-radius: 50%; pointer-events: none; display: none;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 61, 36, 0.55);
+    animation: tgt-ring 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  #tgts :global(.tgt)::before, #tgts :global(.tgt)::after { content: ""; position: absolute; background: var(--signal); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); animation: tgt-hair 0.3s 0.18s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  #tgts :global(.tgt)::before { left: calc(50% - 0.75px); top: -8px; bottom: -8px; width: 1.5px; }
+  #tgts :global(.tgt)::after { top: calc(50% - 0.75px); left: -8px; right: -8px; height: 1.5px; }
+  #tgts :global(.tgt span) { position: absolute; left: 24px; top: -20px; padding: 4px 8px; background: var(--signal); color: var(--void); font: 600 12px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
+    animation: tgt-tag 0.28s 0.3s steps(6, end) both; }
+  @keyframes tgt-ring { 0% { scale: 2.6; opacity: 0; } 50% { opacity: 1; } 100% { scale: 1; opacity: 1; } }
+  @keyframes tgt-hair { from { scale: 0; } to { scale: 1; } }
+  @keyframes tgt-tag { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @media (prefers-reduced-motion: reduce) { #tgts :global(.tgt), #tgts :global(.tgt)::before, #tgts :global(.tgt)::after, #tgts :global(.tgt span) { animation: none; } }
+  .hud { position: absolute; inset: 0; pointer-events: none; display: grid; grid-template-rows: 1fr auto; padding: calc(var(--bar-h) + 24px + env(safe-area-inset-top, 0px)) var(--gut-r) calc(48px + env(safe-area-inset-bottom, 0px)) var(--gut); }
   .readout { justify-self: end; text-align: right; display: grid; gap: 4px; align-content: start; }
-  .readout .dot { font-size: clamp(2.2rem, 1rem + 5vw, 5.4rem); line-height: 0.9; text-shadow: 0 0 18px rgba(243, 243, 239, 0.35); }
-  .cap { max-width: 36ch; font: 600 clamp(15px, 0.8rem + 0.5vw, 19px)/1.35 var(--mono); text-shadow: 0 0 12px #000; }
+  .readout .dot { font-size: clamp(2rem, 1rem + 5vw, 6rem); line-height: 0.9; text-shadow: 0 0 18px rgba(243, 243, 239, 0.35); }
+  .cap { max-width: 36ch; font: 600 clamp(16px, 0.8rem + 0.5vw, 18px)/1.35 var(--mono); text-shadow: 0 0 12px #000; }
 </style>
 
 <script>

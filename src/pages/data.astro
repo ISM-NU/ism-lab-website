@@ -28,9 +28,9 @@ const surveys = [
   <PageHead title="Open data and code" intro="Catalogues and cubes from the group's papers, the group's code, and the public surveys used for the images on this site."
     image="/sky/lmc-bfield.webp" caption="LMC · Planck 353 GHz dust, field orientation as texture" />
 
-  <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
+  <section class="sec" style="padding-top: clamp(32px,6vw,64px)">
     <div class="gut max">
-      <div class="head"><h2 class="brut">Products</h2><p>{products.length} public releases.</p></div>
+      <div class="head"><h2 class="brut">Products</h2></div>
       <ul class="rows">
         {products.map((p) => (
           <li>
@@ -45,7 +45,7 @@ const surveys = [
 
   <section class="slab sec">
     <div class="gut max">
-      <div class="head"><h2 class="brut">Surveys used</h2><p>Every image here is public data, rendered by scripts in the site's repository.</p></div>
+      <div class="head"><h2 class="brut">Surveys used</h2><p>Rendered by scripts in the site's repository.</p></div>
       <ul class="rows">
         {surveys.map((s) => (
           <li>
@@ -60,12 +60,12 @@ const surveys = [
 
 <style>
   .rows { list-style: none; margin: 24px 0 0; padding: 0; }
-  .rows li { display: grid; grid-template-columns: 7rem minmax(0, 1fr) minmax(0, 0.8fr); gap: 8px 18px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
+  .rows li { display: grid; grid-template-columns: 7rem minmax(0, 1fr) minmax(0, 0.8fr); gap: 8px 16px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
   .slab .rows li { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .t { font-weight: 600; }
-  .ref { font: 400 13px/1.45 var(--mono); opacity: 0.75; }
+  .ref { font: 400 14px/1.45 var(--mono); opacity: 0.75; }
   @media (max-width: 760px) {
-    .rows li, .slab .rows li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .rows li, .slab .rows li { grid-template-columns: minmax(0, 1fr); gap: 8px; }
     .rows .tag { justify-self: start; }
   }
 </style>

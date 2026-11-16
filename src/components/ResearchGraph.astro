@@ -37,18 +37,18 @@ const refs = Object.fromEntries([...cited].map((b) => {
 <script type="application/json" id="graphData" set:html={JSON.stringify({ nodes, edges, nodePapers, refs })}></script>
 
 <style>
-  .graph { position: relative; margin-top: 40px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 clamp(48px, 10vw, 180px); }
+  .graph { position: relative; margin-top: 32px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 clamp(48px, 10vw, 192px); }
   .lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
   .lines :global(path) { fill: none; stroke: rgba(10, 10, 11, 0.26); stroke-width: 1; transition: stroke 0.15s, opacity 0.15s; }
   .lines :global(path.soon) { stroke-dasharray: 4 4; }
   .lines :global(path.hot) { stroke: var(--signal); stroke-width: 1.8; }
   .lines :global(path.dim) { opacity: 0.25; }
-  .col { display: grid; align-content: start; gap: 14px; }
+  .col { display: grid; align-content: start; gap: 16px; }
   .col.data, .col.method { justify-items: start; }
-  .col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-  .node { display: inline-flex; align-items: center; gap: 9px; background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--on-paper); text-align: left; min-height: 32px; }
+  .col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .node { display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; padding: 8px 0; cursor: pointer; color: var(--on-paper); text-align: left; min-height: 32px; }
   .node i { width: 8px; height: 8px; background: currentColor; flex: none; }
-  .node span { font: 600 13px/1.15 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+  .node span { font: 600 14px/1.15 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
   .region .node span { font: 800 clamp(18px, 0.9rem + 0.6vw, 24px)/1 var(--brut); font-stretch: 62%; letter-spacing: 0; text-transform: uppercase; }
   .region .node i { width: 11px; height: 11px; }
   .method .node i { border-radius: 50%; background: none; border: 1.5px solid currentColor; }
@@ -56,20 +56,20 @@ const refs = Object.fromEntries([...cited].map((b) => {
   .node[aria-pressed="true"], .node.hot { color: #c4260f; }
   .graph.has-sel .node:not(.hot) { color: color-mix(in srgb, var(--on-paper) 40%, transparent); }
 
-  .detail { margin-top: 32px; border-top: 1px solid rgba(10, 10, 11, 0.2); padding-top: 20px; min-height: 7em; max-width: 90ch; }
+  .detail { margin-top: 32px; border-top: 1px solid rgba(10, 10, 11, 0.2); padding-top: 24px; min-height: 7em; max-width: 90ch; }
   .hint { font-size: 16px; color: var(--on-paper-dim); }
   .detail :global(h3) { font: 600 12px/1.3 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 12px; color: var(--on-paper-dim); }
-  .detail :global(ol) { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-  .detail :global(li) { display: grid; gap: 3px; }
+  .detail :global(ol) { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+  .detail :global(li) { display: grid; gap: 4px; }
   .detail :global(.t) { font-weight: 600; font-size: 16px; }
-  .detail :global(.m) { font: 400 13px/1.4 var(--mono); color: var(--on-paper-dim); }
-  .detail :global(.soon) { font: 600 13px/1.4 var(--mono); color: #c4260f; }
-  .detail :global(.more) { display: inline-block; margin-top: 14px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; padding: 8px 0; }
+  .detail :global(.m) { font: 400 14px/1.4 var(--mono); color: var(--on-paper-dim); }
+  .detail :global(.soon) { font: 600 14px/1.4 var(--mono); color: #c4260f; }
+  .detail :global(.more) { display: inline-block; margin-top: 16px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; padding: 8px 0; }
 
   @media (max-width: 760px) {
-    .graph { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+    .graph { grid-template-columns: minmax(0, 1fr); gap: 24px; }
     .lines { display: none; }
-    .col ul { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+    .col ul { display: flex; flex-wrap: wrap; gap: 4px 16px; }
   }
 </style>
 

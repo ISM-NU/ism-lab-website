@@ -79,8 +79,8 @@ const barLen = ((pcBar / gc.dist_pc) * (180 / Math.PI) * 60 / fovArcmin) * 1000;
 </div>
 
 <style>
-  .gcf { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); gap: 28px; align-items: start; margin-top: 40px; }
-  .map { margin: 0; display: grid; gap: 14px; }
+  .gcf { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); gap: 24px; align-items: start; margin-top: 32px; }
+  .map { margin: 0; display: grid; gap: 16px; }
   .pic { position: relative; aspect-ratio: 1; background: var(--panel); overflow: hidden; container-type: inline-size; }
   .pic > img, .pic > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .segs path { stroke: rgba(243, 243, 239, 0.66); stroke-width: 1.2; stroke-linecap: round; fill: none; vector-effect: non-scaling-stroke; }
@@ -88,33 +88,33 @@ const barLen = ((pcBar / gc.dist_pc) * (180 / Math.PI) * 60 / fovArcmin) * 1000;
   .pilot { stroke: var(--signal); stroke-width: 3; fill: none; vector-effect: non-scaling-stroke; }
   .arc { stroke: var(--signal); stroke-width: 1.4; fill: none; vector-effect: non-scaling-stroke; }
   .chip { fill: rgba(0, 0, 0, 0.78); }
-  .ang { fill: var(--signal); font: 600 30px var(--mono); text-anchor: middle; }
-  .lab { position: absolute; padding: 3px 6px; background: rgba(0, 0, 0, 0.78); font: 600 11px/1.2 var(--mono); letter-spacing: 0.06em; color: var(--ink); white-space: nowrap; pointer-events: none; }
+  .ang { fill: var(--signal); font: 600 32px var(--mono); text-anchor: middle; }
+  .lab { position: absolute; padding: 4px 8px; background: rgba(0, 0, 0, 0.78); font: 600 12px/1.2 var(--mono); letter-spacing: 0.06em; color: var(--ink); white-space: nowrap; pointer-events: none; }
   .lab.red { color: var(--signal); }
   .mfoot { position: absolute; left: 3%; right: 3%; bottom: 3%; display: flex; justify-content: space-between; align-items: end; gap: 12px; pointer-events: none; }
-  .mfoot > span { display: inline-flex; align-items: center; gap: 8px; padding: 3px 6px; background: rgba(0, 0, 0, 0.72); font: 500 11px/1.2 var(--mono); color: var(--ink); }
+  .mfoot > span { display: inline-flex; align-items: center; gap: 8px; padding: 4px 8px; background: rgba(0, 0, 0, 0.72); font: 500 12px/1.2 var(--mono); color: var(--ink); }
   .beam svg { min-width: 8px; aspect-ratio: 1; height: auto; overflow: visible; }
   .beam circle { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .bar { flex-direction: column; align-items: stretch !important; gap: 4px !important; text-align: right; min-width: 3em; }
   .bar i { display: block; height: 5px; border: 1px solid var(--ink); border-top: 0; align-self: flex-end; }
   .cap { font-size: 14px; color: var(--grey); max-width: 70ch; margin: 0; }
-  .panel { display: grid; gap: 14px; border: 1px solid var(--hair); padding: 16px; }
-  .ph { margin: 0; font: 700 20px/1.1 var(--brut); }
+  .panel { display: grid; gap: 16px; border: 1px solid var(--hair); padding: 16px; }
+  .ph { margin: 0; font: 700 18px/1.1 var(--brut); }
   .nums { margin: 0; display: grid; gap: 8px; }
   .nums div { display: grid; gap: 2px; padding-bottom: 8px; border-bottom: 1px solid var(--hair); }
-  .nums dt { font: 600 11px/1.3 var(--mono); letter-spacing: 0.06em; color: var(--grey); }
+  .nums dt { font: 600 12px/1.3 var(--mono); letter-spacing: 0.06em; color: var(--grey); }
   .nums dd { margin: 0; font: 500 14px/1.4 var(--mono); color: var(--ink); }
-  table { border-collapse: collapse; width: 100%; font: 500 13px/1.4 var(--mono); }
-  caption { text-align: left; font-size: 13px; color: var(--ink); padding-bottom: 6px; font-family: var(--brut); }
-  th, td { text-align: left; padding: 6px 14px 6px 0; border-bottom: 1px solid var(--hair); }
-  thead th { font-weight: 600; color: var(--grey); font-size: 11px; letter-spacing: 0.06em; }
+  table { border-collapse: collapse; width: 100%; font: 500 14px/1.4 var(--mono); }
+  caption { text-align: left; font-size: 14px; color: var(--ink); padding-bottom: 8px; font-family: var(--brut); }
+  th, td { text-align: left; padding: 8px 16px 8px 0; border-bottom: 1px solid var(--hair); }
+  thead th { font-weight: 600; color: var(--grey); font-size: 12px; letter-spacing: 0.06em; }
   tbody th { font-family: var(--brut); font-weight: 600; font-size: 14px; }
   td { font-variant-numeric: tabular-nums; }
-  .how { margin: 0; font-size: 13px; line-height: 1.5; color: var(--grey); }
+  .how { margin: 0; font-size: 14px; line-height: 1.5; color: var(--grey); }
   @media (max-width: 960px) {
     .gcf { grid-template-columns: minmax(0, 1fr); }
   }
   @media (max-width: 480px) {
-    .lab, .mfoot > span { font-size: 10px; }
+    .lab, .mfoot > span { font-size: 12px; }
   }
 </style>

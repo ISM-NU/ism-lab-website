@@ -77,14 +77,14 @@ const name = label ?? (wipe ? "LMC magnetic field, Planck as observed and after 
   .over { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
   .compass { position: absolute; translate: -50% -50%; overflow: visible; pointer-events: none; }
   .compass path { stroke: var(--ink); stroke-width: 1.2; fill: none; }
-  .compass text { fill: var(--ink); font: 600 10px var(--mono); }
+  .compass text { fill: var(--ink); font: 600 12px var(--mono); }
   .beam { position: absolute; left: 4%; bottom: 4%; width: var(--b); aspect-ratio: 1; border: 1px solid var(--ink); border-radius: 50%; min-width: 4px; }
-  .beam-l { position: absolute; left: calc(4% + max(var(--b), 4px) + 8px); bottom: calc(4% - 2px); color: var(--ink); background: rgba(0, 0, 0, 0.55); padding: 2px 5px; }
+  .beam-l { position: absolute; left: calc(4% + max(var(--b), 4px) + 8px); bottom: calc(4% - 2px); color: var(--ink); background: rgba(0, 0, 0, 0.55); padding: 2px 4px; }
   .beam-l b { font-weight: 600; }
   /* No uppercase: it would turn sigma into Sigma. */
-  .read { text-transform: none; position: absolute; left: 10px; top: 10px; color: var(--ink); background: rgba(0, 0, 0, 0.6); padding: 4px 6px; }
+  .read { text-transform: none; position: absolute; left: 10px; top: 10px; color: var(--ink); background: rgba(0, 0, 0, 0.6); padding: 4px 8px; }
   .read:empty { display: none; }
-  .side { position: absolute; bottom: 12%; color: var(--ink); background: rgba(0, 0, 0, 0.6); padding: 4px 6px; pointer-events: none; transition: opacity 0.2s; }
+  .side { position: absolute; bottom: 12%; color: var(--ink); background: rgba(0, 0, 0, 0.6); padding: 4px 8px; pointer-events: none; transition: opacity 0.2s; }
   .side.l { right: calc(100% - var(--split) + 14px); }
   .side.r { left: calc(var(--split) + 14px); }
   .handle { position: absolute; top: 0; bottom: 0; left: var(--split); width: 44px; translate: -50% 0; background: none; border: 0; padding: 0; cursor: ew-resize; touch-action: none; }
@@ -92,14 +92,14 @@ const name = label ?? (wipe ? "LMC magnetic field, Planck as observed and after 
   .handle i { position: absolute; left: 50%; top: 50%; width: 14px; height: 40px; translate: -50% -50%; background: var(--ink); border: 1px solid var(--void); }
   .handle:focus-visible { outline: none; }
   .handle:focus-visible i { outline: 1px solid var(--signal); outline-offset: 3px; }
-  .scales { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .scales { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .scales legend { margin-bottom: 8px; padding: 0; }
   .scales label { cursor: pointer; }
   .scales input { position: absolute; opacity: 0; pointer-events: none; }
-  .scales span { display: inline-block; padding: 6px 10px; border: 1px solid var(--hair); font: 600 12px/1.2 var(--mono); letter-spacing: 0.06em; }
+  .scales span { display: inline-block; padding: 8px 12px; border: 1px solid var(--hair); font: 600 12px/1.2 var(--mono); letter-spacing: 0.06em; }
   .scales input:checked + span { background: var(--ink); color: var(--void); border-color: var(--ink); }
   .scales input:focus-visible + span { outline: 1px solid var(--signal); outline-offset: 2px; }
-  .note { flex: 0 0 100%; font-size: 13px; color: var(--grey); margin-top: 6px; }
+  .note { flex: 0 0 100%; font-size: 14px; color: var(--grey); margin-top: 8px; }
   @media (max-width: 520px) { .side { bottom: auto; top: 46px; } }
 </style>
 

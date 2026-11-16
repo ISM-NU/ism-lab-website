@@ -23,7 +23,6 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
     <div class="gut max">
       <div class="head">
         <h2 class="brut" id="work-h" data-scramble>Research lines</h2>
-        <p>Each card links to the papers and data of one line.</p>
       </div>
       <ProjectCards />
     </div>
@@ -76,7 +75,7 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
 <style>
   .split { display: grid; gap: 32px; }
   .log-list { list-style: none; margin: 32px 0 0; padding: 0; }
-  .log-list li { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
-  .log-list .dot { font-size: 20px; min-width: 9ch; }
+  .log-list li { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
+  .log-list .dot { font-size: 18px; min-width: 9ch; }
   .log-list a { font-weight: 600; font-size: 18px; }
 </style>

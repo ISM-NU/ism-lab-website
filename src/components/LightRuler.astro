@@ -59,7 +59,7 @@ const o = objects[sel];
 </section>
 
 <style>
-  .ruler { position: relative; margin-top: 56px; height: 260px; }
+  .ruler { position: relative; margin-top: 48px; height: 260px; }
   canvas, .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
   .leaders :global(path) { fill: none; stroke: rgba(10, 10, 11, 0.28); stroke-width: 1; }
   .leaders :global(path.on) { stroke: var(--signal); stroke-width: 1.5; }
@@ -69,8 +69,8 @@ const o = objects[sel];
   .tick.end { background: var(--on-paper); }
   .mark { position: absolute; width: 9px; height: 9px; margin: -4px 0 0 -4px; background: var(--on-paper); }
   .mark.on { background: var(--signal); box-shadow: 0 0 10px var(--signal); }
-  .you { position: absolute; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-paper); }
-  .obj { position: absolute; padding: 5px 4px; margin: 0; border: 0; background: var(--paper); cursor: pointer; font: 600 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; color: var(--on-paper); }
+  .you { position: absolute; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-paper); }
+  .obj { position: absolute; padding: 4px 4px; margin: 0; border: 0; background: var(--paper); cursor: pointer; font: 600 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; color: var(--on-paper); }
   .obj:hover, .obj[aria-pressed="true"] { color: #c4260f; }
   .obj[aria-pressed="true"] { text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: 4px; }
 
@@ -88,13 +88,13 @@ const o = objects[sel];
   .ruler.v .tick.end span { white-space: normal; width: 9ch; translate: 0 -100%; line-height: 1.2; }
   .ruler.v .you { left: calc(var(--ax) + 10px); top: -4px; }
 
-  .out { margin-top: 36px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: center; }
-  .val { font-size: clamp(2.6rem, 1rem + 6vw, 6.6rem); line-height: 0.9; margin-top: 10px; }
-  .txt { margin-top: 14px; max-width: 42ch; font-size: 17px; }
+  .out { margin-top: 32px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+  .val { font-size: clamp(3rem, 1rem + 6vw, 6rem); line-height: 0.9; margin-top: 12px; }
+  .txt { margin-top: 16px; max-width: 42ch; font-size: 16px; }
   figure { margin: 0; aspect-ratio: 4 / 3; background: var(--on-paper); overflow: hidden; position: relative; }
   figure img { width: 100%; height: 100%; object-fit: cover; }
   figure.empty { visibility: hidden; }
-  figcaption { position: absolute; left: 0; bottom: 0; padding: 5px 8px; background: var(--on-paper); color: var(--paper); font: 600 11px/1.2 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+  figcaption { position: absolute; left: 0; bottom: 0; padding: 4px 8px; background: var(--on-paper); color: var(--paper); font: 600 12px/1.2 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
   @media (max-width: 760px) { .out { grid-template-columns: minmax(0, 1fr); } figure.empty { display: none; } }
 </style>
 

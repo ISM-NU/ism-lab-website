@@ -29,14 +29,14 @@ const { items, dense = false, meta = false, lines } = Astro.props;
 
 <style>
   .papers { list-style: none; margin: 0; padding: 0; border-top: 1px solid currentColor; }
-  li { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto; gap: 8px 20px; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); align-items: baseline; }
-  .yr { font-size: 22px; line-height: 1; }
+  li { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto; gap: 8px 24px; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); align-items: baseline; }
+  .yr { font-size: 24px; line-height: 1; }
   .body { display: grid; gap: 4px; }
-  .ttl { font-weight: 600; font-size: 15px; line-height: 1.35; text-decoration: none; }
+  .ttl { font-weight: 600; font-size: 16px; line-height: 1.35; text-decoration: none; }
   .ttl:hover { text-decoration: underline; text-decoration-color: var(--signal); }
   .by, .ven { font-size: 12px; opacity: 0.72; }
-  .cit { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; white-space: nowrap; }
-  .res { font-size: 13.5px; line-height: 1.45; quotes: "“" "”"; max-width: 70ch; }
+  .cit { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; white-space: nowrap; }
+  .res { font-size: 14px; line-height: 1.45; quotes: "“" "”"; max-width: 70ch; }
   .led .yr { color: var(--signal); }
   :global(.slab) .led .yr { color: #d42a12; }
   .bib { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
@@ -44,7 +44,7 @@ const { items, dense = false, meta = false, lines } = Astro.props;
   .dense li { padding: 12px 0; }
   .dense .ttl { font-size: 14px; }
   @media (max-width: 640px) {
-    li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    li { grid-template-columns: minmax(0, 1fr); gap: 8px; }
     .cit { display: none; }
   }
 </style>

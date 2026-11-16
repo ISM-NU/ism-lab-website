@@ -12,7 +12,7 @@ Needs Node 22.23 or newer.
 
     npm install
     npm run dev        # http://localhost:4321 with live reload
-    npm run check      # type and template check
+    npm run check      # spacing/type scale check, then type and template check
     npm run build      # static site in dist/
     npm run preview    # serves dist/ in the background on localhost:4321;
                        # stop it with `npx astro preview stop`

@@ -46,7 +46,7 @@ const cards: Card[] = [
 </div>
 
 <style>
-  .archive { grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); margin-top: 40px; }
+  .archive { grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); margin-top: 32px; }
   .card { display: grid; grid-template-rows: auto 1fr; }
   figure { margin: 0; position: relative; overflow: hidden; background: var(--panel); aspect-ratio: 1; }
   /* No hover zoom: the scale bar is a measurement and must stay true. */
@@ -54,12 +54,12 @@ const cards: Card[] = [
   .field { position: absolute; inset: 0; opacity: 0; transition: opacity 0.9s ease; }
   .card.on .field { opacity: 1; }
   @media (hover: none) { .field { opacity: 1; } }
-  @media (min-width: 900px) { .card:first-child { grid-column: span 2; grid-row: span 2; } .card:first-child .name { font-size: 40px; } }
+  @media (min-width: 900px) { .card:first-child { grid-column: span 2; grid-row: span 2; } .card:first-child .name { font-size: 32px; } }
   .scan { position: absolute; left: 0; right: 0; height: 2px; background: var(--signal); box-shadow: 0 0 12px var(--signal); top: -4px; opacity: 0; }
   .card.on .scan { animation: scan 0.7s cubic-bezier(0.6, 0, 0.2, 1) both; }
   @keyframes scan { 0% { top: 0; opacity: 1; } 100% { top: 100%; opacity: 0.2; } }
-  .meta { padding: 14px 16px 18px; display: grid; gap: 8px; border-top: 1px solid var(--hair); align-content: start; }
-  .name { font-size: 26px; line-height: 1; }
+  .meta { padding: 16px 16px 16px; display: grid; gap: 8px; border-top: 1px solid var(--hair); align-content: start; }
+  .name { font-size: 24px; line-height: 1; }
   .row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font: 500 12px/1.4 var(--mono); color: var(--grey); letter-spacing: 0.06em; text-transform: uppercase; }
   .row b { color: var(--ink); font-weight: 600; }
   .more { font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; justify-self: start; padding: 8px 0; }

@@ -87,8 +87,8 @@ const wheel = [0, 30, 60, 90, 120, 150];
 <script type="application/json" id="fnData" set:html={JSON.stringify({ field: u.field, segments: u.segments, size: u.size_px, bin: u.bin_deg })}></script>
 
 <style>
-  .fn { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px clamp(24px, 4vw, 56px); margin-top: 40px; }
-  .stagecol { grid-row: span 2; display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .fn { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px clamp(24px, 4vw, 48px); margin-top: 32px; }
+  .stagecol { grid-row: span 2; display: grid; gap: 12px; align-content: start; min-width: 0; }
   .stage { position: relative; aspect-ratio: 1; background: var(--void); border: 1px solid var(--hair); overflow: hidden; touch-action: pan-y; cursor: crosshair; }
   .stage img, .stage canvas, .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .ov { image-rendering: pixelated; pointer-events: none; }
@@ -97,31 +97,31 @@ const wheel = [0, 30, 60, 90, 120, 150];
   .stage[data-all="1"] .sel { border-color: transparent; box-shadow: none; }
   .scale { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
   .scale .bar { flex: 1; height: 1px; background: var(--hair); }
-  .ctl { display: grid; gap: 20px; align-content: start; }
-  fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .ctl { display: grid; gap: 24px; align-content: start; }
+  fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
   legend { margin: 0 0 8px; padding: 0; float: left; width: 100%; }
   fieldset label { cursor: pointer; }
   fieldset input { position: absolute; opacity: 0; pointer-events: none; }
-  fieldset span { display: inline-block; padding: 6px 9px; border: 1px solid var(--hair); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+  fieldset span { display: inline-block; padding: 8px 8px; border: 1px solid var(--hair); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
   fieldset input:checked + span { background: var(--ink); color: var(--void); border-color: var(--ink); }
   fieldset input:focus-visible + span { outline: 1px solid var(--signal); outline-offset: 2px; }
   fieldset:disabled { opacity: 0.4; }
-  .wheel { display: grid; gap: 6px; }
+  .wheel { display: grid; gap: 8px; }
   .ramp { display: block; height: 10px; background: linear-gradient(90deg, hsl(0 90% 58%), hsl(60 90% 58%), hsl(120 90% 58%), hsl(180 90% 58%), hsl(240 90% 58%), hsl(300 90% 58%), hsl(360 90% 58%)); }
-  .ticks { display: flex; justify-content: space-between; font-size: 10px; }
+  .ticks { display: flex; justify-content: space-between; font-size: 12px; }
   .rng { display: grid; gap: 8px; }
-  .rng b { color: var(--ink); font-size: 16px; margin-left: 6px; }
+  .rng b { color: var(--ink); font-size: 16px; margin-left: 8px; }
   .rng label + input { margin-bottom: 8px; }
   input[type="range"] { width: 100%; accent-color: var(--signal); }
   .histcol { display: grid; gap: 12px; align-content: start; }
   .hist { width: 100%; height: auto; overflow: visible; }
   :global(.hist .bar) { fill: var(--ink); }
-  :global(.hist text) { fill: var(--grey); font: 600 9px var(--mono); letter-spacing: 0.08em; }
+  :global(.hist text) { fill: var(--grey); font: 600 12px var(--mono); letter-spacing: 0.08em; }
   :global(.hist .ax) { stroke: var(--hair); }
   :global(.hist .ref) { stroke: var(--signal); stroke-dasharray: 3 3; }
   .read { font: 400 12px/1.6 var(--mono); color: var(--grey); min-height: 4.8em; }
   .read :global(b) { color: var(--ink); font-weight: 600; }
-  .notes { grid-column: 1 / -1; display: grid; gap: 10px; max-width: 78ch; font-size: 14px; color: var(--grey); }
+  .notes { grid-column: 1 / -1; display: grid; gap: 12px; max-width: 78ch; font-size: 14px; color: var(--grey); }
   .notes .prev { color: var(--signal); font-family: var(--mono); font-size: 12px; }
   @media (max-width: 800px) {
     .fn { grid-template-columns: minmax(0, 1fr); }

@@ -87,33 +87,33 @@ const m = patchMeta;
 </div>
 
 <style>
-  .eb { display: grid; gap: clamp(56px, 8vw, 96px); margin-top: 32px; }
-  .panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 24px 40px; align-items: start; }
-  .intro { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 16px 40px; align-items: end; border-bottom: 1px solid var(--hair); padding-bottom: 18px; }
+  .eb { display: grid; gap: clamp(48px, 8vw, 96px); margin-top: 32px; }
+  .panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 24px 32px; align-items: start; }
+  .intro { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 16px 32px; align-items: end; border-bottom: 1px solid var(--hair); padding-bottom: 16px; }
   .intro p { max-width: 68ch; font-size: 16px; }
   .ctl { display: grid; gap: 16px; align-content: start; min-width: 0; }
   .ctl label { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 14px; align-items: baseline; }
   .ctl output { font: 500 14px/1 var(--mono); color: var(--ink); }
   .ctl input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--signal); min-height: 32px; margin: 0; }
   :is(input, button):focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
-  button { justify-self: start; font: 500 13px/1 var(--mono); color: var(--ink); background: transparent; border: 1px solid var(--hair); padding: 10px 14px; min-height: 40px; cursor: pointer; border-radius: 0; }
+  button { justify-self: start; font: 500 14px/1 var(--mono); color: var(--ink); background: transparent; border: 1px solid var(--hair); padding: 12px 16px; min-height: 40px; cursor: pointer; border-radius: 0; }
   button:hover { border-color: var(--ink); }
-  .hint { font-size: 13px; line-height: 1.45; color: var(--grey); }
+  .hint { font-size: 14px; line-height: 1.45; color: var(--grey); }
   figure { margin: 0; min-width: 0; }
-  .chart { display: grid; gap: 14px; }
+  .chart { display: grid; gap: 16px; }
   .chart canvas { width: 100%; }
-  .read { width: 100%; border-collapse: collapse; font: 400 13px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
-  .read th { text-align: left; font-weight: 600; color: var(--grey); padding: 0 8px 6px 0; border-bottom: 1px solid var(--hair); }
-  .read :global(td) { padding: 6px 8px 0 0; color: var(--ink); }
+  .read { width: 100%; border-collapse: collapse; font: 400 14px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
+  .read th { text-align: left; font-weight: 600; color: var(--grey); padding: 0 8px 8px 0; border-bottom: 1px solid var(--hair); }
+  .read :global(td) { padding: 8px 8px 0 0; color: var(--ink); }
   .read :global(td:first-child) { color: var(--grey); }
-  .notes { grid-column: 1 / -1; max-width: 86ch; font-size: 15px; color: var(--grey); }
+  .notes { grid-column: 1 / -1; max-width: 86ch; font-size: 16px; color: var(--grey); }
   .notes b { color: var(--ink); font-weight: 600; }
   .notes a, .intro a { color: var(--ink); }
   .glyphs { display: grid; grid-template-columns: repeat(2, minmax(0, 132px)); gap: 16px; }
   .glyphs canvas { width: 100%; aspect-ratio: 1; border: 1px solid var(--hair); }
-  .glyphs figcaption, .maps figcaption { font: 400 12px/1.4 var(--mono); color: var(--grey); margin-top: 6px; }
-  .key { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font: 400 13px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
-  .key :global(li) { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; color: var(--grey); }
+  .glyphs figcaption, .maps figcaption { font: 400 12px/1.4 var(--mono); color: var(--grey); margin-top: 8px; }
+  .key { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font: 400 14px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
+  .key :global(li) { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; color: var(--grey); }
   .key :global(li b) { color: var(--ink); font-weight: 500; }
   .key :global(svg) { width: 28px; height: 8px; overflow: visible; }
   .maps { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
@@ -122,7 +122,7 @@ const m = patchMeta;
   .scales div { display: grid; gap: 4px; }
   .scales canvas { width: 100%; height: 10px; }
   .scales span { font-size: 12px; color: var(--grey); }
-  .read2 { grid-column: 1 / -1; font-size: 13px; line-height: 1.5; color: var(--ink); }
+  .read2 { grid-column: 1 / -1; font-size: 14px; line-height: 1.5; color: var(--ink); }
   @media (max-width: 900px) {
     .panel, .intro { grid-template-columns: minmax(0, 1fr); }
   }

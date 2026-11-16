@@ -23,14 +23,14 @@
   /* Darken the strip under the fixed nav so its difference-blended text stays legible over bright nebula. */
   .hero::after { content: ""; position: absolute; inset: 0 0 auto; height: 110px; background: linear-gradient(rgba(0, 0, 0, 0.6), transparent); pointer-events: none; }
   .dets { position: absolute; inset: 0; pointer-events: none; }
-  .hero-copy { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 22px; pointer-events: none; z-index: 1; }
+  .hero-copy { position: absolute; left: 0; right: 0; bottom: 0; padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 24px; pointer-events: none; z-index: 1; }
   /* Readability scrim under the copy: the nebula is brightest at the bottom left. */
   .hero-copy::before { content: ""; position: absolute; inset: -30% 0 0; background: linear-gradient(transparent, rgba(0, 0, 0, 0.55) 45%, rgba(0, 0, 0, 0.75)); z-index: -1; }
-  .who { display: grid; gap: 14px; max-width: 58ch; pointer-events: auto; }
-  .who p { font-size: clamp(16px, 0.9rem + 0.35vw, 19px); line-height: 1.45; text-shadow: 0 0 12px #000; }
-  .links { display: flex; flex-wrap: wrap; gap: 10px 22px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; }
+  .who { display: grid; gap: 16px; max-width: 58ch; pointer-events: auto; }
+  .who p { font-size: clamp(16px, 0.9rem + 0.35vw, 18px); line-height: 1.45; text-shadow: 0 0 12px #000; }
+  .links { display: flex; flex-wrap: wrap; gap: 12px 24px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; }
   .links a { padding: 12px 0; text-decoration: underline; text-decoration-color: var(--signal); text-underline-offset: 6px; }
-  h1 { font-size: clamp(3.2rem, 1rem + 11.5vw, 13rem); text-shadow: 0 0 40px rgba(0, 0, 0, 0.55); }
+  h1 { font-size: clamp(48px, 2rem + 6vw, 128px); text-shadow: 0 0 40px rgba(0, 0, 0, 0.55); }
   .who a:not(.links a) { text-decoration: underline; text-decoration-color: var(--signal); text-underline-offset: 4px; }
   .credit { color: var(--ink); text-shadow: 0 0 8px #000; justify-self: end; opacity: 0.8; }
   @media (max-width: 640px) { .who p { font-size: 16px; } .credit { justify-self: start; } }

@@ -6,6 +6,11 @@
 @import "@fontsource-variable/archivo/wdth.css";
 @import "@fontsource-variable/jetbrains-mono/wght.css";
 
+/* Scale. Spacing (padding, margin, gap) uses 4 8 12 16 24 32 48 64 96 128 px,
+   plus 1-2 px for hairlines. Type uses 12 14 16 18 24 32 48 64 96 128 px; a
+   fluid size runs between two steps, clamp(step, fluid, step). Display roles:
+   hero 48-128, page title 48-96, section 32-64, card or block title 24-32.
+   scripts/check_scale.py enforces this in npm run check. */
 :root {
   --void: #000;
   --panel: #0a0a0b;
@@ -45,7 +50,7 @@ button { font: inherit; color: inherit; }
 
 .gut { padding-left: var(--gut); padding-right: var(--gut-r); }
 .max { max-width: 1320px; margin: 0 auto; }
-.sec { padding-block: clamp(64px, 10vw, 140px); }
+.sec { padding-block: clamp(64px, 10vw, 128px); }
 .sec.tight { padding-top: 0; }
 
 .label { font: 600 12px/1.35 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); }
@@ -56,14 +61,14 @@ button { font: inherit; color: inherit; }
 .scr { position: relative; display: inline-block; clip-path: inset(-0.5em 0); }
 .scr-r { opacity: 0; }
 .scr-g { position: absolute; left: 0; top: 0; white-space: pre; }
-h1.brut.page { font-size: clamp(3.2rem, 1rem + 9vw, 10.5rem); }
-h2.brut { font-size: clamp(2.6rem, 1.2rem + 6vw, 6.8rem); }
-h3.brut { font-size: clamp(1.8rem, 1rem + 2.4vw, 3rem); line-height: 0.9; }
+h1.brut.page { font-size: clamp(48px, 1.5rem + 5vw, 96px); }
+h2.brut { font-size: clamp(32px, 1rem + 3.5vw, 64px); }
+h3.brut { font-size: clamp(24px, 1rem + 1vw, 32px); line-height: 0.9; }
 
-.rec::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--signal); margin-right: 7px; vertical-align: 1px; box-shadow: 0 0 10px var(--signal); animation: blink 1.1s steps(2) infinite; }
+.rec::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--signal); margin-right: 8px; vertical-align: 1px; box-shadow: 0 0 10px var(--signal); animation: blink 1.1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0.15; } }
 
-.tag { display: inline-block; padding: 4px 7px; border: 1px solid currentColor; font: 600 11px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+.tag { display: inline-block; padding: 4px 8px; border: 1px solid currentColor; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
 .tag.fill { background: var(--signal); border-color: var(--signal); color: var(--void); }
 .tag.soon { border-style: dashed; color: var(--signal); }
 
@@ -73,7 +78,7 @@ h3.brut { font-size: clamp(1.8rem, 1rem + 2.4vw, 3rem); line-height: 0.9; }
 .slab .label.red { color: #d42a12; }
 
 /* Section head */
-.head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px 28px; align-items: end; border-bottom: 1px solid currentColor; padding-bottom: 18px; }
+.head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 24px; align-items: end; border-bottom: 1px solid currentColor; padding-bottom: 16px; }
 .head > p { max-width: 46ch; font-size: 16px; }
 @media (max-width: 760px) { .head { grid-template-columns: minmax(0, 1fr); } }
 
@@ -89,9 +94,9 @@ h3.brut { font-size: clamp(1.8rem, 1rem + 2.4vw, 3rem); line-height: 0.9; }
     linear-gradient(var(--c), var(--c)) bottom left / 1px 7px no-repeat,
     linear-gradient(var(--c), var(--c)) bottom right / 7px 1px no-repeat,
     linear-gradient(var(--c), var(--c)) bottom right / 1px 7px no-repeat; }
-.det span { position: absolute; left: 100%; top: -2px; margin-left: 4px; font: 600 11px/1 var(--mono); letter-spacing: 0.08em; color: var(--ink); white-space: nowrap; text-shadow: 0 0 6px #000; }
+.det span { position: absolute; left: 100%; top: -2px; margin-left: 4px; font: 600 12px/1 var(--mono); letter-spacing: 0.08em; color: var(--ink); white-space: nowrap; text-shadow: 0 0 6px #000; }
 .det.lock { --c: var(--signal); filter: drop-shadow(0 0 6px rgba(255, 61, 36, 0.6)); }
-.det.lock span { color: var(--void); background: var(--signal); padding: 4px 7px; text-shadow: none; font-size: 12px; top: auto; bottom: 100%; left: -1px; margin: 0 0 6px; }
+.det.lock span { color: var(--void); background: var(--signal); padding: 4px 8px; text-shadow: none; font-size: 12px; top: auto; bottom: 100%; left: -1px; margin: 0 0 8px; }
 .det.lock.flip span { left: auto; right: -1px; }
 /* A long tag wraps instead of pushing the page wider on phones. */
 .tag.wrap { white-space: normal; line-height: 1.4; }
@@ -105,7 +110,7 @@ h3.brut { font-size: clamp(1.8rem, 1rem + 2.4vw, 3rem); line-height: 0.9; }
 .slab .cells > * { background: var(--paper); }
 
 /* Prose from markdown */
-.prose { max-width: 68ch; display: grid; gap: 1em; font-size: 17px; line-height: 1.6; }
+.prose { max-width: 68ch; display: grid; gap: 1em; font-size: 16px; line-height: 1.6; }
 .prose p { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {

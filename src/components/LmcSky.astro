@@ -33,24 +33,24 @@ const fmtLon = (v: number) => `${Math.abs(v).toFixed(2)}° ${v < 0 ? "W" : "E"}`
 <style>
   .lmcsky { color: var(--ink); border: 1px solid var(--hair); background: var(--panel); }
   ul { list-style: none; margin: 0; padding: 0; }
-  li, .axis { display: grid; grid-template-columns: 13rem 7.5rem minmax(0, 1fr); gap: 8px 20px; align-items: center; padding: 14px clamp(14px, 2vw, 24px); }
+  li, .axis { display: grid; grid-template-columns: 13rem 7.5rem minmax(0, 1fr); gap: 8px 24px; align-items: center; padding: 16px clamp(16px, 2vw, 24px); }
   li { border-top: 1px solid var(--hair); }
   .axis { padding-bottom: 0; }
-  .ticks { position: relative; height: 18px; font: 600 11px/1 var(--mono); color: var(--grey); font-variant-numeric: tabular-nums; }
+  .ticks { position: relative; height: 18px; font: 600 12px/1 var(--mono); color: var(--grey); font-variant-numeric: tabular-nums; }
   .ticks :global(span) { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
   .ticks :global(span:first-child) { transform: none; }
   .ticks :global(span:last-child) { transform: translateX(-100%); }
-  .who { display: grid; gap: 4px; font-size: 13px; }
+  .who { display: grid; gap: 4px; font-size: 14px; }
   .who b { font: 600 14px/1.1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
   .who span { color: var(--grey); line-height: 1.4; }
-  .co { font: 400 11px/1.4 var(--mono); }
-  .now { font-size: 22px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .co { font: 400 12px/1.4 var(--mono); }
+  .now { font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
   .now.up { color: var(--signal); }
   .strip { min-width: 0; }
   svg { display: block; width: 100%; height: 26px; border-bottom: 1px solid var(--hair); background: repeating-linear-gradient(to right, transparent 0 calc(25% - 1px), var(--hair) calc(25% - 1px) 25%); }
-  .when { margin: 6px 0 0; font: 400 12px/1.4 var(--mono); color: var(--grey); }
-  .key { margin: 0; padding: 12px clamp(14px, 2vw, 24px); border-top: 1px solid var(--hair); font: 400 12px/1.5 var(--mono); color: var(--grey); }
-  .k { display: inline-block; width: 40px; height: 8px; vertical-align: 0; margin-right: 6px; background: linear-gradient(to right, rgba(255, 61, 36, 0.15), var(--signal)); }
+  .when { margin: 8px 0 0; font: 400 12px/1.4 var(--mono); color: var(--grey); }
+  .key { margin: 0; padding: 12px clamp(16px, 2vw, 24px); border-top: 1px solid var(--hair); font: 400 12px/1.5 var(--mono); color: var(--grey); }
+  .k { display: inline-block; width: 40px; height: 8px; vertical-align: 0; margin-right: 8px; background: linear-gradient(to right, rgba(255, 61, 36, 0.15), var(--signal)); }
   @media (max-width: 760px) {
     li, .axis { grid-template-columns: minmax(0, 1fr) auto; }
     .axis span { display: none; }

@@ -86,22 +86,22 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
 </html>
 
 <style is:global>
-  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) var(--gut-r) 0 var(--gut); display: flex; align-items: center; gap: 20px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); border-bottom: 1px solid transparent; transition: background-color 0.25s, border-color 0.25s; }
+  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) var(--gut-r) 0 var(--gut); display: flex; align-items: center; gap: 24px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); border-bottom: 1px solid transparent; transition: background-color 0.25s, border-color 0.25s; }
   /* Transparent over the dark page tops; a solid strip once content scrolls under it. */
   .topbar.solid { background: var(--void); border-bottom-color: var(--hair); }
   .topbar .logo { font-size: 16px; letter-spacing: 0.06em; text-decoration: none; }
   .topbar nav { flex: 1; display: flex; justify-content: center; }
-  .topbar ul { list-style: none; margin: 0; padding: 0; display: flex; gap: clamp(12px, 2vw, 28px); }
+  .topbar ul { list-style: none; margin: 0; padding: 0; display: flex; gap: clamp(12px, 2vw, 24px); }
   .topbar nav a { text-decoration: none; padding: 8px 0; display: inline-block; }
   .topbar nav a:hover, .topbar nav a[aria-current="page"] { text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: 5px; }
   .topbar .clock { font-variant-numeric: tabular-nums; min-width: 13ch; text-align: right; }
-  .menu-btn { display: none; background: none; border: 1px solid currentColor; padding: 6px 10px; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+  .menu-btn { display: none; background: none; border: 1px solid currentColor; padding: 8px 12px; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
   @media (max-width: 860px) {
     .topbar nav, .topbar .clock { display: none; }
     .topbar { justify-content: space-between; }
     .menu-btn { display: inline-block; }
   }
-  .menu { position: fixed; inset: 0; z-index: 35; background: var(--void); padding: calc(var(--bar-h) + 40px) var(--gut-r) 40px var(--gut); display: grid; align-content: space-between; }
+  .menu { position: fixed; inset: 0; z-index: 35; background: var(--void); padding: calc(var(--bar-h) + 32px) var(--gut-r) 32px var(--gut); display: grid; align-content: space-between; }
   .menu[hidden] { display: none; }
   .menu ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
   .menu a { font-size: clamp(3rem, 14vw, 6rem); text-decoration: none; display: block; }
@@ -114,7 +114,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   .console .bar, .corner { opacity: 0; transition: opacity 0.3s; }
   .console.on .bar { opacity: 1; }
   .console.on .corner { opacity: 0.6; }
-  .console .bar { position: absolute; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px var(--gut-r) 10px var(--gut); font: 600 11.5px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); text-shadow: 0 0 8px #000; font-variant-numeric: tabular-nums; }
+  .console .bar { position: absolute; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px var(--gut-r) 12px var(--gut); font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); text-shadow: 0 0 8px #000; font-variant-numeric: tabular-nums; }
   .console .bottom { bottom: env(safe-area-inset-bottom, 0px); }
   .corner { position: absolute; width: 14px; height: 14px; border-color: var(--ink); border-style: solid; }
   .c1 { top: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); left: var(--gut); border-width: 1px 0 0 1px; }
@@ -125,10 +125,10 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   .scrollrule i { position: absolute; left: -3px; width: 14px; height: 2px; background: var(--signal); top: 0; box-shadow: 0 0 8px var(--signal); }
   @media (max-width: 640px) { .console .hide-sm { display: none; } }
 
-  .foot { border-top: 1px solid var(--hair); padding-block: 56px calc(90px + env(safe-area-inset-bottom, 0px)); font-size: 12px; color: var(--grey); }
+  .foot { border-top: 1px solid var(--hair); padding-block: 48px calc(96px + env(safe-area-inset-bottom, 0px)); font-size: 12px; color: var(--grey); }
   .foot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 32px; }
-  .foot-grid > div { display: grid; gap: 10px; align-content: start; }
-  .foot-logo { font-size: 28px; color: var(--ink); }
+  .foot-grid > div { display: grid; gap: 12px; align-content: start; }
+  .foot-logo { font-size: 24px; color: var(--ink); }
   .foot-lead { color: var(--ink); font-size: 14px; }
   .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
   .foot a { color: var(--ink); }

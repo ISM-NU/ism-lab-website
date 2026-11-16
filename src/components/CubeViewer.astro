@@ -76,9 +76,9 @@ import meta from "../data/cube.json";
 <script type="application/json" id="cvMeta" set:html={JSON.stringify(meta)}></script>
 
 <style>
-  .cube { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px 32px; margin-top: 40px; }
+  .cube { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 24px 32px; margin-top: 32px; }
   .mapcol { min-width: 0; }
-  .side { min-width: 0; display: grid; gap: 14px; align-content: start; }
+  .side { min-width: 0; display: grid; gap: 16px; align-content: start; }
   .foot-note { grid-column: 1 / -1; font-size: 12px; color: var(--grey); max-width: 100ch; }
   .mapwrap { position: relative; aspect-ratio: 1; background: var(--void); border: 1px solid var(--hair); cursor: crosshair; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
   .mapwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -86,37 +86,37 @@ import meta from "../data/cube.json";
   .mark { fill: none; stroke: var(--ink); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
   .cutline { stroke: var(--signal); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-dasharray: 6 4; }
   .beam { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
-  .beamlab { position: absolute; left: 30px; bottom: 6px; font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink); text-transform: uppercase; pointer-events: none; text-shadow: 0 0 4px #000; }
+  .beamlab { position: absolute; left: 30px; bottom: 6px; font-size: 12px; letter-spacing: 0.08em; color: var(--ink); text-transform: uppercase; pointer-events: none; text-shadow: 0 0 4px #000; }
   .hd { position: absolute; width: 26px; height: 26px; translate: -50% -50%; padding: 0; border: 1.5px solid var(--signal); background: rgba(0, 0, 0, 0.55); border-radius: 50%; cursor: grab; touch-action: none; }
   .hd.end { border-radius: 0; width: 20px; height: 20px; }
   .hd:active { cursor: grabbing; }
   .mapwrap:focus-visible { outline: 1px solid var(--signal); outline-offset: 3px; }
-  .bar { position: relative; margin-top: 10px; }
+  .bar { position: relative; margin-top: 12px; }
   .bar canvas { width: 100%; height: 12px; border: 1px solid var(--hair); image-rendering: pixelated; }
-  .ticks { position: relative; height: 18px; font-size: 10.5px; color: var(--grey); }
+  .ticks { position: relative; height: 18px; font-size: 12px; color: var(--grey); }
   .ticks :global(span) { position: absolute; top: 3px; translate: -50% 0; white-space: nowrap; }
   .ticks :global(span:first-child) { translate: 0 0; }
   .ticks :global(span.last) { translate: -100% 0; }
-  .unit { font-size: 11px; color: var(--grey); letter-spacing: 0.04em; }
-  .read { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; font-size: 12px; }
+  .unit { font-size: 12px; color: var(--grey); letter-spacing: 0.04em; }
+  .read { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; font-size: 12px; }
   .read div { min-width: 0; }
-  .read dt { color: var(--grey); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .read dt { color: var(--grey); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
   .read dd { margin: 0; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
   .plot { margin: 0; }
   .plot canvas { width: 100%; display: block; background: var(--panel); border: 1px solid var(--hair); }
   #cvSpec { height: 210px; cursor: ew-resize; touch-action: pan-y; }
   #cvPV { height: 250px; cursor: crosshair; }
   .win { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px 16px; align-items: end; }
-  .win label { display: grid; gap: 4px; font-size: 11px; color: var(--grey); min-width: 0; }
+  .win label { display: grid; gap: 4px; font-size: 12px; color: var(--grey); min-width: 0; }
   .win output { color: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
   .win input { width: 100%; accent-color: var(--signal); margin: 0; }
-  .btn { background: none; border: 1px solid var(--hair); color: var(--ink); padding: 7px 10px; font: 600 11px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+  .btn { background: none; border: 1px solid var(--hair); color: var(--ink); padding: 8px 12px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
   .btn:hover { border-color: var(--ink); }
   .btn[aria-pressed="true"] { background: var(--ink); color: var(--void); border-color: var(--ink); }
   .note { font-size: 12px; color: var(--grey); }
-  .pvctl { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--grey); }
+  .pvctl { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; font-size: 12px; color: var(--grey); }
   .pvctl .mono { min-width: 0; }
-  .snd { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+  .snd { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
   .snd .note { flex: 1 1 220px; }
   @media (max-width: 860px) {
     .cube { grid-template-columns: minmax(0, 1fr); }
