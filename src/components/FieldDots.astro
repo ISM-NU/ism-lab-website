@@ -34,7 +34,6 @@ const lmc = maps.snr_stats.lmc8;
 </style>
 
 <script>
-  import sky from "../data/sky.json";
   import { onFrame, watchVisible, canvasFit, loadImage, clamp, reduce } from "../scripts/motion";
 
   const box = document.getElementById("dotfield")!;
@@ -43,7 +42,9 @@ const lmc = maps.snr_stats.lmc8;
   const m = { x: 0, y: 0, t: -1e9, has: false };
   // F holds the field as an angle on the image grid (what the dashes need);
   // T is the grid angle of local north, so F - T is the position angle.
-  const N = sky.field_n, F = sky.field, TN = sky.tilt_n, T = sky.north_tilt;
+  // The field grid is most of sky.json (about 50 KB), so it is fetched when
+  // the section comes near rather than bundled with the page script.
+  let N = 0, F: number[] = [], TN = 0, T: number[] = [];
   const SN = JSON.parse(document.getElementById("snrData")!.textContent!) as { n: number; scale: number; min: number; grid: number[] };
   const snrAt = (u: number, v: number) => SN.grid[clamp(Math.floor(v * SN.n), 0, SN.n - 1) * SN.n + clamp(Math.floor(u * SN.n), 0, SN.n - 1)] / SN.scale;
 
@@ -56,10 +57,16 @@ const lmc = maps.snr_stats.lmc8;
 
   size();
   addEventListener("resize", size);
-  loadImage("/sky/lmc-dust.webp").then((i) => (dust = i));
+  let asked = false;
+  watchVisible(box, (on) => {
+    if (!on || asked) return;
+    asked = true;
+    loadImage("/sky/lmc-dust.webp").then((i) => (dust = i));
+    import("../data/sky.json").then(({ default: sky }) => { N = sky.field_n; F = sky.field; TN = sky.tilt_n; T = sky.north_tilt; });
+  }, "100%");
   watchVisible(box, (on) => (visible = on));
   onFrame((t) => {
-    if (!visible) return;
+    if (!visible || !F.length) return;
     const side = Math.max(w, h), ox = (w - side) / 2, oy = (h - side) / 2;
     ctx.clearRect(0, 0, w, h);
     let mx = m.x, my = m.y;

@@ -263,6 +263,7 @@ export class FieldView {
   private loading = 0;
   private last = 0;
   webgl: boolean;
+  private started = false;
 
   constructor(private canvas: HTMLCanvasElement, private store: StokesStore, private opts: FieldOpts) {
     const gl = canvas.getContext("webgl2", { antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: false });
@@ -273,15 +274,17 @@ export class FieldView {
     if (!this.gl) this.ctx2d = canvas.getContext("2d");
     new ResizeObserver(() => { this.resize(); this.dirty = true; }).observe(canvas);
     watchVisible(canvas, (on) => { this.visible = on; this.dirty = true; }, "200px");
+    // The Stokes planes are about 600 KB of PNG: fetch them when the map is
+    // a screen away, not with the page.
+    watchVisible(canvas, (on) => { if (on && !this.started) { this.started = true; this.load(); } }, "100%");
     onFrame((t) => this.frame(t));
-    this.load();
   }
 
   set(o: Partial<FieldOpts>) {
     const reload = o.scale !== undefined && o.scale !== this.opts.scale;
     Object.assign(this.opts, o);
     this.dirty = true;
-    if (reload) this.load();
+    if (reload && this.started) this.load();
   }
 
   private async load() {

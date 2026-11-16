@@ -1,9 +1,14 @@
 ---
 // Scroll-driven zoom out: the Tarantula (264 ly) -> the whole LMC -> the whole
 // sky. World units are LMC widths; sizes and positions are real.
+import sky from "../data/sky.json";
+// Only these fields reach the browser. Importing sky.json in the script would
+// load all of it (the field grid is about 50 KB) before the page is usable.
+const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsky, lmc_rot_deg: sky.lmc_rot_deg };
 ---
 
 <section class="pull" id="pull" aria-labelledby="pull-cap" data-console>
+  <script type="application/json" id="pullData" set:html={JSON.stringify(pullData)} />
   <div class="stage" id="pullStage">
     <canvas id="pullCanvas" aria-hidden="true"></canvas>
     <div class="frame red" id="fT"><span>NGC 2070 &middot; JWST field &middot; 264 ly</span></div>
@@ -51,7 +56,8 @@
 </style>
 
 <script>
-  import sky from "../data/sky.json";
+  const { lmc_targets, lmc_in_allsky, lmc_rot_deg } = JSON.parse(document.getElementById("pullData")!.textContent!) as {
+    lmc_targets: Record<string, [number, number]>; lmc_in_allsky: [number, number]; lmc_rot_deg: number };
   import det from "../data/detections.json";
   import insets from "../data/zoom-insets.json";
   import { onFrame, canvasFit, loadImage, clamp, seg, ease, fmt, reduce, watchVisible, tarantulaSrc } from "../scripts/motion";
@@ -75,9 +81,9 @@
   const TW = 264 / LY_PER_L, TH = TW * 0.75; // Tarantula frame, 4:3
   const TROT = (13.5 * Math.PI) / 180;
   const FL = 0.0373; // LMC width as a fraction of the all-sky map width
-  const T_C = sky.lmc_targets["30 Doradus"];
-  const SKY_LMC = sky.lmc_in_allsky;
-  const ROT = sky.lmc_rot_deg;
+  const T_C = lmc_targets["30 Doradus"];
+  const SKY_LMC = lmc_in_allsky;
+  const ROT = lmc_rot_deg;
   // R136 sits off the centre of the Webb frame; shift the frame so R136
   // lands on the 30 Dor position.
   const CORE = det.tarantula.core;
@@ -93,10 +99,10 @@
   // Finer renders around R136 (scripts/composites.py insets), placed in LMC
   // image fractions. Each fades in once the LMC image under it would be
   // magnified past its own pixels.
-  const ins: { img?: HTMLImageElement; x: number; y: number; w: number }[] = insets.map((b) => ({ ...b }));
+  const ins: { img?: HTMLImageElement; src: string; x: number; y: number; w: number }[] = insets.map((b) => ({ ...b }));
   const dpr = Math.min(devicePixelRatio || 1, 2);
   const tg = document.getElementById("tgts")!;
-  const targets = Object.entries(sky.lmc_targets).map(([name, pos]) => {
+  const targets = Object.entries(lmc_targets).map(([name, pos]) => {
     const e = document.createElement("div");
     e.className = "tgt";
     const s = document.createElement("span");
@@ -254,18 +260,19 @@
 
   size();
   addEventListener("resize", size);
-  // Load once the zoom is near; the hero needs the bandwidth first.
+  // The zoom sits right under the hero, so a "near" margin would fire at
+  // once and compete with the hero image. Load on the first scroll into it
+  // instead: the finest inset first (it is on screen first), the all-sky map
+  // last. The Tarantula is the hero's image, already in the cache.
   let asked = false;
   watchVisible(pull, (on) => {
     if (!on || asked) return;
     asked = true;
     const big = W * dpr > 1400;
+    [...ins].reverse().forEach((b) => loadImage(`${b.src}-${big ? 2048 : 1024}.webp`).then((i) => { b.img = i; lastP = -1; }));
     loadImage(big ? "/sky/comp-lmc-field-v-2048.webp" : "/sky/comp-lmc-field-v-1400.webp").then((i) => { imgs.lmc = i; lastP = -1; });
-    ins.forEach((b, j) => loadImage(`${insets[j].src}-${big ? 2048 : 1024}.webp`).then((i) => { b.img = i; lastP = -1; }));
-  }, "100%");
-  Promise.all([
-    loadImage("/sky/allsky.webp").then((i) => (imgs.sky = i)),
-    loadImage(tarantulaSrc()).then((i) => (imgs.tar = i)),
-  ]).then(() => { lastP = -1; });
+    loadImage("/sky/allsky.webp").then((i) => { imgs.sky = i; lastP = -1; });
+  }, "0px 0px -2px 0px"); // its top edge touches the viewport at load
+  loadImage(tarantulaSrc()).then((i) => { imgs.tar = i; lastP = -1; });
   onFrame(draw);
 </script>

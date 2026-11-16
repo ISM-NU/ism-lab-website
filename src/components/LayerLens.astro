@@ -19,8 +19,8 @@ const layers = [
 <div class="lens-wrap">
   <div class="stage" id="lensStage" style="--x:50%;--y:50%">
     <MapFrame box="abs" ids={layers.map((l) => l.map)} active={[layers[0].map, layers[1].map]}>
-      <img class="base" id="lensBase" src={layers[0].src} alt="LMC map, base layer" />
-      <img class="top" id="lensTop" src={layers[1].src} alt="" />
+      <img class="base" id="lensBase" src={layers[0].src} alt="LMC map, base layer" loading="lazy" decoding="async" />
+      <img class="top" id="lensTop" src={layers[1].src} alt="" loading="lazy" decoding="async" />
     </MapFrame>
     <span class="ring" aria-hidden="true"></span>
     <span class="readout label" id="lensRead" aria-live="polite">Lens: {layers[1].l}</span>
