@@ -8,17 +8,17 @@ const YR = 31557600; // seconds in a Julian year
 // centre 8.18 kpc), Kuhn et al. 2019 (M16 1.74 kpc), Ortiz-Leon et al. 2017
 // (rho Oph 139 pc). SMACS 0723: z = 0.39, lookback time 4.3 Gyr (Planck 2018).
 const objects = [
-  { n: "Moon", s: 1.28, name: "The Moon", v: "1.3", unit: "seconds", text: "in transit. Moonlight is almost live." },
-  { n: "Sun", s: 499, name: "The Sun", v: "8.3", unit: "minutes", text: "in transit. If the Sun went out, we would not know for eight minutes." },
+  { n: "Moon", s: 1.28, name: "The Moon", v: "1.3", unit: "seconds", text: "in transit." },
+  { n: "Sun", s: 499, name: "The Sun", v: "8.3", unit: "minutes", text: "in transit." },
   { n: "Proxima Cen", s: 4.24 * YR, name: "Proxima Centauri", v: "4.2", unit: "years", text: "in transit. The nearest star." },
   { n: "ρ Oph", s: 450 * YR, name: "ρ Ophiuchi", v: "450", unit: "years", img: "/webb/rhooph-960.webp", text: "in transit. One of the nearest star-forming clouds." },
-  { n: "M16 pillars", s: 5700 * YR, name: "Pillars of Creation · M16", v: "5 700", unit: "years", img: "/webb/pillars-960.webp", text: "in transit. Older than writing." },
-  { n: "NGC 3324", s: 7600 * YR, name: "Cosmic Cliffs · NGC 3324", v: "7 600", unit: "years", img: "/webb/cliffs-960.webp", text: "in transit. Light from the edge of a cavity carved by young stars." },
+  { n: "M16 pillars", s: 5700 * YR, name: "Pillars of Creation · M16", v: "5 700", unit: "years", img: "/webb/pillars-960.webp", text: "in transit." },
+  { n: "NGC 3324", s: 7600 * YR, name: "Cosmic Cliffs · NGC 3324", v: "7 600", unit: "years", img: "/webb/cliffs-960.webp", text: "in transit. The edge of a cavity cleared by young stars in NGC 3324." },
   { n: "Galactic Centre", s: 27000 * YR, name: "Galactic Centre", v: "27 000", unit: "years", img: "/sky/comp-galactic_centre-960.webp", text: "in transit, through the dust whose polarization PILOT mapped (Mangilli et al. 2019)." },
-  { n: "LMC · 30 Dor", s: 162000 * YR, name: "30 Doradus · Large Magellanic Cloud", v: "162 000", unit: "years", img: "/webb/tarantula-960.webp", text: "in transit. It left long before modern humans spread out of Africa, about 60 000 years ago." },
+  { n: "LMC · 30 Dor", s: 162000 * YR, name: "30 Doradus · Large Magellanic Cloud", v: "162 000", unit: "years", img: "/webb/tarantula-960.webp", text: "in transit. The region in the hero image and the zoom above." },
   { n: "SMC · NGC 346", s: 200000 * YR, name: "NGC 346 · Small Magellanic Cloud", v: "200 000", unit: "years", img: "/webb/ngc346-960.webp", text: "in transit. The LMC's smaller companion." },
-  { n: "Andromeda", s: 2.5e6 * YR, name: "Andromeda · M31", v: "2.5 million", unit: "years", text: "in transit. The farthest object most people can see with the naked eye." },
-  { n: "SMACS 0723", s: 4.3e9 * YR, name: "SMACS 0723 · z = 0.39", v: "4.3 billion", unit: "years", img: "/webb/deepfield-960.webp", text: "of lookback time. The Sun and the Earth were a few hundred million years old." },
+  { n: "Andromeda", s: 2.5e6 * YR, name: "Andromeda · M31", v: "2.5 million", unit: "years", text: "in transit. Visible to the naked eye from a dark site." },
+  { n: "SMACS 0723", s: 4.3e9 * YR, name: "SMACS 0723 · z = 0.39", v: "4.3 billion", unit: "years", img: "/webb/deepfield-960.webp", text: "of lookback time, at z = 0.39." },
 ];
 const ticks: [number, string][] = [
   [1, "1 s"], [60, "1 min"], [3600, "1 h"], [86400, "1 d"], [YR, "1 yr"], [1e3 * YR, "1 kyr"], [1e6 * YR, "1 Myr"], [1e9 * YR, "1 Gyr"],
@@ -31,8 +31,8 @@ const o = objects[sel];
 <section class="slab sec" aria-labelledby="light-h">
   <div class="gut max">
     <div class="head">
-      <h2 class="brut" id="light-h" data-scramble>How old is the light</h2>
-      <p>Light from each of these objects left it long ago. The axis is logarithmic in light-travel time and ends at the age of the Universe. Select an object to read its distance.</p>
+      <h2 class="brut" id="light-h" data-scramble>Light-travel time</h2>
+      <p>Objects on a logarithmic axis of light-travel time, from the Moon to the age of the Universe. Select one to read its distance.</p>
     </div>
     <div class="ruler" id="ruler" role="group" aria-label="Objects by light-travel time" data-age={AGE}>
       <canvas id="rulerCanvas" aria-hidden="true"></canvas>

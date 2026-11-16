@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content";
 import Base from "../layouts/Base.astro";
 import PageHead from "../components/PageHead.astro";
+import { papers } from "../lib/pubs";
 
 const people = (await getCollection("people")).sort((a, b) => a.data.order - b.data.order);
 const rendered = await Promise.all(people.map(async (p) => ({ p, Content: (await render(p)).Content })));
@@ -13,25 +14,55 @@ const initials = (n: string) => {
   const w = n.split(/\s+/);
   return clash ? (w[0][0] + w.at(-1)!.slice(0, 2)).toUpperCase() : two(n);
 };
-const anyMock = people.some((p) => p.data.mock);
+// The PI gets a lead block of her own; everyone else is listed below as a student.
+const [lead, ...rest] = rendered;
+const anyMock = rest.some(({ p }) => p.data.mock);
+const since = Math.min(...papers.map((p) => p.year));
+const led = papers.filter((p) => p.led).length;
+const avatar = (p: (typeof people)[number], i: number) =>
+  p.data.mock && p.data.name.startsWith("Member") ? String(i + 1).padStart(2, "0") : initials(p.data.name);
 ---
 
-<Base title="People" description="Members of the ISM group at Nazarbayev University.">
-  <PageHead title="The group" intro={`${people.length} people working on the magnetized interstellar medium.`}>
-    {anyMock && <p class="tag soon wrap">Placeholder profiles: photos and bios are on their way</p>}
-  </PageHead>
-  <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
+<Base title="People" description="Dana Alina's interstellar medium group at Nazarbayev University: the principal investigator and her students.">
+  <PageHead title="People" intro={`The group is led by ${lead.p.data.name}. ${rest.length} students work with her on the magnetized interstellar medium.`} />
+
+  <section class="sec lead-sec" id={lead.p.id} aria-labelledby="lead-h">
+    <div class="gut max lead">
+      <div class="avatar big" aria-hidden="true">
+        {lead.p.data.photo ? <img src={lead.p.data.photo} alt="" /> : <span class="dot">{avatar(lead.p, 0)}</span>}
+        <i class="b tl"></i><i class="b br"></i>
+      </div>
+      <div class="lead-meta">
+        <span class="label red">{lead.p.data.role}</span>
+        <h2 class="brut" id="lead-h">{lead.p.data.name}</h2>
+        <span class="focus">{lead.p.data.focus}</span>
+        <div class="lead-bio"><lead.Content /></div>
+        <dl class="stats">
+          <div><dt class="label">Entries in NASA ADS</dt><dd class="dot">{papers.length}</dd></div>
+          <div><dt class="label">Group-led</dt><dd class="dot">{led}</dd></div>
+          <div><dt class="label">Since</dt><dd class="dot">{since}</dd></div>
+        </dl>
+        {lead.p.data.links.length > 0 && <ul class="links">{lead.p.data.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="students-h">
     <div class="gut max">
+      <div class="head">
+        <h2 class="brut" id="students-h">Students</h2>
+        {anyMock && <p class="tag soon wrap">Placeholder profiles. Photos and bios to be added.</p>}
+      </div>
       <ul class="people cells">
-        {rendered.map(({ p, Content }, i) => (
-          <li>
+        {rest.map(({ p, Content }, i) => (
+          <li id={p.id}>
             <div class="avatar" aria-hidden="true">
-              {p.data.photo ? <img src={p.data.photo} alt="" /> : <span class="dot">{p.data.mock && p.data.name.startsWith("Member") ? String(i + 1).padStart(2, "0") : initials(p.data.name)}</span>}
+              {p.data.photo ? <img src={p.data.photo} alt="" /> : <span class="dot">{avatar(p, i + 1)}</span>}
               <i class="b tl"></i><i class="b br"></i>
             </div>
             <div class="meta">
-              <div class="row"><span class="label">{p.data.role}</span>{p.data.mock && <span class="tag soon">Mock</span>}</div>
-              <h2 class="brut">{p.data.name}</h2>
+              <div class="row"><span class="label">{p.data.role}</span>{p.data.mock && <span class="tag soon">Placeholder</span>}</div>
+              <h3 class="brut">{p.data.name}</h3>
               <span class="focus">{p.data.focus}</span>
               <div class="bio"><Content /></div>
               {p.data.links.length > 0 && <ul class="links">{p.data.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>}
@@ -58,7 +89,22 @@ const anyMock = people.some((p) => p.data.mock);
   .br { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
   .meta { padding: 16px 16px 22px; display: grid; gap: 8px; align-content: start; border-top: 1px solid var(--hair); }
   .row { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
-  h2 { font-size: clamp(1.9rem, 1.2rem + 1.4vw, 2.6rem); }
+  .people h3 { font-size: clamp(1.9rem, 1.2rem + 1.4vw, 2.6rem); }
+  .lead-sec { padding-block: clamp(40px, 6vw, 80px); border-bottom: 1px solid var(--hair); }
+  .lead { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
+  .avatar.big { border: 1px solid var(--hair); }
+  .avatar.big .dot { font-size: clamp(7rem, 16vw, 14rem); }
+  .lead-meta { display: grid; gap: 14px; align-content: start; }
+  .lead-meta h2 { font-size: clamp(3rem, 1.5rem + 5vw, 6.5rem); }
+  .lead-meta .label.red { color: var(--signal); }
+  .lead-bio { max-width: 60ch; font-size: clamp(15px, 0.85rem + 0.25vw, 17px); }
+  .lead-bio :global(p) { margin: 0; }
+  .stats { display: flex; flex-wrap: wrap; gap: 18px 36px; margin: 6px 0 0; }
+  .stats div { display: grid; gap: 6px; }
+  .stats dd { margin: 0; font-size: clamp(1.8rem, 1rem + 2vw, 2.8rem); line-height: 1; }
+  .lead .links { font-size: 13px; gap: 22px; }
+  .lead .links a { text-decoration-color: var(--signal); text-underline-offset: 4px; }
+  @media (max-width: 800px) { .lead { grid-template-columns: minmax(0, 1fr); } .avatar.big { max-width: 420px; } }
   .focus { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
   .bio { font-size: 13px; color: var(--grey); }
   .links { list-style: none; padding: 0; margin: 4px 0 0; display: flex; gap: 14px; font-size: 12px; }

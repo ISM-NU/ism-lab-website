@@ -1,5 +1,5 @@
 ---
-title: "Where stars form"
+title: "Magnetic fields in star-forming clouds"
 code: "SF"
 summary: "Magnetic fields, cores and gas flows inside individual molecular clouds: Orion, Monoceros OB1, infrared dark clouds and the centre of NGC 253."
 order: 3
@@ -55,5 +55,5 @@ findings:
 
 Inside a single cloud the field is measured with submillimetre polarimeters
 such as POL-2 on the JCMT and with ALMA, and compared with the gas motions
-traced by molecular lines. The question in each case is the same: does the
-field guide the gas into cores, or do gravity and turbulence win?
+traced by molecular lines. In each case the question is whether the field
+guides the gas into cores or gravity and turbulence dominate.

@@ -15,15 +15,15 @@ const news = (await getCollection("news")).sort((a, b) => +b.data.date - +a.data
 const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
 ---
 
-<Base title="Home" description="The interstellar medium group at Nazarbayev University studies magnetic fields, dust and gas between the stars, from Galactic clouds to the Large Magellanic Cloud.">
+<Base title="Home" description="Dana Alina's interstellar medium group at Nazarbayev University measures magnetic fields in interstellar dust and gas, from Galactic molecular clouds to the Large Magellanic Cloud.">
   <Hero />
   <PullBack />
 
   <section class="sec" aria-labelledby="work-h">
     <div class="gut max">
       <div class="head">
-        <h2 class="brut" id="work-h" data-scramble>What the group measures</h2>
-        <p>The group works on four research lines. Each card links to its papers and data.</p>
+        <h2 class="brut" id="work-h" data-scramble>Research lines</h2>
+        <p>Each card links to the papers and data of one line.</p>
       </div>
       <ProjectCards />
     </div>
@@ -34,7 +34,7 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
   <section class="sec" aria-labelledby="ours-h">
     <div class="gut max">
       <div class="head">
-        <h2 class="brut" id="ours-h" data-scramble>Our regions in several bands</h2>
+        <h2 class="brut" id="ours-h" data-scramble>Multi-band maps of our regions</h2>
         <p>Each composite combines dust and gas from Herschel, Spitzer, WISE and SHASSA H&alpha; with the plane-of-sky field orientation from Planck 353 GHz polarization. Hover over a map, or tap it, to show the field.</p>
       </div>
       <Archive />

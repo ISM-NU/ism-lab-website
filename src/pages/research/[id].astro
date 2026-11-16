@@ -56,7 +56,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
     <section class="sec tight" aria-labelledby="lens-h">
       <div class="gut max">
         <div class="head">
-          <h2 class="brut" id="lens-h" data-scramble>Look through the layers</h2>
+          <h2 class="brut" id="lens-h" data-scramble>Survey layers of the LMC</h2>
           <p>Every layer below is public survey data on one 12° grid. Choose a base map and a lens layer.</p>
         </div>
         <LayerLens />
@@ -68,7 +68,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
     <section class="sec tight" aria-labelledby="cube-h">
       <div class="gut max">
         <div class="head">
-          <h2 class="brut" id="cube-h" data-scramble>H I under the pointer</h2>
+          <h2 class="brut" id="cube-h" data-scramble>H I spectra across the LMC</h2>
           <p>Move over the map to see the 21 cm spectrum there. Drag on the spectrum to choose a velocity window. Move the red cut to see the rotation of the disc.</p>
         </div>
         <CubeViewer />
@@ -92,7 +92,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
     <section class="sec tight" aria-labelledby="fg-h">
       <div class="gut max">
         <div class="head">
-          <h2 class="brut" id="fg-h" data-scramble>Without the Milky Way</h2>
+          <h2 class="brut" id="fg-h" data-scramble>Milky Way foreground subtraction</h2>
           <p>Left of the handle, the Planck field as observed. Right of it, the same data after subtracting the Milky Way foreground.</p>
         </div>
         <ForegroundWipe />
@@ -104,7 +104,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
     <section class="sec tight" aria-labelledby="fn-h">
       <div class="gut max">
         <div class="head">
-          <h2 class="brut" id="fn-h" data-scramble>The U-Net on a real filament field</h2>
+          <h2 class="brut" id="fn-h" data-scramble>U-Net filament detection in Mon OB1</h2>
           <p>The group's network run on Herschel 250 µm in Mon OB1, with the Planck field for comparison.</p>
         </div>
         <FilamentNet preview />
@@ -116,7 +116,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
     <section class="sec tight" aria-labelledby="or-h">
       <div class="gut max">
         <div class="head">
-          <h2 class="brut" id="or-h" data-scramble>Filaments and the field inside them</h2>
+          <h2 class="brut" id="or-h" data-scramble>Filament orientation relative to the field</h2>
           <p>The public catalogue of Alina et al. 2019: 138 Planck filaments, 93 with a field angle.</p>
         </div>
         <OrientationExplorer />
@@ -129,7 +129,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
       <div class="gut max">
         <div class="head">
           <h2 class="brut" id="bench-h" data-scramble>Bias at low signal to noise</h2>
-          <p>Noise biases the polarization fraction and the angle dispersion function. Try the estimators the group has studied.</p>
+          <p>Noise biases the polarization fraction and the angle dispersion function. Compare the estimators the group has studied.</p>
         </div>
         <EstimatorBench />
       </div>

@@ -1,6 +1,6 @@
 ---
 name: "Denis Andreyev"
-role: "Researcher"
+role: "Student"
 focus: "LMC magnetic field, gas phase separation"
 order: 2
 mock: true

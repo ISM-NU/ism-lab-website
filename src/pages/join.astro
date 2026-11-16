@@ -11,8 +11,8 @@ const soon = projects.flatMap((p) => p.data.upcoming.map((u) => ({ ...u, line: p
 ---
 
 <Base title="Join or visit" description="Directions in interstellar magnetic fields where a student or visitor could contribute, with the open code and public data behind each.">
-  <PageHead title="Join or visit" intro="Students and visitors are welcome to write. These are directions where the group has open code and public data, and where a new person could add something. Nothing here is a vacancy.">
-    <p class="cta"><a class="tag fill" href="/contact">Write to discuss</a></p>
+  <PageHead title="Join or visit" intro="Students and visitors are welcome to write to Dana Alina. Below are directions where the group has open code and public data and where a new person could contribute. None of them is an advertised position.">
+    <p class="cta"><a class="tag fill" href="mailto:dana.alina@nu.edu.kz">dana.alina@nu.edu.kz</a></p>
   </PageHead>
 
   <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
@@ -25,9 +25,9 @@ const soon = projects.flatMap((p) => p.data.upcoming.map((u) => ({ ...u, line: p
             <div class="body">
               <h3 class="brut">{d.title}</h3>
               <p>{d.exists}</p>
-              <p class="open">Where you could contribute: {d.open}</p>
+              <p class="open">Open work: {d.open}</p>
               <p class="meta">Data: {d.data}</p>
-              <p class="meta"><a href={d.code.href} rel="noopener">{d.code.label}</a> · <a href={`/research/${d.line}`}>{name(d.line)}</a></p>
+              <p class="meta">{d.code && <><a href={d.code.href} rel="noopener">{d.code.label}</a> · </>}<a href={`/research/${d.line}`}>{name(d.line)}</a></p>
             </div>
           </li>
         ))}
@@ -38,7 +38,7 @@ const soon = projects.flatMap((p) => p.data.upcoming.map((u) => ({ ...u, line: p
   {soon.length > 0 && (
     <section class="slab sec" aria-labelledby="soon-h">
       <div class="gut max">
-        <div class="head"><h2 class="brut" id="soon-h">In progress</h2><p>Lines the group is working on now. Details follow once the group has agreed to show them.</p></div>
+        <div class="head"><h2 class="brut" id="soon-h">In progress</h2><p>Work under way. Details follow on publication.</p></div>
         <ul class="soon">
           {soon.map((u) => (
             <li>
@@ -57,8 +57,8 @@ const soon = projects.flatMap((p) => p.data.upcoming.map((u) => ({ ...u, line: p
 
   <section class="sec">
     <div class="gut max narrow">
-      <h2 class="brut">Before you write</h2>
-      <p>Positions, funding and computing are not advertised on this page. If one of the directions above interests you, tell us which one and what you have worked with, and we can discuss what is possible. Contact details are on the <a href="/contact">contact page</a>, which also shows why a group at 51° N works with data from the south.</p>
+      <h2 class="brut">How to apply</h2>
+      <p>Write to Dana Alina at <a href="mailto:dana.alina@nu.edu.kz">dana.alina@nu.edu.kz</a>. Say which direction interests you and what data or code you have worked with. Positions, funding and computing are discussed individually.</p>
     </div>
   </section>
 </Base>

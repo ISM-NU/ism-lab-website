@@ -1,7 +1,7 @@
 ---
 title: "The magnetic field of the Large Magellanic Cloud"
 code: "LMC"
-summary: "Mapping the field of our nearest gas-rich galaxy from polarized dust and from the motions of its atomic hydrogen, and picking out its cold neutral phase."
+summary: "Mapping the magnetic field of the Large Magellanic Cloud from polarized dust and from the motions of its atomic hydrogen, and separating its cold neutral phase."
 order: 1
 image: "/sky/comp-lmc-field-960.webp"
 instruments: ["Planck", "ASKAP", "Parkes"]
@@ -13,7 +13,7 @@ papers:
 upcoming:
   - title: "Field from GASKAP-HI velocity gradients"
     note: "The same velocity-gradient method applied to GASKAP-HI 21 cm data, at 30 arcsecond resolution instead of the 16 arcminutes of GASS."
-  - title: "Cold neutral medium, separated"
+  - title: "Separating the cold neutral medium"
     note: "Gaussian decomposition of every H I spectrum (ROHSA) separates the cold neutral medium from the rest of the atomic gas."
 findings:
   # Abstract: "After foreground removal, the geometry of the plane-of-the-sky magnetic field in the LMC tends to

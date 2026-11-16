@@ -7,7 +7,7 @@ const LAT = 51.0906, LON = 71.3982;
 ---
 
 <Base title="Contact" description="How to reach the ISM group at Nazarbayev University, Astana.">
-  <PageHead title="Find us" intro="Students who want to work on the interstellar medium, collaborators and visitors are welcome. Please write before visiting. What a student could work on is on the join page.">
+  <PageHead title="Contact" intro="Students who want to work on the interstellar medium, collaborators and visitors are welcome. Please write before visiting. What a student could work on is on the join page.">
   </PageHead>
   <section class="sec" style="padding-top:clamp(40px,6vw,80px)">
     <div class="gut max grid">
@@ -18,7 +18,7 @@ const LAT = 51.0906, LON = 71.3982;
       </div>
       <div class="cell">
         <p class="big brut">Email</p>
-        <p>Group address to be confirmed. <span class="tag soon">Coming soon</span></p>
+        <p>Dana Alina, group leader<br /><a class="mail" href="mailto:dana.alina@nu.edu.kz">dana.alina@nu.edu.kz</a></p>
         <p><a href="/join">What a student or visitor could work on</a></p>
       </div>
     </div>
@@ -31,8 +31,8 @@ const LAT = 51.0906, LON = 71.3982;
         <p>Where the Large Magellanic Cloud is in the sky of Astana and of the telescopes behind our data.</p>
       </div>
       <div class="why">
-        <p>At 51° N the LMC never rises. Its centre is at declination −70°, so from Astana it peaks about 31° below the horizon, and the whole 12° field we map stays down with it. A group here cannot point a telescope at it.</p>
-        <p>The data do not need us to. Planck mapped the whole sky from space. GASS, the Parkes H I survey, and the ASKAP survey GASKAP-HI observe the LMC from the south and are available through public archives. At Parkes, ASKAP and ALMA the LMC is circumpolar: it never sets, though at ALMA it sinks to 3° at its lowest and peaks at 43°. JCMT on Maunakea never gets it above 0.4°, so that telescope serves our Galactic cloud work instead.</p>
+        <p>At 51° N the LMC never rises. Its centre is at declination −70°, so from Astana it peaks about 31° below the horizon, and the whole 12° field we map stays down with it. </p>
+        <p>The group works from public data instead. Planck mapped the whole sky from space. GASS, the Parkes H I survey, and the ASKAP survey GASKAP-HI observe the LMC from the south and are available through public archives. At Parkes, ASKAP and ALMA the LMC is circumpolar: it never sets, though at ALMA it sinks to 3° at its lowest and peaks at 43°. JCMT on Maunakea never gets it above 0.4°, so that telescope serves our Galactic cloud work instead.</p>
       </div>
       <div class="panel"><LmcSky /></div>
     </div>
@@ -46,5 +46,6 @@ const LAT = 51.0906, LON = 71.3982;
   .why { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px 40px; margin-top: 24px; max-width: 120ch; }
   .why p { margin: 0; }
   .panel { margin-top: 32px; color: var(--ink); }
+  .mail { font-size: clamp(18px, 1rem + 0.6vw, 24px); }
   .coord { font-size: 22px; margin-top: 10px; color: var(--signal); }
 </style>

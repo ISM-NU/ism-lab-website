@@ -15,6 +15,7 @@ detector rather than mixing to grey. Point sources come from a short-wavelength
 band with the extended emission subtracted.
 
     LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/composites.py [region ...]
+    python3 scripts/composites.py insets   # zoom insets around R136, after lmc
 
 HiPS reprojections are cached in .cache/hips/; images go to public/sky/.
 """
@@ -248,9 +249,15 @@ def enhance(x, gains=(0.6, 1.5, 1.45, 1.25, 1.1)):
     return np.clip(out, 0, 1)
 
 
-def stretch(a, soft, lo=15, hi=99.9):
+def levels(a, lo=15, hi=99.9):
     v = a[np.isfinite(a) & (a != 0)]
-    lo_v, hi_v = np.percentile(v, [lo, hi])
+    return np.percentile(v, [lo, hi])
+
+
+def stretch(a, soft, lo=15, hi=99.9, lv=None):
+    """asinh stretch between the lo and hi percentiles of a, or between the
+    given levels lv (the insets reuse the LMC composite's levels)."""
+    lo_v, hi_v = levels(a, lo, hi) if lv is None else lv
     x = np.clip((np.nan_to_num(a, nan=lo_v) - lo_v) / (hi_v - lo_v), 0, None)
     return np.clip(np.arcsinh(x / soft) / np.arcsinh(1 / soft), 0, 1)
 
@@ -310,6 +317,15 @@ def field_angle(r, wcs, planck):
     return 0.5 * np.arctan2(gaussian_filter(np.nan_to_num(U), smooth), gaussian_filter(np.nan_to_num(Q), smooth)) + np.pi / 2
 
 
+def tone(rgb):
+    """Black point, a gentle S-curve and a small saturation lift."""
+    rgb = np.clip((rgb - 0.03) / 0.97, 0, 1)
+    t = rgb ** 1.15
+    rgb = 0.35 * t * t * (3 - 2 * t) + 0.65 * t  # part smoothstep, part gamma
+    lum = rgb.mean(axis=2, keepdims=True)
+    return np.clip(lum + 1.2 * (rgb - lum), 0, 1)
+
+
 def save(rgb, stem, widths=(960, 1920), vignette=False):
     img = Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8)).transpose(Image.FLIP_TOP_BOTTOM)
     for w in widths:
@@ -321,7 +337,7 @@ def save(rgb, stem, widths=(960, 1920), vignette=False):
             rad = np.hypot(xx - w / 2, yy - w / 2) / (w / 2)
             im = im.convert("RGBA")
             im.putalpha(Image.fromarray((np.clip((1 - rad) / 0.35, 0, 1) ** 1.5 * 255).astype(np.uint8)))
-            name = f"{stem}-v.webp"
+            name = f"{stem}-v-{w}.webp"
         im.save(OUT / name, quality=86, method=6)
 
 
@@ -365,13 +381,7 @@ def composite(name, planck):
         s = fetch(name, star_band, r, wcs)
     used.append(star_band)
     out *= 1 - 0.6 * np.array((0.9, 0.95, 1.0)) * star_layer(s)[..., None]
-    rgb = 1 - out
-    # Black point, a gentle S-curve and a small saturation lift.
-    rgb = np.clip((rgb - 0.03) / 0.97, 0, 1)
-    t = rgb ** 1.15
-    rgb = 0.35 * t * t * (3 - 2 * t) + 0.65 * t  # part smoothstep, part gamma
-    lum = rgb.mean(axis=2, keepdims=True)
-    rgb = np.clip(lum + 1.2 * (rgb - lum), 0, 1)
+    rgb = tone(1 - out)
     save(rgb, f"comp-{name}")
 
     # LIC on a quarter-resolution grid, upsampled and softened, so the field
@@ -390,7 +400,7 @@ def composite(name, planck):
     field = np.clip(rgb * (1 + k * tex[..., None]) + glow[..., None] * np.array((0.85, 0.9, 1.0)), 0, 1)
     save(field, f"comp-{name}-field")
     if name == "lmc":
-        save(field, "comp-lmc-field", widths=(1400,), vignette=True)
+        save(field, "comp-lmc-field", widths=(1400, 2048), vignette=True)
     # Ridge map of the cold dust, drawn in signal red on black for the lens.
     # Fill gaps before filtering so survey borders do not read as ridges, then
     # mask with the feathered coverage and weight by brightness, which drops
@@ -405,7 +415,94 @@ def composite(name, planck):
     return [SURVEYS[s][2] for s in dict.fromkeys(used)]
 
 
+# Nested renders around R136 for the scroll zoom (PullBack.astro), which
+# otherwise stretches a few hundred pixels of the LMC composite across the
+# screen. Each inset is a window of the LMC composite's own TAN grid at a finer
+# pixel scale, so it registers with it exactly (a TAN grid centred on 30 Dor
+# would be turned about 3.5 deg against it), and it reuses that composite's
+# stretch levels, so colours match across the seam.
+# name, width (deg), size (px), source of the 8-12 um layer and of the stars.
+R136 = (84.6766, -69.1008)  # R136a1, J2000
+INSETS = [("lmc-30dor", 2.4, 2048, "w3", "w1"), ("lmc-tarantula", 0.6, 2048, "irac4", "irac1")]
+INSET_JSON = ROOT / "src" / "data" / "zoom-insets.json"
+
+
+def insets():
+    from scipy.ndimage import map_coordinates
+
+    r = REGIONS["lmc"]
+    nb = r["n"]
+    bw = target_wcs(r)
+    cb = nb / 2 - 0.5  # 0-based reference pixel of the LMC grid
+    xb, yb = (float(v) for v in bw.world_to_pixel_values(*R136))
+    # The LMC composite's processed bands, as composite() makes them; their
+    # levels, and for WISE the subtracted background, carry over to the insets.
+    (_, _, BL, blo, bsoft, bwt), (_, _, TL, tlo, tsoft, twt), (_, _, RD, rlo, rsoft, rwt) = r["layers"]
+    ha = destar(fetch("lmc", "halpha", r, bw), 48, r["fov"], nb)
+    w3 = fetch("lmc", "w3", r, bw)
+    w3_bg = w3 - flatten(w3)
+    sp = fetch("lmc", "spire250", r, bw)
+    lv_ha, lv_w3, lv_sp = levels(ha, blo), levels(w3 - w3_bg, tlo), levels(sp, rlo)
+
+    boxes = []
+    for stem, fov, n, warm, star in INSETS:
+        s = (fov / n) / (r["fov"] / nb)  # inset pixel in LMC-grid pixels
+        ci = n / 2 - 0.5 - (xb - cb) / s, n / 2 - 0.5 - (yb - cb) / s
+        h = bw.to_header()
+        h.update(NAXIS1=n, NAXIS2=n, CRPIX1=ci[0] + 1, CRPIX2=ci[1] + 1, CDELT1=-fov / n, CDELT2=fov / n)
+        wcs = WCS(h)
+        ri = dict(frame="icrs", centre=R136, fov=fov, n=n)
+        jj, ii = np.meshgrid(np.arange(n), np.arange(n))
+        on_base = [cb + (ii - ci[1]) * s, cb + (jj - ci[0]) * s]  # (row, col) on the LMC grid
+        from_base = lambda a: map_coordinates(np.nan_to_num(a), on_base, order=3, mode="nearest")
+        print(stem, flush=True)
+
+        warm_a = fetch(stem, "w3", ri, wcs) - from_base(w3_bg)
+        if warm != "w3":
+            # IRAC 8 um is sharper than WISE 12 um and traces the same PAH and
+            # warm dust emission. Put it in the WISE units the levels expect
+            # with a robust linear fit at WISE resolution.
+            ir = fetch(stem, warm, ri, wcs)
+            beam = (6.5 / 3600) / (fov / n) / 2.355
+            x, y = gaussian_filter(np.nan_to_num(ir), beam).ravel(), warm_a.ravel()
+            m = np.isfinite(y) & (x != 0)
+            x, y = x[m][::7], y[m][::7]
+            for _ in range(4):
+                A = np.polyfit(x, y, 1)
+                res = y - np.polyval(A, x)
+                keep = np.abs(res) < 3 * 1.4826 * np.median(np.abs(res))
+                x, y = x[keep], y[keep]
+            print(f"  {warm} -> w3: slope {A[0]:.4g}, offset {A[1]:.4g}", flush=True)
+            warm_a = np.where(ir != 0, np.polyval(A, np.nan_to_num(ir)), warm_a)
+        layers = [
+            (from_base(ha), BL, bsoft, bwt, lv_ha),
+            (warm_a, TL, tsoft, twt, lv_w3),
+            # SPIRE 250 um has an 18" beam, which the LMC grid's 21" pixels
+            # already hold, so it is resampled like H-alpha.
+            (from_base(sp), RD, rsoft, rwt, lv_sp),
+        ]
+        out = np.ones((n, n, 3))
+        for a, colour, soft, weight, lv in layers:
+            out *= 1 - np.array(colour) * (enhance(stretch(a, soft, lv=lv)) * weight)[..., None]
+        out *= 1 - 0.6 * np.array((0.9, 0.95, 1.0)) * star_layer(fetch(stem, star, ri, wcs))[..., None]
+        rgb = tone(1 - out)
+        img = Image.fromarray((rgb * 255).astype(np.uint8)).transpose(Image.FLIP_TOP_BOTTOM).convert("RGBA")
+        # Soft square edge, so the inset fades into the image under it.
+        ramp = np.clip(np.minimum(np.arange(n), np.arange(n)[::-1]) / (0.12 * n), 0, 1)
+        ramp = ramp * ramp * (3 - 2 * ramp)
+        img.putalpha(Image.fromarray((np.outer(ramp, ramp) * 255).astype(np.uint8)))
+        for w in (1024, 2048):
+            img.resize((w, w), Image.LANCZOS).save(OUT / f"{stem}-{w}.webp", quality=84, method=6)
+        # Position in the LMC image (fractions of its width, y down), pixel edges.
+        x0 = (cb + (-0.5 - ci[0]) * s + 0.5) / nb
+        y1 = (cb + (n - 0.5 - ci[1]) * s + 0.5) / nb
+        boxes.append(dict(src=f"/sky/{stem}", x=round(x0, 6), y=round(1 - y1, 6), w=round(n * s / nb, 6)))
+    INSET_JSON.write_text(json.dumps(boxes, indent=1) + "\n")
+
+
 def main():
+    if sys.argv[1:] == ["insets"]:
+        return insets()
     names = sys.argv[1:] or list(REGIONS)
     planck = rl.read_planck()
     credits = json.loads(CREDITS.read_text()) if CREDITS.exists() else {}

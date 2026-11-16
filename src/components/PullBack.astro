@@ -11,7 +11,7 @@
     <div id="tgts" aria-hidden="true"></div>
     <div class="hud">
       <div class="readout" aria-hidden="true"><span class="label red" id="rLabel">Field width</span><span class="dot" id="rVal">264 LY</span><span class="label" id="rSub">across the screen</span></div>
-      <p class="cap" id="pull-cap" aria-live="polite">This is one star-forming region in another galaxy. Keep scrolling to see where it sits.</p>
+      <p class="cap" id="pull-cap" aria-live="polite">JWST NIRCam image of 30 Doradus (NGC 2070) and its central cluster, R136.</p>
     </div>
   </div>
 </section>
@@ -39,7 +39,8 @@
 <script>
   import sky from "../data/sky.json";
   import det from "../data/detections.json";
-  import { onFrame, canvasFit, loadImage, clamp, seg, ease, fmt, reduce } from "../scripts/motion";
+  import insets from "../data/zoom-insets.json";
+  import { onFrame, canvasFit, loadImage, clamp, seg, ease, fmt, reduce, watchVisible, tarantulaSrc } from "../scripts/motion";
 
   const pull = document.getElementById("pull")!;
   const stage = document.getElementById("pullStage")!;
@@ -67,7 +68,7 @@
   // lands on the 30 Dor position.
   const CORE = det.tarantula.core;
   const caps = [
-    "This is one star-forming region in another galaxy. Keep scrolling to see where it sits.",
+    "JWST NIRCam image of 30 Doradus (NGC 2070) and its central cluster, R136.",
     "30 Doradus is the brightest star-forming region in the Large Magellanic Cloud.",
     "The LMC in public infrared and Hα surveys. Streaks trace the plane-of-sky field orientation from Planck 353 GHz polarization at about 25′, Milky Way foreground included.",
     "On the whole sky the LMC sits 33° below the Galactic plane. Streaks show the Milky Way's own field.",
@@ -75,6 +76,11 @@
 
   let ctx: CanvasRenderingContext2D, W = 0, H = 0, lastP = -1, capI = -1;
   const imgs: Record<string, HTMLImageElement> = {};
+  // Finer renders around R136 (scripts/composites.py insets), placed in LMC
+  // image fractions. Each fades in once the LMC image under it would be
+  // magnified past its own pixels.
+  const ins: { img?: HTMLImageElement; x: number; y: number; w: number }[] = insets.map((b) => ({ ...b }));
+  const dpr = Math.min(devicePixelRatio || 1, 2);
   const tg = document.getElementById("tgts")!;
   const targets = Object.entries(sky.lmc_targets).map(([name, pos]) => {
     const e = document.createElement("div");
@@ -140,13 +146,54 @@
     ctx.translate(lc[0], lc[1]);
     ctx.rotate(rot);
     const aL = p < 0.6 ? seg(e1, 0.08, 0.5) : 1;
+    // The viewport in this rotated frame, so only the visible part of each
+    // image is drawn and deep zooms stay cheap.
+    const cs0 = Math.cos(-rot), sn0 = Math.sin(-rot);
+    const vx: number[] = [], vy: number[] = [];
+    for (const [sx, sy] of [[0, 0], [W, 0], [0, H], [W, H]]) {
+      const dx = sx - lc[0], dy = sy - lc[1];
+      vx.push(dx * cs0 - dy * sn0);
+      vy.push(dx * sn0 + dy * cs0);
+    }
+    const view = [Math.min(...vx) - 2, Math.min(...vy) - 2, Math.max(...vx) + 2, Math.max(...vy) + 2];
+    const part = (im: HTMLImageElement, ox: number, oy: number, size: number) => {
+      // Pad by two source pixels so the clamped edge of the cut stays off screen.
+      const f = im.naturalWidth / size, pad = 2 / f;
+      const x0 = Math.max(ox, view[0] - pad), y0 = Math.max(oy, view[1] - pad), x1 = Math.min(ox + size, view[2] + pad), y1 = Math.min(oy + size, view[3] + pad);
+      if (x1 <= x0 || y1 <= y0) return;
+      ctx.drawImage(im, (x0 - ox) * f, (y0 - oy) * f, (x1 - x0) * f, (y1 - y0) * f, x0, y0, x1 - x0, y1 - y0);
+    };
     const L = imgs.lmc;
     if (aL > 0 && L?.naturalWidth) {
-      // Draw only the visible part of the LMC so deep zooms stay cheap.
-      const half = k / 2, iw = L.naturalWidth, lim = W + H;
-      const v0 = Math.max(-half, -lim), v1 = Math.min(half, lim);
-      const s0 = ((v0 + half) / k) * iw, sw = ((v1 - v0) / k) * iw;
-      if (sw > 0.5) { ctx.globalAlpha = aL; ctx.drawImage(L, s0, s0, sw, sw, v0, v0, v1 - v0, v1 - v0); ctx.globalAlpha = 1; }
+      // The LMC and its insets are one layer: drawn opaque, then faded in as a
+      // whole by a black veil (below p = 0.6 only black lies underneath).
+      // Fading each image separately would add them up and brighten the stack.
+      const layers: [HTMLImageElement, number, number, number, number][] = [[L, -k / 2, -k / 2, k, 1]];
+      for (const b of ins) {
+        const a = b.img?.naturalWidth ? seg((k * dpr) / L.naturalWidth, 1, 1.6) : 0;
+        if (a > 0) layers.push([b.img!, (b.x - 0.5) * k, (b.y - 0.5) * k, b.w * k, a]);
+      }
+      // Skip whatever lies under an opaque inset that fills the view: each
+      // layer is a full-screen blend, and fill rate is the cost on big screens.
+      // EDGE is the feathered border baked into the inset images.
+      const EDGE = 0.12;
+      let from = 0;
+      layers.forEach(([, ox, oy, s, a], j) => {
+        const e = s * EDGE;
+        if (a >= 1 && ox + e <= view[0] && oy + e <= view[1] && ox + s - e >= view[2] && oy + s - e >= view[3]) from = j;
+      });
+      const draw = layers.slice(from);
+      // A single layer takes the fade itself; a stack needs the veil.
+      const one = draw.length === 1;
+      for (const [im, ox, oy, s, a] of draw) {
+        ctx.globalAlpha = one ? a * aL : a;
+        part(im, ox, oy, s);
+      }
+      ctx.globalAlpha = 1;
+      if (!one && aL < 1) {
+        ctx.fillStyle = `rgba(0,0,0,${1 - aL})`;
+        ctx.fillRect(view[0], view[1], view[2] - view[0], view[3] - view[1]);
+      }
     }
     const tr = TROT * e1;
     if (imgs.tar?.naturalWidth) {
@@ -193,10 +240,18 @@
 
   size();
   addEventListener("resize", size);
+  // Load once the zoom is near; the hero needs the bandwidth first.
+  let asked = false;
+  watchVisible(pull, (on) => {
+    if (!on || asked) return;
+    asked = true;
+    const big = W * dpr > 1400;
+    loadImage(big ? "/sky/comp-lmc-field-v-2048.webp" : "/sky/comp-lmc-field-v-1400.webp").then((i) => { imgs.lmc = i; lastP = -1; });
+    ins.forEach((b, j) => loadImage(`${insets[j].src}-${big ? 2048 : 1024}.webp`).then((i) => { b.img = i; lastP = -1; }));
+  }, "100%");
   Promise.all([
     loadImage("/sky/allsky.webp").then((i) => (imgs.sky = i)),
-    loadImage("/sky/comp-lmc-field-v.webp").then((i) => (imgs.lmc = i)),
-    loadImage(innerWidth > 1100 ? "/webb/tarantula-1920.webp" : "/webb/tarantula-960.webp").then((i) => (imgs.tar = i)),
+    loadImage(tarantulaSrc()).then((i) => (imgs.tar = i)),
   ]).then(() => { lastP = -1; });
   onFrame(draw);
 </script>

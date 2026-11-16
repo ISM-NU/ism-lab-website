@@ -40,10 +40,10 @@ build needs none of this. Rerun the scripts when a source changes.
 | Script | Reads | Writes |
 |---|---|---|
 | `scripts/fetch_publications.py` | NASA ADS API (`ADS_API_TOKEN` or `~/.ads/dev_key`) | `src/data/publications.json` |
-| `scripts/webb_images.py` | ESA/Webb release images, cached in `.cache/webb/` | `public/webb/*.webp`, `src/data/detections.json` |
+| `scripts/webb_images.py` | ESA/Webb release images, cached in `.cache/webb/` (plus the full Tarantula mosaic for a 2880 px copy) | `public/webb/*.webp`, `src/data/detections.json` |
 | `scripts/render_lmc.py` | Planck 353 GHz, GASS H I and MAGMA CO from the LMC workspace data | `assets/lmc/` (not tracked) |
 | `scripts/web_assets.py` | `assets/lmc/` | `public/sky/*.webp`, `src/data/sky.json` |
-| `scripts/composites.py` | Herschel, Spitzer, WISE (HiPS tiles), SHASSA H-alpha (SkyView), Planck; HiPS cutouts cached in `.cache/hips/` | `public/sky/comp-*.webp`, `src/data/composites.json` |
+| `scripts/composites.py` | Herschel, Spitzer, WISE (HiPS tiles), SHASSA H-alpha (SkyView), Planck; HiPS cutouts cached in `.cache/hips/` | `public/sky/comp-*.webp`, `src/data/composites.json`; with `insets`, the finer renders around R136 for the scroll zoom (`public/sky/lmc-30dor-*`, `lmc-tarantula-*`, `src/data/zoom-insets.json`) |
 
     python3 scripts/fetch_publications.py
     python3 scripts/webb_images.py
@@ -51,6 +51,7 @@ build needs none of this. Rerun the scripts when a source changes.
     LMC_DATA=/path/to/lmc-data python3 scripts/render_lmc.py --regions
     python3 scripts/web_assets.py
     LMC_DATA=/path/to/lmc-data python3 scripts/composites.py [lmc galactic_centre monoceros_ob1]
+    python3 scripts/composites.py insets      # after lmc; reuses its levels
 
 `render_lmc.py` reads the H I cube named by `HI_CUBE` (default: the GASS LMC
 subcube). The combined GASKAP + Parkes LMC cube the group works with is

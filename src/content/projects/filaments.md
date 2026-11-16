@@ -1,7 +1,7 @@
 ---
 title: "Filaments and the field"
 code: "FIL"
-summary: "Star-forming gas collects in long filaments. We measure how they line up with the magnetic field, and train neural networks to find them and read their orientation."
+summary: "Star-forming gas collects in long filaments. The group measures their orientation relative to the magnetic field and trains neural networks to find them and measure their position angles."
 order: 2
 image: "/sky/region-orion.webp"
 instruments: ["Planck", "Herschel", "Neural networks"]

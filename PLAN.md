@@ -181,3 +181,17 @@ before the site goes public.
 - [ ] Public hostname: DNS A record for ism.unsoundmint.com -> 46.62.161.228
       and the deploy/Caddyfile.snippet block in /etc/caddy/Caddyfile (sudo).
       Until Dana has approved the findings and join page, consider holding this.
+
+## Tone, Dana, zoom resolution (2026-11-16)
+- [x] Scrambled headings keep their final line breaks (word boxes in
+      motion.ts scramble) instead of wrapping onto extra lines while resolving
+- [x] Copy pass for register: plain headings and captions, no light-ruler
+      asides, hero h1 "Interstellar medium group", hero log and H I barcode cut
+- [x] Dana Alina: named in the hero and footer, lead block on People with her
+      ADS record, email dana.alina@nu.edu.kz on Contact, Join and her card.
+- [x] Scroll zoom: two insets around R136 (2.4 and 0.6 deg) on the LMC
+      composite's grid and levels; 2048 px LMC base; 2880 px Tarantula
+- [x] VGT.jl is private (2026-11-16): no links to it; the Join direction cites
+      Alina et al. 2023 instead of a repository
+- [ ] Students: real roles, photos and bios (Denis is listed as "Student")
+- [ ] Dana's photo; her bio uses only her thesis and the ADS record

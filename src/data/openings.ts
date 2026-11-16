@@ -1,6 +1,7 @@
 // Directions where a student or visitor could contribute. Every entry rests on
 // public facts: an open repository (checked with `gh repo list ISM-NU`,
-// 2026-11-15) or a published record, and the public data it works with. No
+// 2026-11-16) or a published record, and the public data it works with.
+// Link only public repositories: VGT.jl is private, so its direction has none. No
 // positions, funding or computing are implied. The PI confirms this list.
 export interface Direction {
   title: string;
@@ -9,7 +10,7 @@ export interface Direction {
   /** Where a contribution would go. */
   open: string;
   data: string;
-  code: { label: string; href: string };
+  code?: { label: string; href: string };
   /** Research page the direction belongs to. */
   line: string;
 }
@@ -17,16 +18,15 @@ export interface Direction {
 export const directions: Direction[] = [
   {
     title: "Magnetic field from velocity gradients",
-    exists: "VGT.jl turns H I and CO spectral-line cubes into plane-of-sky field orientation maps. The method gave the foreground direction in the LMC paper (Alina et al. 2023).",
+    exists: "The group's velocity-gradient code turns H I and CO spectral-line cubes into plane-of-sky field orientation maps. The method gave the foreground direction in the LMC paper (Alina et al. 2023).",
     open: "Testing the method on more cubes, and checking its angles against dust and starlight polarization.",
     data: "GASS H I (Parkes), MAGMA CO (Mopra), Planck 353 GHz",
-    code: { label: "ISM-NU/VGT.jl", href: "https://github.com/ISM-NU/VGT.jl" },
     line: "lmc",
   },
   {
     title: "Cold neutral gas in the LMC",
     exists: "ROHSA-LMC runs the ROHSA Gaussian decomposition (Marchal et al. 2019) on LMC H I cubes, with velocity-layer cubes and disk de-rotation.",
-    open: "Reading the decomposed components, and separating the cold neutral medium from the rest of the atomic gas.",
+    open: "Interpreting the decomposed components, and separating the cold neutral medium from the rest of the atomic gas.",
     data: "GASS H I (Parkes)",
     code: { label: "ISM-NU/ROHSA-LMC", href: "https://github.com/ISM-NU/ROHSA-LMC" },
     line: "lmc",

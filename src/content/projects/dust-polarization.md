@@ -1,7 +1,7 @@
 ---
 title: "Measuring polarized dust"
 code: "POL"
-summary: "The methods under everything else: how to estimate polarization fraction and angle without bias, and how the Planck satellite and the PILOT balloon measure them."
+summary: "Methods used across the group's work: estimating polarization fraction and angle without bias, and the Planck and PILOT instruments that measure them."
 order: 4
 image: "/sky/comp-galactic_centre-960.webp"
 instruments: ["Planck", "PILOT"]

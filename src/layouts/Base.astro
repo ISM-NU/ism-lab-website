@@ -1,6 +1,9 @@
 ---
 import "../styles/global.css";
 import "lenis/dist/lenis.css";
+// Preload the condensed headline face: without it the big headings first lay
+// out in the wider fallback font and then reflow, often from three lines to two.
+import archivo from "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url";
 
 interface Props {
   title: string;
@@ -28,6 +31,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
     <meta name="description" content={description} />
     <meta name="theme-color" content="#000000" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={archivo} as="font" type="font/woff2" crossorigin />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content="/webb/tarantula-1920.webp" />
@@ -66,6 +70,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
         <div>
           <span class="dot foot-logo">ISM/NU</span>
           <p>Interstellar medium group, Department of Physics, Nazarbayev University, Astana.</p>
+          <p class="foot-lead">Led by <a href="/people#dana-alina">Dana Alina</a><br /><a href="mailto:dana.alina@nu.edu.kz">dana.alina@nu.edu.kz</a></p>
         </div>
         <div>
           <span class="label">Pages</span>
@@ -124,6 +129,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   .foot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 32px; }
   .foot-grid > div { display: grid; gap: 10px; align-content: start; }
   .foot-logo { font-size: 28px; color: var(--ink); }
+  .foot-lead { color: var(--ink); font-size: 14px; }
   .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
   .foot a { color: var(--ink); }
 </style>

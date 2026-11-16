@@ -56,27 +56,73 @@ export const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * 
 export const fmt = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
 const GLYPH = "01#/\\<>[]=+*:.";
-/** Resolves an element's text left to right from random glyphs. */
+/** Resolves an element's text left to right from random glyphs.
+ *
+ * The glyphs are wider than the condensed capitals and allow line breaks
+ * after / \ ] and :, so writing them into the text itself wrapped a one-line
+ * heading onto two lines and shifted the page while it resolved. Instead each
+ * word becomes an inline-block that keeps the real word (invisible) for its
+ * size, with the glyphs drawn over it and clipped to it. Line breaks can then
+ * fall only where the final text breaks. The original text nodes come back
+ * when the animation ends. */
 export function scramble(el: HTMLElement, dur = 650) {
   if (reduce || el.dataset.busy) return;
-  const nodes: [Text, string][] = [];
-  const walk = (n: Node) => n.childNodes.forEach((c) => (c.nodeType === 3 ? nodes.push([c as Text, c.nodeValue ?? ""]) : walk(c)));
+  const texts: Text[] = [];
+  const walk = (n: Node) => n.childNodes.forEach((c) => (c.nodeType === 3 ? texts.push(c as Text) : walk(c)));
   walk(el);
+  const words: [HTMLElement, string, number][] = [];
+  const undo: [Text, Node[]][] = [];
+  let total = 0;
+  for (const t of texts) {
+    const s = t.nodeValue ?? "";
+    if (!s.trim()) continue;
+    const parts: Node[] = [];
+    for (const tok of s.split(/(\s+)/)) {
+      if (!tok) continue;
+      if (!tok.trim()) { parts.push(document.createTextNode(tok)); continue; }
+      // Split after hyphens and slashes too: the final text may break there.
+      for (const w of tok.match(/[^-/]+[-/]?|[-/]/g) ?? []) {
+        const box = document.createElement("span");
+        box.className = "scr";
+        const real = document.createElement("span");
+        real.className = "scr-r";
+        real.textContent = w;
+        const g = document.createElement("span");
+        g.className = "scr-g";
+        g.setAttribute("aria-hidden", "true");
+        box.append(real, g);
+        parts.push(box);
+        words.push([g, w, total]);
+        total += w.length;
+      }
+    }
+    t.replaceWith(...parts);
+    undo.push([t, parts]);
+  }
+  if (!words.length) return;
   el.dataset.busy = "1";
   const t0 = performance.now();
   const step = (t: number) => {
     const k = clamp((t - t0) / dur, 0, 1);
-    for (const [node, s] of nodes) {
-      const cut = Math.floor(s.length * k);
-      let out = s.slice(0, cut);
-      for (let i = cut; i < s.length; i++) out += s[i] === " " ? " " : GLYPH[(Math.random() * GLYPH.length) | 0];
-      node.nodeValue = out;
+    const upto = Math.floor(total * k);
+    for (const [g, w, at] of words) {
+      const cut = clamp(upto - at, 0, w.length);
+      let out = w.slice(0, cut);
+      for (let i = cut; i < w.length; i++) out += GLYPH[(Math.random() * GLYPH.length) | 0];
+      g.textContent = out;
     }
     if (k < 1) requestAnimationFrame(step);
     else {
-      for (const [node, s] of nodes) node.nodeValue = s;
+      for (const [t, parts] of undo) { parts[0].parentNode?.insertBefore(t, parts[0]); parts.forEach((p) => (p as ChildNode).remove()); }
       delete el.dataset.busy;
     }
   };
   requestAnimationFrame(step);
+}
+
+/** The Webb Tarantula at a width that covers the screen in device pixels.
+ * The hero and the scroll zoom share it, so it downloads once. */
+export function tarantulaSrc() {
+  const px = Math.max(innerWidth, innerHeight * (4 / 3)) * Math.min(devicePixelRatio || 1, 2);
+  return `/webb/tarantula-${px > 2100 ? 2880 : px > 1100 ? 1920 : 960}.webp`;
 }

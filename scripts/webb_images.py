@@ -39,6 +39,10 @@ IMAGES = {
 # north 13.5 deg left of vertical): R136a1 lands within 0.7" of this point.
 CORE_OVERRIDE = {"tarantula": [0.5967, 0.5508]}
 WIDTHS = (960, 1920)
+# A sharper copy for wide and high-density screens (hero and scroll zoom), cut
+# from the full 14 557 x 8418 mosaic: its centred 4:3 crop is the wallpaper
+# frame to the pixel (checked against the wallpaper, no shift).
+LARGE = {"tarantula": ("weic2212a", 2880)}
 N_SOURCES = 70
 
 
@@ -56,6 +60,21 @@ def fetch(release):
         except OSError:
             continue
     raise RuntimeError(f"could not download {release}")
+
+
+def large(name):
+    release, width = LARGE[name]
+    path = CACHE / f"{release}-large.jpg"
+    if not path.exists():
+        with urllib.request.urlopen(f"https://cdn.esawebb.org/archives/images/large/{release}.jpg", timeout=600) as r:
+            path.write_bytes(r.read())
+    Image.MAX_IMAGE_PIXELS = None
+    img = Image.open(path).convert("RGB")
+    w, h = img.size
+    cw = round(h * 4 / 3)
+    x0 = (w - cw) // 2
+    img = img.crop((x0, 0, x0 + cw, h)).resize((width, width * 3 // 4), Image.LANCZOS)
+    img.save(OUT / f"{name}-{width}.webp", quality=80, method=6)
 
 
 def detect(img):
@@ -88,6 +107,8 @@ def main():
             im = img.copy()
             im.thumbnail((width, width))
             im.save(OUT / f"{name}-{width}.webp", quality=80, method=6)
+        if name in LARGE:
+            large(name)
         det[name] = detect(img)
         det[name]["release"] = release
         if name in CORE_OVERRIDE:

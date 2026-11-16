@@ -52,6 +52,10 @@ button { font: inherit; color: inherit; }
 .label.red { color: var(--signal); }
 .dot { font-family: var(--dot); font-weight: 900; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
 .brut { font-family: var(--brut); font-stretch: 62%; font-weight: 800; text-transform: uppercase; line-height: 0.86; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+/* Word boxes used while a heading resolves from glyphs (scramble in motion.ts). */
+.scr { position: relative; display: inline-block; clip-path: inset(-0.5em 0); }
+.scr-r { opacity: 0; }
+.scr-g { position: absolute; left: 0; top: 0; white-space: pre; }
 h1.brut.page { font-size: clamp(3.2rem, 1rem + 9vw, 10.5rem); }
 h2.brut { font-size: clamp(2.6rem, 1.2rem + 6vw, 6.8rem); }
 h3.brut { font-size: clamp(1.8rem, 1rem + 2.4vw, 3rem); line-height: 0.9; }
