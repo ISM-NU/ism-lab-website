@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "python3 scripts/check_scale.py && astro check",
+    "check": "python3 scripts/check_scale.py && python3 scripts/check_viewport.py && astro check",
     "test": "node --test src/lib/*.test.mjs"
   },
   "dependencies": {

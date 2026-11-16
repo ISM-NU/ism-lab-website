@@ -32,6 +32,29 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
     <meta name="theme-color" content="#000000" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href={archivo} as="font" type="font/woff2" crossorigin />
+    <!-- In-app browsers (Telegram, Instagram) resize the whole web view when
+         their header collapses mid-scroll, so svh changes there too, and the
+         hero, zoom and dot field (about 7.5 screens of svh) made the page
+         jump by hundreds of px. --svh is 1svh measured once and refreshed
+         only when the width changes (rotation). Use it instead of vh units;
+         scripts/check_viewport.py enforces that. -->
+    <script is:inline>
+      (() => {
+        const r = document.documentElement;
+        let w = 0;
+        const set = () => {
+          if (innerWidth === w) return;
+          w = innerWidth;
+          const p = document.createElement("div");
+          p.style.cssText = "position:fixed;top:0;height:100svh;visibility:hidden;pointer-events:none";
+          r.appendChild(p);
+          r.style.setProperty("--svh", p.getBoundingClientRect().height / 100 + "px");
+          p.remove();
+        };
+        set();
+        addEventListener("resize", set);
+      })();
+    </script>
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content="/webb/tarantula-1920.webp" />

@@ -27,7 +27,7 @@ const lmc = maps.snr_stats.lmc8;
 </section>
 
 <style>
-  .dotfield { position: relative; height: min(88svh, 820px); margin-top: 32px; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); overflow: hidden; touch-action: pan-y; }
+  .dotfield { position: relative; height: min(88 * var(--svh, 1svh), 820px); margin-top: 32px; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); overflow: hidden; touch-action: pan-y; }
   @media (hover: hover) { .dotfield { cursor: none; } }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   .dotfield .label { position: absolute; left: var(--gut); bottom: 14px; }
