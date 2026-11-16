@@ -121,7 +121,9 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   .c2 { top: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); right: var(--gut-r); border-width: 1px 1px 0 0; }
   .c3 { bottom: calc(34px + env(safe-area-inset-bottom, 0px)); left: var(--gut); border-width: 0 0 1px 1px; }
   .c4 { bottom: calc(34px + env(safe-area-inset-bottom, 0px)); right: var(--gut-r); border-width: 0 1px 1px 0; }
-  .scrollrule { position: absolute; right: max(4px, env(safe-area-inset-right, 0px)); top: 20%; bottom: 20%; width: 8px; background: repeating-linear-gradient(to bottom, var(--hair) 0 1px, transparent 1px 10px); mix-blend-mode: difference; }
+  /* Mid grey reads on black and on paper; a blend mode did the same but made
+     the browser re-blend this strip against the page on every scroll frame. */
+  .scrollrule { position: absolute; right: max(4px, env(safe-area-inset-right, 0px)); top: 20%; bottom: 20%; width: 8px; background: repeating-linear-gradient(to bottom, rgba(138, 138, 134, 0.55) 0 1px, transparent 1px 10px); }
   .scrollrule i { position: absolute; left: -3px; width: 14px; height: 2px; background: var(--signal); top: 0; box-shadow: 0 0 8px var(--signal); }
   @media (max-width: 640px) { .console .hide-sm { display: none; } }
 

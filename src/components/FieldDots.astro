@@ -48,7 +48,17 @@ const lmc = maps.snr_stats.lmc8;
   const SN = JSON.parse(document.getElementById("snrData")!.textContent!) as { n: number; scale: number; min: number; grid: number[] };
   const snrAt = (u: number, v: number) => SN.grid[clamp(Math.floor(v * SN.n), 0, SN.n - 1) * SN.n + clamp(Math.floor(u * SN.n), 0, SN.n - 1)] / SN.scale;
 
-  function size() { w = box.clientWidth; h = box.clientHeight; ctx = canvasFit(canvas, w, h); }
+  // The faint grid never changes, so it is drawn once per size into its own
+  // layer; each frame only the cells under the lens are visited.
+  let dots: HTMLCanvasElement | null = null;
+  const stepOf = () => (w < 640 ? 13 : 16);
+  function size() {
+    w = box.clientWidth; h = box.clientHeight; ctx = canvasFit(canvas, w, h);
+    dots = document.createElement("canvas");
+    const d = canvasFit(dots, w, h), step = stepOf();
+    d.fillStyle = "rgba(243,243,239,.22)";
+    for (let y = step / 2; y < h; y += step) for (let x = step / 2; x < w; x += step) d.fillRect(x - 1, y - 1, 2, 2);
+  }
   function setM(e: PointerEvent) { const r = box.getBoundingClientRect(); m.x = e.clientX - r.left; m.y = e.clientY - r.top; m.has = true; m.t = performance.now(); }
   box.addEventListener("pointermove", setM);
   box.addEventListener("pointerdown", setM);
@@ -65,8 +75,16 @@ const lmc = maps.snr_stats.lmc8;
     import("../data/sky.json").then(({ default: sky }) => { N = sky.field_n; F = sky.field; TN = sky.tilt_n; T = sky.north_tilt; });
   }, "100%");
   watchVisible(box, (on) => (visible = on));
+  // Dash styles come in LEVELS steps of strength, so each frame strokes one
+  // path per step instead of one per dash.
+  const LEVELS = 10;
+  let lastDraw = -1e9;
   onFrame((t) => {
-    if (!visible || !F.length) return;
+    if (!visible || !F.length || !dots) return;
+    // 60 fps is plenty for a wandering lens; a 120-180 Hz screen would
+    // otherwise redraw the whole field two or three times as often.
+    if (t - lastDraw < 15) return;
+    lastDraw = t;
     const side = Math.max(w, h), ox = (w - side) / 2, oy = (h - side) / 2;
     ctx.clearRect(0, 0, w, h);
     let mx = m.x, my = m.y;
@@ -76,33 +94,49 @@ const lmc = maps.snr_stats.lmc8;
       mx = w * (0.5 + 0.28 * Math.sin(tt * 0.45));
       my = h * (0.5 + 0.3 * Math.sin(tt * 0.7 + 1));
     }
-    const R = Math.max(150, Math.min(w, h) * 0.3), step = w < 640 ? 13 : 16;
+    const R = Math.max(150, Math.min(w, h) * 0.3), step = stepOf();
     if (dust?.naturalWidth) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(mx, my, R * 1.05, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.globalAlpha = 0.5;
-      ctx.drawImage(dust, ox, oy, side, side);
-      ctx.restore();
+      // Only the lens's square of the dust map, clipped to the circle.
+      const r = R * 1.05, f = dust.naturalWidth / side;
+      const x0 = Math.max(0, mx - r), y0 = Math.max(0, my - r), x1 = Math.min(w, mx + r), y1 = Math.min(h, my + r);
+      if (x1 > x0 && y1 > y0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(mx, my, r, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(dust, (x0 - ox) * f, (y0 - oy) * f, (x1 - x0) * f, (y1 - y0) * f, x0, y0, x1 - x0, y1 - y0);
+        ctx.restore();
+      }
     }
-    for (let y = step / 2; y < h; y += step) {
-      for (let x = step / 2; x < w; x += step) {
+    ctx.drawImage(dots, 0, 0, w, h);
+    const paths = Array.from({ length: LEVELS }, () => new Path2D());
+    const i0 = Math.max(0, Math.floor((mx - R) / step)), i1 = Math.ceil((mx + R) / step);
+    const j0 = Math.max(0, Math.floor((my - R) / step)), j1 = Math.ceil((my + R) / step);
+    for (let j = j0; j <= j1; j++) {
+      const y = step / 2 + j * step;
+      if (y >= h) break;
+      for (let i = i0; i <= i1; i++) {
+        const x = step / 2 + i * step;
+        if (x >= w) break;
         const q0 = clamp(1 - Math.hypot(x - mx, y - my) / R, 0, 1);
-        if (q0 <= 0) { ctx.fillStyle = "rgba(243,243,239,.22)"; ctx.fillRect(x - 1, y - 1, 2, 2); continue; }
+        if (q0 <= 0) continue;
         // Below S/N 3 the direction is not trusted: the dash shrinks back to a dot (full strength at 3, none at 1).
         const sn = snrAt((x - ox) / side, (y - oy) / side);
         const q = q0 * clamp((sn - 1) / (SN.min - 1), 0, 1);
-        if (q <= 0) { ctx.fillStyle = "rgba(243,243,239,.22)"; ctx.fillRect(x - 1, y - 1, 2, 2); continue; }
+        if (q <= 0) continue;
         const a = fieldAt((x - ox) / side, (y - oy) / side), L = 2 + q * step * 0.9;
         const ex = (-Math.sin(a) * L) / 2, ey = (-Math.cos(a) * L) / 2;
-        ctx.strokeStyle = q > 0.55 ? `rgba(255,61,36,${0.5 + q * 0.5})` : `rgba(243,243,239,${0.35 + q * 0.6})`;
-        ctx.lineWidth = 1 + q * 1.2;
-        ctx.beginPath();
-        ctx.moveTo(x - ex, y - ey);
-        ctx.lineTo(x + ex, y + ey);
-        ctx.stroke();
+        const path = paths[Math.min(LEVELS - 1, Math.floor(q * LEVELS))];
+        path.moveTo(x - ex, y - ey);
+        path.lineTo(x + ex, y + ey);
       }
+    }
+    for (let k = 0; k < LEVELS; k++) {
+      const q = (k + 0.5) / LEVELS;
+      ctx.strokeStyle = q > 0.55 ? `rgba(255,61,36,${0.5 + q * 0.5})` : `rgba(243,243,239,${0.35 + q * 0.6})`;
+      ctx.lineWidth = 1 + q * 1.2;
+      ctx.stroke(paths[k]);
     }
     ctx.strokeStyle = "rgba(255,61,36,.9)";
     ctx.lineWidth = 1;

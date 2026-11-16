@@ -40,14 +40,29 @@ export function canvasFit(c: HTMLCanvasElement, w: number, h: number) {
   return x;
 }
 
+/** Loads and decodes an image. Decoding up front, off the main thread, keeps
+ * the first canvas drawImage of a large image from decoding it synchronously
+ * mid-scroll (about 60 ms for the 2048 px zoom layers). */
 export function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((res) => {
-    const i = new Image();
-    i.decoding = "async";
-    i.onload = () => res(i);
-    i.onerror = () => res(i);
-    i.src = src;
-  });
+  const i = new Image();
+  i.decoding = "async";
+  i.src = src;
+  return i.decode().then(() => i, () => i);
+}
+
+/** An image decoded once into an ImageBitmap, for canvases that redraw it
+ * every frame: a plain <img> may have its decoded pixels dropped and then be
+ * decoded again inside a frame (35-40 ms for a 2048 px layer). Decoding from
+ * the fetched bytes runs off the main thread; createImageBitmap(img) does not.
+ * Falls back to an <img> where that path fails. */
+export async function loadBitmap(src: string): Promise<ImageBitmap | HTMLImageElement> {
+  try {
+    const r = await fetch(src);
+    if (!r.ok) throw new Error(String(r.status));
+    return await createImageBitmap(await r.blob());
+  } catch {
+    return loadImage(src);
+  }
 }
 
 export const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
