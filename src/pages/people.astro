@@ -1,7 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
 import Base from "../layouts/Base.astro";
-import PageHead from "../components/PageHead.astro";
 import { papers } from "../lib/pubs";
 
 const people = (await getCollection("people")).sort((a, b) => a.data.order - b.data.order);
@@ -24,9 +23,9 @@ const avatar = (p: (typeof people)[number], i: number) =>
 ---
 
 <Base title="People" description="Dana Alina's interstellar medium group at Nazarbayev University: the principal investigator and her students.">
-  <PageHead title="People" />
-
-  <section class="sec lead-sec" id={lead.p.id} aria-labelledby="lead-h">
+  <!-- No title band: the nav marks the page and Dana Alina's block is its header. -->
+  <h1 class="sr-only">People</h1>
+  <section class="lead-sec" id={lead.p.id} aria-labelledby="lead-h">
     <div class="gut max lead">
       <div class="avatar big" aria-hidden="true">
         {lead.p.data.photo ? <img src={lead.p.data.photo} alt="" /> : <span class="dot">{avatar(lead.p, 0)}</span>}
@@ -90,7 +89,7 @@ const avatar = (p: (typeof people)[number], i: number) =>
   .meta { padding: 16px 16px 24px; display: grid; gap: 8px; align-content: start; border-top: 1px solid var(--hair); }
   .row { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
   .people h3 { font-size: clamp(24px, 1rem + 1vw, 32px); }
-  .lead-sec { padding-block: clamp(32px, 6vw, 64px); border-bottom: 1px solid var(--hair); }
+  .lead-sec { padding: calc(var(--bar-h) + clamp(32px, 5vw, 64px)) 0 clamp(32px, 6vw, 64px); border-bottom: 1px solid var(--hair); }
   .lead { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
   .avatar.big { border: 1px solid var(--hair); }
   .avatar.big .dot { font-size: clamp(6rem, 16vw, 8rem); }
@@ -103,7 +102,7 @@ const avatar = (p: (typeof people)[number], i: number) =>
   .stats dd { margin: 0; font-size: clamp(32px, 1rem + 2vw, 48px); line-height: 1; }
   .lead .links { font-size: 14px; gap: 24px; }
   .lead .links a { text-decoration-color: var(--signal); text-underline-offset: 4px; }
-  @media (max-width: 800px) { .lead { grid-template-columns: minmax(0, 1fr); } .avatar.big { max-width: 420px; } }
+  @media (max-width: 800px) { .lead { grid-template-columns: minmax(0, 1fr); } .avatar.big { max-width: 192px; } .avatar.big .dot { font-size: 64px; } }
   .focus { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
   .bio { font-size: 14px; color: var(--grey); }
   .links { list-style: none; padding: 0; margin: 4px 0 0; display: flex; gap: 16px; font-size: 12px; }
