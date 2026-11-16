@@ -10,18 +10,18 @@ const LAT = 51.0906, LON = 71.3982;
   <PageHead title="Contact" intro="Please write before visiting.">
   </PageHead>
   <section class="sec" style="padding-top: clamp(32px,6vw,64px)">
-    <div class="gut max grid">
+    <div class="gut max"><div class="grid">
       <div class="cell">
         <p class="big brut">Nazarbayev University</p>
         <p>Department of Physics, School of Sciences and Humanities<br />53 Kabanbay Batyr Ave, Astana 010000, Kazakhstan</p>
-        <p class="coord dot">{LAT.toFixed(4)}° N &nbsp; {LON.toFixed(4)}° E</p>
+        <p class="coord dot"><span>{LAT.toFixed(4)}° N</span> &nbsp; <span>{LON.toFixed(4)}° E</span></p>
       </div>
       <div class="cell">
         <p class="big brut">Email</p>
         <p>Dana Alina, group leader<br /><a class="mail" href="mailto:dana.alina@nu.edu.kz">dana.alina@nu.edu.kz</a></p>
-        <p><a href="/join">What a student or visitor could work on</a></p>
+        <p><a class="more" href="/join">Join or visit &rarr;</a></p>
       </div>
-    </div>
+    </div></div>
   </section>
 
   <section class="slab sec" aria-labelledby="sky-h">
@@ -46,6 +46,8 @@ const LAT = 51.0906, LON = 71.3982;
   .why { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px 32px; margin-top: 24px; max-width: 120ch; }
   .why p { margin: 0; }
   .panel { margin-top: 32px; color: var(--ink); }
+  .more { font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; }
   .mail { font-size: clamp(18px, 1rem + 0.6vw, 24px); }
-  .coord { font-size: 24px; margin-top: 12px; color: var(--signal); }
+  .coord { font-size: 24px; margin-top: 12px; color: var(--signal); white-space: normal; }
+  .coord span { display: inline-block; }
 </style>

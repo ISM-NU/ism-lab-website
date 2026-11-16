@@ -30,7 +30,9 @@ export function link(p: Paper): string {
 }
 
 export function venue(p: Paper): string {
-  return [p.pub, p.volume, p.page].filter(Boolean).join(", ");
+  // An e-print's page is its arXiv id, which the list already links.
+  const page = p.arxiv && p.page === `arXiv:${p.arxiv}` ? null : p.page;
+  return [p.pub, p.volume, page].filter(Boolean).join(", ");
 }
 
 /** Large collaboration: an author list of 100 or more (the three Planck intermediate results, SCOPE, TOP-SCOPE). */

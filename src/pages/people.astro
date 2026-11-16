@@ -14,8 +14,9 @@ const initials = (n: string) => {
   return clash ? (w[0][0] + w.at(-1)!.slice(0, 2)).toUpperCase() : two(n);
 };
 // The PI gets a lead block of her own; everyone else is listed below as a student.
-const [lead, ...rest] = rendered;
-const anyMock = rest.some(({ p }) => p.data.mock);
+// Numbered placeholder entries ("Member 03") wait in the repo until real
+// profiles arrive; they are not published.
+const [lead, ...rest] = rendered.filter(({ p }) => !p.data.name.startsWith("Member "));
 const since = Math.min(...papers.map((p) => p.year));
 const led = papers.filter((p) => p.led).length;
 const avatar = (p: (typeof people)[number], i: number) =>
@@ -50,7 +51,6 @@ const avatar = (p: (typeof people)[number], i: number) =>
     <div class="gut max">
       <div class="head">
         <h2 class="brut" id="students-h">Students</h2>
-        {anyMock && <p class="tag soon wrap">Placeholder profiles. Photos and bios to be added.</p>}
       </div>
       <ul class="people cells">
         {rest.map(({ p, Content }, i) => (

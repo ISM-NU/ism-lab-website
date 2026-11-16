@@ -33,7 +33,8 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { background: var(--void); -webkit-text-size-adjust: 100%; }
 /* Prose is set in Archivo; monospace is kept for data, labels, dates and readouts. */
-body { margin: 0; background: var(--void); color: var(--ink); font: 400 16px/1.55 var(--brut); font-stretch: 100%; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+body { margin: 0; min-height: 100svh; display: flex; flex-direction: column; background: var(--void); color: var(--ink); font: 400 16px/1.55 var(--brut); font-stretch: 100%; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+main { flex: 1; }
 .mono { font-family: var(--mono); }
 img, canvas, svg { display: block; max-width: 100%; }
 [hidden] { display: none !important; }
@@ -52,6 +53,8 @@ button { font: inherit; color: inherit; }
 .max { max-width: 1320px; margin: 0 auto; }
 .sec { padding-block: clamp(64px, 10vw, 128px); }
 .sec.tight { padding-top: 0; }
+/* Two sections on the same ground would stack both paddings into one gap. */
+.sec:not(.slab) + .sec:not(.slab), .sec.slab + .sec.slab { padding-top: 0; }
 
 .label { font: 600 12px/1.35 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); }
 .label.red { color: var(--signal); }

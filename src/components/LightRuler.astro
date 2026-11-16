@@ -86,6 +86,9 @@ const o = objects[sel];
   .ruler.v .tick { left: calc(var(--ax) - 6px); height: 1px; width: 12px; }
   .ruler.v .tick span { right: 20px; top: 0; translate: 0 -50%; text-align: right; }
   .ruler.v .tick.end span { white-space: normal; width: 9ch; translate: 0 -100%; line-height: 1.2; }
+  /* The end label hangs up from the axis end over the 1 Gyr label, a few
+     pixels above it on a phone: drop that label, keep its tick. */
+  .ruler.v .tick:has(+ .tick.end) span { display: none; }
   .ruler.v .you { left: calc(var(--ax) + 10px); top: -4px; }
 
   .out { margin-top: 32px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }

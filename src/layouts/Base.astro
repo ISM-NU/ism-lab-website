@@ -65,8 +65,8 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
 
     <main id="main"><slot /></main>
 
-    <footer class="foot gut">
-      <div class="max foot-grid">
+    <footer class="foot">
+      <div class="gut max foot-grid">
         <div>
           <span class="dot foot-logo">ISM/NU</span>
           <p>Interstellar medium group, Department of Physics, Nazarbayev University, Astana.</p>
@@ -125,7 +125,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   .scrollrule i { position: absolute; left: -3px; width: 14px; height: 2px; background: var(--signal); top: 0; box-shadow: 0 0 8px var(--signal); }
   @media (max-width: 640px) { .console .hide-sm { display: none; } }
 
-  .foot { border-top: 1px solid var(--hair); padding-block: 48px calc(96px + env(safe-area-inset-bottom, 0px)); font-size: 12px; color: var(--grey); }
+  .foot { border-top: 1px solid var(--hair); padding-block: 48px calc(96px + env(safe-area-inset-bottom, 0px)); font-size: 14px; color: var(--grey); }
   .foot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 32px; }
   .foot-grid > div { display: grid; gap: 12px; align-content: start; }
   .foot-logo { font-size: 24px; color: var(--ink); }
@@ -178,7 +178,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   const co = new IntersectionObserver((es) => {
     for (const e of es) e.isIntersecting ? live.add(e.target) : live.delete(e.target);
     con.classList.toggle("on", live.size > 0);
-  }, { rootMargin: "0px 0px -90% 0px" });
+  }, { rootMargin: "-90% 0px 0px 0px" });
   document.querySelectorAll("[data-console]").forEach((el) => co.observe(el));
 
   const btn = document.querySelector<HTMLButtonElement>(".menu-btn")!;

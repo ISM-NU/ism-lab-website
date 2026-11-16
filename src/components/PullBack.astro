@@ -42,9 +42,12 @@
   @keyframes tgt-tag { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
   @media (prefers-reduced-motion: reduce) { #tgts :global(.tgt), #tgts :global(.tgt)::before, #tgts :global(.tgt)::after, #tgts :global(.tgt span) { animation: none; } }
   .hud { position: absolute; inset: 0; pointer-events: none; display: grid; grid-template-rows: 1fr auto; padding: calc(var(--bar-h) + 24px + env(safe-area-inset-top, 0px)) var(--gut-r) calc(48px + env(safe-area-inset-bottom, 0px)) var(--gut); }
-  .readout { justify-self: end; text-align: right; display: grid; gap: 4px; align-content: start; }
-  .readout .dot { font-size: clamp(2rem, 1rem + 5vw, 6rem); line-height: 0.9; text-shadow: 0 0 18px rgba(243, 243, 239, 0.35); }
-  .cap { max-width: 36ch; font: 600 clamp(16px, 0.8rem + 0.5vw, 18px)/1.35 var(--mono); text-shadow: 0 0 12px #000; }
+  .readout { justify-self: end; text-align: right; display: grid; gap: 4px; align-content: start; text-shadow: 0 0 8px #000, 0 0 16px #000; }
+  .readout .label { color: var(--ink); }
+  .readout .label.red { color: var(--signal); }
+  .readout .dot { font-size: clamp(2rem, 1rem + 5vw, 6rem); line-height: 0.9; text-shadow: 0 0 16px #000; }
+  /* On a dark plate: frame outlines and bright nebula pass under the caption. */
+  .cap { max-width: 36ch; justify-self: start; font: 600 clamp(16px, 0.8rem + 0.5vw, 18px)/1.35 var(--mono); background: rgba(0, 0, 0, 0.72); padding: 8px 12px; margin-left: -12px; position: relative; z-index: 1; }
 </style>
 
 <script>
@@ -156,7 +159,7 @@
     ctx.save();
     ctx.translate(lc[0], lc[1]);
     ctx.rotate(rot);
-    const aL = p < 0.6 ? seg(e1, 0.08, 0.5) : 1;
+    const aL = p < 0.6 ? seg(e1, 0.03, 0.22) : 1;
     // The viewport in this rotated frame, so only the visible part of each
     // image is drawn and deep zooms stay cheap.
     const cs0 = Math.cos(-rot), sn0 = Math.sin(-rot);

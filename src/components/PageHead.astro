@@ -6,8 +6,8 @@ interface Props { title: string; intro?: string; image?: string; caption?: strin
 const { title, intro, image, caption } = Astro.props;
 ---
 
-<header class="ph gut">
-  <div class="max grid">
+<header class="ph">
+  <div class="gut max grid">
     <div class="txt">
       <h1 class="brut page" data-scramble>{title}</h1>
       {intro && <p class="intro">{intro}</p>}
@@ -35,7 +35,7 @@ const { title, intro, image, caption } = Astro.props;
   .tr { top: 0; right: 0; border-width: 1px 1px 0 0; }
   .bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
   .br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
-  figcaption { position: absolute; left: 14px; bottom: -24px; color: var(--grey); }
+  figcaption { position: absolute; left: 16px; top: calc(100% + 8px); color: var(--grey); }
   @media (max-width: 800px) {
     .grid { grid-template-columns: minmax(0, 1fr); }
     .frame { max-width: 420px; }

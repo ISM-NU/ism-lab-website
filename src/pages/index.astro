@@ -11,7 +11,7 @@ import PaperList from "../components/PaperList.astro";
 import { papers } from "../lib/pubs";
 
 const latest = papers.filter((p) => p.group === "Papers").slice(0, 5);
-const news = (await getCollection("news")).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
+const news = (await getCollection("news", (n) => !n.data.mock)).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
 const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
 ---
 
@@ -52,6 +52,7 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
     </div>
   </section>
 
+  {news.length > 0 && (
   <section class="sec slab" aria-labelledby="news-h">
     <div class="gut max">
       <div class="head">
@@ -70,6 +71,7 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
       </ul>
     </div>
   </section>
+  )}
 </Base>
 
 <style>

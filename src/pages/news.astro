@@ -3,7 +3,8 @@ import { getCollection, render } from "astro:content";
 import Base from "../layouts/Base.astro";
 import PageHead from "../components/PageHead.astro";
 
-const items = (await getCollection("news")).sort((a, b) => +b.data.date - +a.data.date);
+// Placeholder items (mock: true) are kept as templates but not shown.
+const items = (await getCollection("news", (n) => !n.data.mock)).sort((a, b) => +b.data.date - +a.data.date);
 const rendered = await Promise.all(items.map(async (n) => ({ n, Content: (await render(n)).Content })));
 const today = new Date();
 const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
@@ -13,7 +14,8 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
   <PageHead title="News and events" />
   <section class="sec" style="padding-top: clamp(32px,6vw,64px)">
     <div class="gut max">
-      <ol class="feed">
+      {items.length === 0 && <p class="empty">No announcements yet.</p>}
+      {items.length > 0 && <ol class="feed">
         {rendered.map(({ n, Content }) => {
           const upcoming = n.data.kind === "event" && n.data.date >= today;
           return (
@@ -33,12 +35,13 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
             </li>
           );
         })}
-      </ol>
+      </ol>}
     </div>
   </section>
 </Base>
 
 <style>
+  .empty { color: var(--grey); }
   .feed { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--hair); }
   .feed li { display: grid; grid-template-columns: minmax(180px, 260px) minmax(0, 1fr); gap: 16px 32px; padding: 32px 0; border-bottom: 1px solid var(--hair); scroll-margin-top: 80px; }
   .when { display: grid; gap: 12px; align-content: start; justify-items: start; }

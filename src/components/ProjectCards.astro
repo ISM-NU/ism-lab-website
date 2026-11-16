@@ -6,12 +6,12 @@ const projects = (await getCollection("projects")).sort((a, b) => a.data.order -
 <div class="proj cells">
   {projects.map((p) => (
     <a class="card" href={`/research/${p.id}`}>
-      <figure><img src={p.data.image} alt="" loading="lazy" decoding="async" /></figure>
+      <figure><img src={p.data.image} alt="" loading="lazy" decoding="async" />{p.data.upcoming.length > 0 && <span class="tag soon wip">Work in progress</span>}</figure>
       <div class="meta">
-        <div class="row"><span class="dot code">{p.data.code}</span>{p.data.upcoming.length > 0 && <span class="tag soon">Work in progress</span>}</div>
+        <span class="dot code">{p.data.code}</span>
         <h3 class="brut">{p.data.title}</h3>
         <p>{p.data.summary}</p>
-        <span class="label">{p.data.instruments.join(" · ")} &middot; {p.data.papers.length} papers</span>
+        <span class="label pinned">{p.data.instruments.join(" · ")} &middot; {p.data.papers.length} papers</span>
       </div>
     </a>
   ))}
@@ -25,8 +25,9 @@ const projects = (await getCollection("projects")).sort((a, b) => a.data.order -
   .card:hover img, .card:focus-visible img { transform: scale(1.05); filter: none; }
   figure::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--signal); opacity: 0; transition: opacity 0.2s; }
   .card:hover figure::after { opacity: 1; }
-  .meta { padding: 16px 16px 24px; display: grid; gap: 12px; align-content: start; }
-  .row { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+  .meta { padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .pinned { margin-top: auto; }
+  .wip { position: absolute; left: 12px; top: 12px; background: var(--void); }
   .code { font-size: 24px; line-height: 1; }
   h3 { font-size: clamp(24px, 1rem + 1vw, 32px); line-height: 0.9; }
   p { font-size: 16px; line-height: 1.5; color: color-mix(in srgb, currentColor 82%, transparent); }
