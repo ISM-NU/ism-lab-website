@@ -200,3 +200,17 @@ before the site goes public.
 - [x] Redundant intros and head paragraphs removed across pages
 - [ ] Students: real roles, photos and bios (Denis is listed as "Student")
 - [ ] Dana's photo; her bio uses only her thesis and the ADS record
+
+## Mobile motion pass (2026-11-16)
+- [x] Page height no longer follows an in-app browser's header (--svh in
+      Base.astro, scripts/check_viewport.py)
+- [x] Scroll zoom on tall screens: Webb frame on black until it shrinks, LMC
+      disc fills the width, sky stage ends on about 130 deg around the LMC and
+      Galactic centre, target tags flip at the right edge, LMC tag upright
+- [x] Dot field: near-square on phones; on touch the lens tours N79, N11, N44,
+      30 Doradus and N159 with the scroll, a tap moves it
+- [x] Light-travel time: one row per object on narrow screens
+- [x] Layer lens: a tap places it
+- [ ] Re-render the R136 inset (lmc-tarantula) with a stretch that does not
+      clip 30 Dor's core; it reads as a pale wash around 1 000 ly on every
+      screen

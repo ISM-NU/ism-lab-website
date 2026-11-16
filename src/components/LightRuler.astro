@@ -2,7 +2,7 @@
 // Light-travel time on a log scale, from the Moon to the age of the Universe.
 // Selecting an object streams pixel "photons" from it to the observer.
 // Horizontal on wide screens (labels packed into lanes so the ruler always
-// fits the width), vertical on phones. Layout runs in the script below.
+// fits the width), one row per object on phones. Layout runs in the script below.
 const YR = 31557600; // seconds in a Julian year
 // Distances: Pietrzynski et al. 2019 (LMC 49.6 kpc), GRAVITY 2019 (Galactic
 // centre 8.18 kpc), Kuhn et al. 2019 (M16 1.74 kpc), Ortiz-Leon et al. 2017
@@ -81,15 +81,20 @@ const o = objects[sel];
   /* The age of the Universe gets its own row so it never meets the 1 Gyr label. */
   .ruler:not(.v) .tick.end span { top: 40px; translate: -100% 0; color: var(--on-paper); }
   .ruler:not(.v) .you { left: 0; top: calc(var(--ax) - 34px); }
-  /* Vertical: axis down the left, tick labels to its left, names to its right. */
-  .ruler.v .axis { top: 0; bottom: 0; width: 1px; left: var(--ax); }
-  .ruler.v .tick { left: calc(var(--ax) - 6px); height: 1px; width: 12px; }
-  .ruler.v .tick span { right: 20px; top: 0; translate: 0 -50%; text-align: right; }
-  .ruler.v .tick.end span { white-space: normal; width: 9ch; translate: 0 -100%; line-height: 1.2; }
-  /* The end label hangs up from the axis end over the 1 Gyr label, a few
-     pixels above it on a phone: drop that label, keep its tick. */
-  .ruler.v .tick:has(+ .tick.end) span { display: none; }
-  .ruler.v .you { left: calc(var(--ax) + 10px); top: -4px; }
+  /* Narrow: one row per object, name and time on top, and under them a bar
+     on the shared log axis from you (left) to the object. Ticks run down
+     behind the rows, labelled above them; where labels would touch on a
+     phone (1 s by You, 1 min, 1 d) only the line stays. */
+  .ruler.v .axis { display: none; }
+  .ruler.v .tick { top: var(--t0); height: var(--th); width: 1px; background: rgba(10, 10, 11, 0.12); }
+  .ruler.v .tick span { top: -24px; left: 0; translate: -50% 0; }
+  .ruler.v .tick:is([data-s="1"], [data-s="60"], [data-s="86400"]) span { display: none; }
+  .ruler.v .tick.end span { top: calc(100% + 12px); left: auto; right: 0; translate: none; color: var(--on-paper); }
+  .ruler.v .you { left: 0; top: calc(var(--t0) - 24px); }
+  .ruler.v .obj { left: 0; width: 100%; height: var(--row); padding: 12px 0 0; display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; text-align: left; background: none; border-top: 1px solid rgba(10, 10, 11, 0.12); }
+  .ruler.v .obj::after { content: attr(data-v) " " attr(data-unit); font-weight: 500; letter-spacing: 0.02em; text-transform: none; color: var(--on-paper-dim); }
+  .ruler.v .obj[aria-pressed="true"] { text-decoration: none; }
+  .ruler.v .obj[aria-pressed="true"]::after { color: inherit; }
 
   .out { margin-top: 32px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
   .val { font-size: clamp(3rem, 1rem + 6vw, 6rem); line-height: 0.9; margin-top: 12px; }
@@ -117,8 +122,10 @@ const o = objects[sel];
   let ctx: CanvasRenderingContext2D, W = 0, H = 0, vertical = false, ax = 0, visible = false;
   let target = 0; // position of the selected object along the axis, px
   const photons: { u: number; o: number; v: number }[] = [];
-  // Horizontal name lanes are roomier than the vertical minimum spacing.
-  const LANE = 26, HLANE = 38, GAP = 28, LIFT = 40;
+  // Wide layout: name lanes above the axis.
+  const HLANE = 38, GAP = 28, LIFT = 40;
+  // Narrow layout: one row per object, under a header for the tick labels.
+  const ROW = 48, HEAD = 32;
 
   function layout() {
     vertical = ruler.clientWidth < 700;
@@ -169,23 +176,24 @@ const o = objects[sel];
       ticks.forEach((t) => (t.style.left = frac(Number(t.dataset.s)) * W + "px"));
       target = frac(Number(buttons[sel].dataset.s)) * W;
     } else {
-      H = 620;
       W = ruler.clientWidth;
-      ax = 62;
+      const n = buttons.length;
+      H = HEAD + n * ROW + 40;
       ruler.style.height = H + "px";
-      // Names sit beside their mark, nudged apart where marks crowd.
-      const ys = buttons.map((b) => frac(Number(b.dataset.s)) * H);
-      const out = ys.slice();
-      for (let i = 1; i < out.length; i++) out[i] = Math.max(out[i], out[i - 1] + LANE);
-      for (let i = out.length - 2; i >= 0; i--) out[i] = Math.min(out[i], out[i + 1] - LANE);
-      const lx = ax + 34;
+      ruler.style.setProperty("--t0", HEAD + "px");
+      ruler.style.setProperty("--th", n * ROW + "px");
+      ruler.style.setProperty("--row", ROW + "px");
+      // Bar baseline of row i; photons run just above it, as above the axis
+      // on wide screens.
+      const base = (i: number) => HEAD + i * ROW + ROW - 12;
       buttons.forEach((b, i) => {
-        Object.assign(b.style, { left: lx + "px", top: out[i] - 11 + "px" });
-        paths += `<path data-i="${i}" d="M${ax} ${ys[i]} H${ax + 14} L${lx - 2} ${out[i]}" />`;
+        Object.assign(b.style, { left: "", top: HEAD + i * ROW + "px" });
+        paths += `<path data-i="${i}" d="M0 ${base(i)} H${frac(Number(b.dataset.s)) * W}" />`;
       });
-      marks.forEach((m) => Object.assign(m.style, { top: frac(Number(m.dataset.s)) * H + "px", left: ax + "px" }));
-      ticks.forEach((t) => (t.style.top = frac(Number(t.dataset.s)) * H + "px"));
-      target = ys[sel];
+      marks.forEach((m) => Object.assign(m.style, { left: frac(Number(m.dataset.s)) * W + "px", top: base(Number(m.dataset.i)) + "px" }));
+      ticks.forEach((t) => (t.style.left = frac(Number(t.dataset.s)) * W + "px"));
+      ax = base(sel);
+      target = frac(Number(buttons[sel].dataset.s)) * W;
     }
     ruler.style.setProperty("--ax", ax + "px");
     svg.innerHTML = paths;
@@ -237,8 +245,7 @@ const o = objects[sel];
       for (let j = 0; j < 5; j++) {
         const u = Math.round((p.u + j * 4) / 4) * 4;
         if (u > target) continue;
-        if (vertical) ctx.fillRect(ax - 4 - p.o - 1, u, 2, 2);
-        else ctx.fillRect(u, ax - 4 - p.o, 2, 2);
+        ctx.fillRect(u, ax - 4 - p.o, 2, 2);
       }
       if (p.u < 0) photons.splice(i, 1);
     }

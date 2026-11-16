@@ -14,12 +14,12 @@ const lmc = maps.snr_stats.lmc8;
   <div class="gut max">
     <div class="head">
       <h2 class="brut" id="field-h" data-scramble>Field orientation in the LMC</h2>
-      <p>A grid of dots over the LMC. Near the cursor each dot turns into a dash along the plane-of-sky field orientation, inferred from polarized dust emission.</p>
+      <p>A grid of dots over the LMC. Inside the lens each dot turns into a dash along the plane-of-sky field orientation, inferred from polarized dust emission. Point or tap to move the lens.</p>
     </div>
   </div>
   <div class="dotfield" id="dotfield">
     <MapFrame ids={["dotfield"]} box="abs" fill inset="62px">
-      <canvas id="dotCanvas" role="img" aria-label="Dot grid that shows the LMC magnetic field direction near the pointer"></canvas>
+      <canvas id="dotCanvas" role="img" aria-label="Dot grid that shows the LMC magnetic field direction inside a movable lens"></canvas>
     </MapFrame>
     <span class="label">Planck 353 GHz &middot; field PA &middot; foreground not removed &middot; S/N &gt; 3 over {Math.round(lmc.frac_gt3 * 100)}% of the grid</span>
     <script type="application/json" id="snrData" set:html={JSON.stringify(snr)}></script>
@@ -27,7 +27,7 @@ const lmc = maps.snr_stats.lmc8;
 </section>
 
 <style>
-  .dotfield { position: relative; height: min(88 * var(--svh, 1svh), 820px); margin-top: 32px; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); overflow: hidden; touch-action: pan-y; }
+  .dotfield { position: relative; height: min(88 * var(--svh, 1svh), 820px, 110vw); margin-top: 32px; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); overflow: hidden; touch-action: pan-y; }
   @media (hover: hover) { .dotfield { cursor: none; } }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   .dotfield .label { position: absolute; left: var(--gut); bottom: 14px; }
@@ -39,7 +39,16 @@ const lmc = maps.snr_stats.lmc8;
   const box = document.getElementById("dotfield")!;
   const canvas = document.getElementById("dotCanvas") as HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D, w = 0, h = 0, visible = false, dust: HTMLImageElement | null = null;
-  const m = { x: 0, y: 0, t: -1e9, has: false };
+  const m = { x: 0, y: 0, t: -1e9, has: false, sy: 0 };
+  // Touch screens have no pointer to follow. There the lens tours named
+  // regions as the section scrolls past (on the 12 deg grid the dust map
+  // shares), and a tap or a sideways drag moves it until the page has
+  // scrolled a quarter screen on. It eases to each new place, and the canvas
+  // is redrawn only when it moves.
+  const touch = matchMedia("(hover: none)").matches;
+  const TOUR = ["N79", "N11", "N44", "30 Doradus", "N159"];
+  let tour: [string, number, number][] = [];
+  let lx = -1, ly = -1, dirty = true;
   // F holds the field as an angle on the image grid (what the dashes need);
   // T is the grid angle of local north, so F - T is the position angle.
   // The field grid is most of sky.json (about 50 KB), so it is fetched when
@@ -53,16 +62,17 @@ const lmc = maps.snr_stats.lmc8;
   let dots: HTMLCanvasElement | null = null;
   const stepOf = () => (w < 640 ? 13 : 16);
   function size() {
-    w = box.clientWidth; h = box.clientHeight; ctx = canvasFit(canvas, w, h);
+    w = box.clientWidth; h = box.clientHeight; ctx = canvasFit(canvas, w, h); dirty = true;
     dots = document.createElement("canvas");
     const d = canvasFit(dots, w, h), step = stepOf();
     d.fillStyle = "rgba(243,243,239,.22)";
     for (let y = step / 2; y < h; y += step) for (let x = step / 2; x < w; x += step) d.fillRect(x - 1, y - 1, 2, 2);
   }
-  function setM(e: PointerEvent) { const r = box.getBoundingClientRect(); m.x = e.clientX - r.left; m.y = e.clientY - r.top; m.has = true; m.t = performance.now(); }
+  function setM(e: PointerEvent) { const r = box.getBoundingClientRect(); m.x = e.clientX - r.left; m.y = e.clientY - r.top; m.has = true; m.t = performance.now(); m.sy = scrollY; }
   box.addEventListener("pointermove", setM);
   box.addEventListener("pointerdown", setM);
-  box.addEventListener("pointerleave", () => (m.has = false));
+  // A finger "leaves" as it lifts; the lens stays where it was tapped.
+  box.addEventListener("pointerleave", (e) => { if (e.pointerType !== "touch") m.has = false; });
   const fieldAt = (u: number, v: number) => F[clamp(Math.floor(v * N), 0, N - 1) * N + clamp(Math.floor(u * N), 0, N - 1)];
 
   size();
@@ -71,30 +81,54 @@ const lmc = maps.snr_stats.lmc8;
   watchVisible(box, (on) => {
     if (!on || asked) return;
     asked = true;
-    loadImage("/sky/lmc-dust.webp").then((i) => (dust = i));
-    import("../data/sky.json").then(({ default: sky }) => { N = sky.field_n; F = sky.field; TN = sky.tilt_n; T = sky.north_tilt; });
+    loadImage("/sky/lmc-dust.webp").then((i) => { dust = i; dirty = true; });
+    import("../data/sky.json").then(({ default: sky }) => {
+      N = sky.field_n; F = sky.field; TN = sky.tilt_n; T = sky.north_tilt;
+      const at: Record<string, number[]> = sky.lmc_targets;
+      tour = TOUR.map((n) => [n, at[n][0], at[n][1]]);
+    });
   }, "100%");
   watchVisible(box, (on) => (visible = on));
   // Dash styles come in LEVELS steps of strength, so each frame strokes one
   // path per step instead of one per dash.
   const LEVELS = 10;
-  let lastDraw = -1e9;
+  let lastDraw = -1e9, lastName = "";
   onFrame((t) => {
     if (!visible || !F.length || !dots) return;
     // 60 fps is plenty for a wandering lens; a 120-180 Hz screen would
     // otherwise redraw the whole field two or three times as often.
     if (t - lastDraw < 15) return;
-    lastDraw = t;
     const side = Math.max(w, h), ox = (w - side) / 2, oy = (h - side) / 2;
-    ctx.clearRect(0, 0, w, h);
-    let mx = m.x, my = m.y;
-    if (!m.has || performance.now() - m.t > 2500) {
+    let mx = m.x, my = m.y, name = "";
+    const held = m.has && (touch ? Math.abs(scrollY - m.sy) < innerHeight / 4 : performance.now() - m.t <= 2500);
+    if (!held && touch && tour.length) {
+      // Scroll tour: progress runs from the box entering the screen to it
+      // leaving; the lens rests on each region for the middle half of its
+      // share and moves between them in the rest.
+      const r = box.getBoundingClientRect();
+      const f = clamp(((innerHeight - r.top) / (innerHeight + r.height) - 0.15) / 0.7, 0, 1) * (tour.length - 1);
+      const i = Math.min(tour.length - 2, Math.floor(f)), u = clamp((f - i - 0.25) / 0.5, 0, 1), e = u * u * (3 - 2 * u);
+      const [a, b] = [tour[i], tour[i + 1]];
+      mx = ox + (a[1] + (b[1] - a[1]) * e) * side;
+      my = oy + (a[2] + (b[2] - a[2]) * e) * side;
+      name = e === 0 ? a[0] : e === 1 ? b[0] : "";
+    } else if (!held) {
       // Idle: the lens wanders on its own.
       const tt = (reduce ? 0 : t) / 1000;
       mx = w * (0.5 + 0.28 * Math.sin(tt * 0.45));
       my = h * (0.5 + 0.3 * Math.sin(tt * 0.7 + 1));
     }
-    const R = Math.max(150, Math.min(w, h) * 0.3), step = stepOf();
+    if (touch) {
+      if (lx < 0 || reduce) [lx, ly] = [mx, my];
+      else { lx += (mx - lx) * 0.2; ly += (my - ly) * 0.2; }
+      if (!dirty && Math.abs(lx - mx) < 0.3 && Math.abs(ly - my) < 0.3 && name === lastName) return;
+      [mx, my] = [lx, ly];
+    }
+    dirty = false;
+    lastName = name;
+    lastDraw = t;
+    ctx.clearRect(0, 0, w, h);
+    const R = Math.max(w < 640 ? 100 : 150, Math.min(w, h) * 0.3), step = stepOf();
     if (dust?.naturalWidth) {
       // Only the lens's square of the dust map, clipped to the circle.
       const r = R * 1.05, f = dust.naturalWidth / side;
@@ -148,6 +182,9 @@ const lmc = maps.snr_stats.lmc8;
     a0 = ((a0 % 180) + 180) % 180;
     ctx.fillStyle = "#f3f3ef";
     ctx.font = "600 10px 'JetBrains Mono Variable', monospace";
-    ctx.fillText(`B PA ${a0.toFixed(0)}° · S/N ${snrAt(tu, tv).toFixed(1)}`, Math.min(mx + R * 0.72 + 8, w - 130), Math.max(my - R * 0.72, 16));
+    const txt = `B PA ${a0.toFixed(0)}° · S/N ${snrAt(tu, tv).toFixed(1)}`;
+    const tx = Math.min(mx + R * 0.72 + 8, w - ctx.measureText(txt).width - 8), ty = Math.max(my - R * 0.72, name ? 30 : 16);
+    ctx.fillText(txt, tx, ty);
+    if (name) { ctx.fillStyle = "#ff3d24"; ctx.fillText(name.toUpperCase(), tx, ty - 14); }
   });
 </script>

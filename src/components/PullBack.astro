@@ -12,7 +12,7 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
   <div class="stage" id="pullStage">
     <canvas id="pullCanvas" aria-hidden="true"></canvas>
     <div class="frame red" id="fT"><span>NGC 2070 &middot; JWST field &middot; 264 ly</span></div>
-    <div class="frame" id="fL"><span>LMC field &middot; 12&deg; &asymp; 34 000 ly</span></div>
+    <div class="frame" id="fL"><span class="long">LMC field &middot; 12&deg; &asymp; 34 000 ly</span><span class="short">LMC</span></div>
     <div id="tgts" aria-hidden="true"></div>
     <div class="hud">
       <div class="readout" aria-hidden="true"><span class="label red" id="rLabel">Field width</span><span class="dot" id="rVal">264 LY</span><span class="label" id="rSub">across the screen</span></div>
@@ -30,6 +30,12 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
   .frame span { position: absolute; left: -1px; bottom: 100%; padding: 4px 8px; font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; background: var(--ink); color: var(--void); white-space: nowrap; }
   .frame.red span { background: var(--signal); }
   .frame.mini span { display: none; }
+  /* Tall or short screens: the LMC frame's tag stays upright (the frame turns by
+     101 deg on the way to the sky map) and shortens to "LMC" once the frame
+     is narrower than the full tag. */
+  #fL span { transform-origin: 0 100%; rotate: var(--unrot, 0rad); }
+  #fL .short, #fL.small .long { display: none; }
+  #fL.small .short { display: block; }
   /* Target markers: signal red with a dark outline, so they read on white
      nebula as well as on black. Each locks on when it appears (it switches
      from display none, which restarts the animations): the ring closes in,
@@ -40,6 +46,8 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
   #tgts :global(.tgt)::before, #tgts :global(.tgt)::after { content: ""; position: absolute; background: var(--signal); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); animation: tgt-hair 0.3s 0.18s cubic-bezier(0.16, 1, 0.3, 1) both; }
   #tgts :global(.tgt)::before { left: calc(50% - 0.75px); top: -8px; bottom: -8px; width: 1.5px; }
   #tgts :global(.tgt)::after { top: calc(50% - 0.75px); left: -8px; right: -8px; height: 1.5px; }
+  /* .flip hangs the tag to the left of a marker near the right edge. */
+  #tgts :global(.tgt.flip span) { left: auto; right: 24px; }
   #tgts :global(.tgt span) { position: absolute; left: 24px; top: -20px; padding: 4px 8px; background: var(--signal); color: var(--void); font: 600 12px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
     animation: tgt-tag 0.28s 0.3s steps(6, end) both; }
   @keyframes tgt-ring { 0% { scale: 2.6; opacity: 0; } 50% { opacity: 1; } 100% { scale: 1; opacity: 1; } }
@@ -53,6 +61,8 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
   .readout .dot { font-size: clamp(2rem, 1rem + 5vw, 6rem); line-height: 0.9; text-shadow: 0 0 16px #000; }
   /* On a dark plate: frame outlines and bright nebula pass under the caption. */
   .cap { max-width: 36ch; justify-self: start; font: 600 clamp(16px, 0.8rem + 0.5vw, 18px)/1.35 var(--mono); background: rgba(0, 0, 0, 0.72); padding: 8px 12px; margin-left: -12px; position: relative; z-index: 1; }
+  /* Landscape phones: a smaller readout and caption leave the LMC in view. */
+  @media (max-height: 500px) { .readout .dot { font-size: 48px; } .cap { max-width: 32ch; font-size: 14px; } }
 </style>
 
 <script>
@@ -91,7 +101,7 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
     "JWST NIRCam image of 30 Doradus (NGC 2070) and its central cluster, R136.",
     "30 Doradus is the brightest star-forming region in the Large Magellanic Cloud.",
     "The LMC in public infrared and Hα surveys. Streaks trace the plane-of-sky field orientation from Planck 353 GHz polarization at about 25′, Milky Way foreground included.",
-    "On the whole sky the LMC sits 33° below the Galactic plane. Streaks show the Milky Way's own field.",
+    "The LMC sits 33° below the Galactic plane. Streaks show the Milky Way's own field.",
   ];
 
   let ctx: CanvasRenderingContext2D, W = 0, H = 0, lastP = -1, capI = -1;
@@ -111,7 +121,7 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
     s.textContent = name;
     e.appendChild(s);
     tg.appendChild(e);
-    return { e, pos };
+    return { e, pos, w: 0 };
   });
 
   function size() {
@@ -131,9 +141,15 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
     const skyW = 1 / FL, skyH = skyW / 2;
     const skyX = 0.5 - SKY_LMC[0] * skyW, skyY = 0.5 - SKY_LMC[1] * skyH;
     const k0 = Math.max(W / TW, H / TH);
-    const k1 = wide ? Math.min(W * 0.62, H * 0.98) : Math.min(W, H) * 1.02;
-    const k2 = Math.min(W / skyW, H / skyH) * 0.96;
-    const c0 = [T_C[0] + TW * (0.5 - CORE[0]), T_C[1] + TH * (0.5 - CORE[1])], c1 = [0.5, 0.5], c2 = [skyX + skyW / 2, skyY + skyH / 2];
+    // On tall screens the disc is held wider than the screen: it fills only
+    // the middle of the 12 deg field, so fitting the field left it small.
+    const k1 = wide ? Math.min(W * 0.62, H * 0.98) : Math.min(W * 1.7, H * 0.95);
+    // The whole sky fitted to a phone's width is a thin band in a black
+    // screen. Tall screens end on about 130 deg of it instead, centred
+    // between the LMC and the Galactic centre so both stay in view.
+    const k2 = wide ? Math.min(W / skyW, H / skyH) * 0.96 : W / (skyW * 0.36);
+    const c2 = wide ? [skyX + skyW / 2, skyY + skyH / 2] : [skyX + (skyW * (0.5 + SKY_LMC[0])) / 2, skyY + (skyH * (0.5 + SKY_LMC[1])) / 2];
+    const c0 = [T_C[0] + TW * (0.5 - CORE[0]), T_C[1] + TH * (0.5 - CORE[1])], c1 = [0.5, 0.5];
     // Screen anchor of the view centre: the LMC sits left of the readout on
     // wide screens and below it on tall ones.
     const a0 = [W / 2, H / 2], a1 = wide ? [W * 0.42, H / 2] : [W / 2, H * 0.56];
@@ -167,7 +183,11 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
     ctx.save();
     ctx.translate(lc[0], lc[1]);
     ctx.rotate(rot);
-    const aL = p < 0.6 ? seg(e1, 0.03, 0.22) : 1;
+    // Around the Webb frame the finest inset is 30 Dor's saturated core, a
+    // pale wash that fills a tall screen above and below the 4:3 frame. There
+    // the context comes in only as the frame shrinks from 70% to 20% of the
+    // screen width, so the Webb image first reads as a window on black.
+    const aL = p >= 0.6 ? 1 : wide ? seg(e1, 0.03, 0.22) : seg(1 - (TW * k) / W, 0.3, 0.8);
     // The viewport in this rotated frame, so only the visible part of each
     // image is drawn and deep zooms stay cheap.
     const cs0 = Math.cos(-rot), sn0 = Math.sin(-rot);
@@ -236,16 +256,29 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
     fT.style.display = showT ? "block" : "none";
     if (showT) {
       Object.assign(fT.style, { left: tcx - tw / 2 + "px", top: tcy - th / 2 + "px", width: tw + "px", height: th + "px", rotate: rot + tr + "rad" });
-      fT.classList.toggle("mini", tw < 90 && p > 0.3 && p < 0.62);
+      // A narrow screen has no room for the tag beside a small frame.
+      fT.classList.toggle("mini", (tw < 90 && p > 0.3 && p < 0.62) || (!wide && tcx - tw / 2 + 290 > W));
     }
     const showL = p > 0.62 && k < W * 0.8;
     fL.style.display = showL ? "block" : "none";
-    if (showL) Object.assign(fL.style, { left: lc[0] - k / 2 + "px", top: lc[1] - k / 2 + "px", width: k + "px", height: k + "px", rotate: rot + "rad" });
+    if (showL) {
+      Object.assign(fL.style, { left: lc[0] - k / 2 + "px", top: lc[1] - k / 2 + "px", width: k + "px", height: k + "px", rotate: rot + "rad" });
+      // Upright where a turned tag would run off the screen: tall or short screens.
+      const upright = !wide || H < 560;
+      fL.style.setProperty("--unrot", upright ? -rot + "rad" : "0rad");
+      fL.classList.toggle("small", upright && k < 280);
+    }
     const showTg = p > 0.44 && p < 0.62;
     targets.forEach((t, i) => {
       const on = showTg && (reduce || seg(p, 0.44, 0.5) * targets.length > i);
       t.e.style.display = on ? "block" : "none";
-      if (on) { const q = S(t.pos[0], t.pos[1]); t.e.style.left = q[0] + "px"; t.e.style.top = q[1] + "px"; }
+      if (on) {
+        const q = S(t.pos[0], t.pos[1]);
+        t.e.style.left = q[0] + "px";
+        t.e.style.top = q[1] + "px";
+        t.w ||= (t.e.firstElementChild as HTMLElement).offsetWidth;
+        t.e.classList.toggle("flip", q[0] + 24 + t.w > W - 8);
+      }
     });
 
     const widthL = W / k;

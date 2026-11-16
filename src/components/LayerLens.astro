@@ -34,7 +34,7 @@ const layers = [
       <legend class="label">Lens</legend>
       {layers.map((l, i) => <label><input type="radio" name="top" value={l.id} data-src={l.src} data-map={l.map} data-note={l.note} checked={i === 1} /><span>{l.l}</span></label>)}
     </fieldset>
-    <p class="note" id="lensNote">{layers[1].note}. Move over the map; the lens shows a second layer.</p>
+    <p class="note" id="lensNote">{layers[1].note}. Point at or tap the map; the lens shows a second layer.</p>
   </div>
 </div>
 
@@ -67,11 +67,15 @@ const layers = [
   const checked = (n: string) => document.querySelector<HTMLInputElement>(`input[name="${n}"]:checked`)!.dataset.map!;
   const maps = [checked("base"), checked("top")];
 
-  stage.addEventListener("pointermove", (e) => {
+  // A tap places the lens on touch screens; a sideways drag moves it there
+  // too (touch-action: pan-y keeps vertical drags for scrolling the page).
+  const move = (e: PointerEvent) => {
     const r = stage.getBoundingClientRect();
     stage.style.setProperty("--x", ((e.clientX - r.left) / r.width) * 100 + "%");
     stage.style.setProperty("--y", ((e.clientY - r.top) / r.height) * 100 + "%");
-  });
+  };
+  stage.addEventListener("pointermove", move);
+  stage.addEventListener("pointerdown", move);
   document.querySelectorAll<HTMLInputElement>('.ctl input[type="radio"]').forEach((inp) =>
     inp.addEventListener("change", () => {
       const img = inp.name === "base" ? base : top;
