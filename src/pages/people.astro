@@ -84,16 +84,16 @@ const avatar = (p: (typeof people)[number]) => initials(p.data.name);
   .people > li { border: solid var(--hair); border-width: 0 1px 1px 0; }
   .people > li { display: grid; grid-template-rows: auto 1fr; }
   .avatar { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: radial-gradient(circle, rgba(243, 243, 239, 0.14) 1px, transparent 1.5px) 0 0 / 12px 12px, var(--panel); overflow: hidden; }
-  /* Photos keep their own colours. A scanline screen, a light vignette and a
-     fade into the card below make them read as frames on the console; the
-     screen clears on hover. The corner brackets sit above it. */
+  /* Photos keep their own colours and brightness. A faint scanline screen and
+     a short fade into the card below make them read as frames on the console;
+     the screen clears on hover. The corner brackets sit above it. Keep it
+     light: stronger values made every face look dim. */
   .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .avatar:has(img)::after {
     content: ""; position: absolute; inset: 0; pointer-events: none; transition: opacity 0.3s;
     background:
-      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 3px),
-      linear-gradient(transparent 62%, rgba(0, 0, 0, 0.55)),
-      radial-gradient(ellipse at 50% 42%, transparent 60%, rgba(0, 0, 0, 0.35) 100%);
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0 1px, transparent 1px 3px),
+      linear-gradient(transparent 80%, rgba(0, 0, 0, 0.3));
   }
   li:hover .avatar::after, .lead:hover .avatar::after { opacity: 0; }
   .avatar .b { z-index: 1; }
