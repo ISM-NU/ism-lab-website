@@ -46,6 +46,7 @@ build needs none of this. Rerun the scripts when a source changes.
 | `scripts/composites.py` | Herschel, Spitzer, WISE (HiPS tiles), SHASSA H-alpha (SkyView), Planck; HiPS cutouts cached in `.cache/hips/` | `public/sky/comp-*.webp`, `src/data/composites.json`; with `insets`, the finer renders around R136 for the scroll zoom (`public/sky/lmc-30dor-*`, `lmc-tarantula-*`, `src/data/zoom-insets.json`) |
 | `scripts/assy_map.py` | Natural Earth 1:50m countries GeoJSON (path as argument) | `src/data/assy-map.json` |
 | `scripts/ml_card.py` | `public/sky/unet-herschel.webp`, `public/sky/unet-data.png` | `public/sky/ml-card-960.webp` |
+| `scripts/people_photos.py` | member photos as sent, in `assets/people-src/` (not tracked) | `public/people/*.webp` (crop, sRGB, exposure, vibrance) |
 
     python3 scripts/fetch_publications.py
     python3 scripts/webb_images.py

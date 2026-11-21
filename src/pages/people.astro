@@ -91,12 +91,12 @@ const links = (p: (typeof people)[number]) => {
   .people > li { border: solid var(--hair); border-width: 0 1px 1px 0; }
   .people > li { display: grid; grid-template-rows: auto 1fr; }
   .avatar { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: radial-gradient(circle, rgba(243, 243, 239, 0.14) 1px, transparent 1.5px) 0 0 / 12px 12px, var(--panel); overflow: hidden; }
-  /* Photos keep their own colours. A faint scanline screen makes them read as
-     frames on the console and clears on hover; the slight brightness lift
-     cancels the 2% the lines take. Keep it this light: every stronger screen
+  /* Tone and colour are baked into the files by scripts/people_photos.py; no
+     filters here. A faint scanline screen makes photos read as frames on the
+     console and clears on hover. Keep it this light: every stronger screen
      (vignette, bottom fade, 8-16% lines) made faces look dim. The corner
      brackets sit above it. */
-  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(1.04); }
+  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .avatar:has(img)::after {
     content: ""; position: absolute; inset: 0; pointer-events: none; transition: opacity 0.3s;
     background:
