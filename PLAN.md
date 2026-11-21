@@ -243,3 +243,15 @@ before the site goes public.
 - [ ] Optical polarimetry has no papers, so no collaborators yet; Dana to name
       the Assy partners if they should appear
 - [ ] Ali Tussupov has no photo
+
+## Person pages, group publications, photo grading (2026-11-21)
+- [x] /people/<id>/ for everyone: bio, research lines (`lines`, set only from
+      the person's bio or authorship; evidence in a YAML comment), code and
+      contributions (`work`, no link for private repos), papers (papersOf)
+- [x] Publications cover the whole group: ADS query over every member's name,
+      kept only with Dana Alina, a member at NU, or ALLOW; member filter
+- [x] Photos graded by scripts/people_photos.py from originals in
+      assets/people-src/ (untracked; copy them back from Downloads if lost)
+- [ ] Adel: does she work on the Assy polarimeter? (her page lists optical
+      polarimetry from her bio's instrument work)
+- [ ] Denis's role still reads "Student"

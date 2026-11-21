@@ -1,20 +1,16 @@
 ---
 import { getCollection, render } from "astro:content";
 import Base from "../layouts/Base.astro";
-import { alinaPapers, profileLinks } from "../lib/pubs";
+import Avatar from "../components/Avatar.astro";
+import PersonHead from "../components/PersonHead.astro";
+import { alinaPapers } from "../lib/pubs";
+import { initials, personHref, personLinks } from "../lib/people";
 
 const people = (await getCollection("people")).sort((a, b) => a.data.order - b.data.order);
+const names = people.map((p) => p.data.name);
 const rendered = await Promise.all(people.map(async (p) => ({ p, Content: (await render(p)).Content })));
-// Two-letter initials, widened with the next letter of the surname when two
-// people would share them (Dana Alina and Denis Andreyev are both "DA").
-const two = (n: string) => n.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-const initials = (n: string) => {
-  const clash = people.filter((q) => two(q.data.name) === two(n)).length > 1;
-  const w = n.split(/\s+/);
-  return clash ? (w[0][0] + w.at(-1)!.slice(0, 2)).toUpperCase() : two(n);
-};
 // The PI gets a lead block of her own; everyone else is listed below, current
-// students first, then alumni.
+// students first, then alumni. Each name opens the person's page.
 const [lead, ...others] = rendered;
 const groups = [
   { id: "students", title: "Students", list: others.filter(({ p }) => !p.data.alumni) },
@@ -23,39 +19,19 @@ const groups = [
 // Dana Alina's own record (entries she is an author on), not the whole group's.
 const since = Math.min(...alinaPapers.map((p) => p.year));
 const led = alinaPapers.filter((p) => p.led).length;
-const avatar = (p: (typeof people)[number]) => initials(p.data.name);
-// NU addresses follow name.surname@nu.edu.kz. Alumni lose theirs, so they get none.
-const email = (p: (typeof people)[number]) =>
-  p.data.alumni ? null : `${p.data.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/\s+/).join(".")}@nu.edu.kz`;
-const links = (p: (typeof people)[number]) => {
-  const e = email(p);
-  return [...(e ? [{ label: e, href: `mailto:${e}` }] : []), ...profileLinks(p.data.name), ...p.data.links];
-};
 ---
 
-<Base title="People" description="Dana Alina's interstellar medium group at Nazarbayev University: the principal investigator, her students and alumni.">
+<Base title="People" description="The interstellar medium group at Nazarbayev University: Dana Alina, her students and alumni.">
   <!-- No title band: the nav marks the page and Dana Alina's block is its header. -->
   <h1 class="sr-only">People</h1>
-  <section class="lead-sec" id={lead.p.id} aria-labelledby="lead-h">
-    <div class="gut max lead">
-      <div class="avatar big" aria-hidden="true">
-        {lead.p.data.photo ? <img src={lead.p.data.photo} alt="" decoding="async" /> : <span class="dot">{avatar(lead.p)}</span>}
-        <i class="b tl"></i><i class="b br"></i>
-      </div>
-      <div class="lead-meta">
-        <span class="label red">{lead.p.data.role}</span>
-        <h2 class="brut" id="lead-h">{lead.p.data.name}</h2>
-        <span class="focus">{lead.p.data.focus}</span>
-        <div class="lead-bio"><lead.Content /></div>
-        <dl class="stats">
-          <div><dt class="label">Entries in NASA ADS</dt><dd class="dot">{alinaPapers.length}</dd></div>
-          <div><dt class="label">Group-led</dt><dd class="dot">{led}</dd></div>
-          <div><dt class="label">Since</dt><dd class="dot">{since}</dd></div>
-        </dl>
-        {links(lead.p).length > 0 && <ul class="links">{links(lead.p).map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>}
-      </div>
-    </div>
-  </section>
+  <PersonHead p={lead.p} initials={initials(lead.p.data.name, names)} href={personHref(lead.p.id)}>
+    <lead.Content slot="bio" />
+    <dl class="stats">
+      <div><dt class="label">Entries in NASA ADS</dt><dd class="dot">{alinaPapers.length}</dd></div>
+      <div><dt class="label">Group-led</dt><dd class="dot">{led}</dd></div>
+      <div><dt class="label">Since</dt><dd class="dot">{since}</dd></div>
+    </dl>
+  </PersonHead>
 
   {groups.map((g) => (
   <section class="sec" aria-labelledby={`${g.id}-h`}>
@@ -65,17 +41,14 @@ const links = (p: (typeof people)[number]) => {
       </div>
       <ul class="people cells">
         {g.list.map(({ p, Content }) => (
-          <li id={p.id}>
-            <div class="avatar" aria-hidden="true">
-              {p.data.photo ? <img src={p.data.photo} alt="" loading="lazy" decoding="async" /> : <span class="dot">{avatar(p)}</span>}
-              <i class="b tl"></i><i class="b br"></i>
-            </div>
+          <li id={p.id} class="hover-clear">
+            <Avatar photo={p.data.photo} initials={initials(p.data.name, names)} />
             <div class="meta">
-              <div class="row"><span class="label">{p.data.role}</span>{p.data.mock && <span class="tag soon">Example</span>}</div>
-              <h3 class="brut">{p.data.name}</h3>
+              <span class="label">{p.data.role}</span>
+              <h3 class="brut"><a class="open" href={personHref(p.id)}>{p.data.name}</a></h3>
               <span class="focus">{p.data.focus}</span>
-              <div class="bio"><Content /></div>
-              {links(p).length > 0 && <ul class="links">{links(p).map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>}
+              <div class="bio">{p.data.short ? <p>{p.data.short}</p> : <Content />}</div>
+              <ul class="links">{personLinks(p).map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
             </div>
           </li>
         ))}
@@ -89,47 +62,22 @@ const links = (p: (typeof people)[number]) => {
   /* Hairlines drawn per card rather than by the grid gap, so a short last row
      leaves blank page instead of a grey hole. */
   .people { list-style: none; margin: 0; padding: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0; background: none; border-width: 1px 0 0 1px; }
-  .people > li { border: solid var(--hair); border-width: 0 1px 1px 0; }
-  .people > li { display: grid; grid-template-rows: auto 1fr; }
-  .avatar { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: radial-gradient(circle, rgba(243, 243, 239, 0.14) 1px, transparent 1.5px) 0 0 / 12px 12px, var(--panel); overflow: hidden; }
-  /* Tone and colour are baked into the files by scripts/people_photos.py; no
-     filters here. A faint scanline screen makes photos read as frames on the
-     console and clears on hover. Keep it this light: every stronger screen
-     (vignette, bottom fade, 8-16% lines) made faces look dim. The corner
-     brackets sit above it. */
-  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .avatar:has(img)::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none; transition: opacity 0.3s;
-    background:
-      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.06) 0 1px, transparent 1px 3px);
-  }
-  li:hover .avatar::after, .lead:hover .avatar::after { opacity: 0; }
-  .avatar .b { z-index: 1; }
-  @media (prefers-reduced-motion: reduce) { .avatar::after { transition: none; } }
-  .avatar .dot { font-size: clamp(4rem, 10vw, 8rem); line-height: 1; color: var(--ink); }
-  li:hover .avatar .dot { color: var(--signal); }
-  .b { position: absolute; width: 18px; height: 18px; border: 0 solid var(--signal); }
-  .tl { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
-  .br { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
+  .people > li { position: relative; display: grid; grid-template-rows: auto 1fr; border: solid var(--hair); border-width: 0 1px 1px 0; }
   .meta { padding: 16px 16px 24px; display: grid; gap: 8px; align-content: start; border-top: 1px solid var(--hair); }
-  .row { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
   .people h3 { font-size: clamp(24px, 1rem + 1vw, 32px); }
-  .lead-sec { padding: calc(var(--bar-h) + clamp(32px, 5vw, 64px)) 0 clamp(32px, 6vw, 64px); border-bottom: 1px solid var(--hair); }
-  .lead { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
-  .avatar.big { border: 1px solid var(--hair); }
-  .avatar.big .dot { font-size: clamp(6rem, 16vw, 8rem); }
-  .lead-meta { display: grid; gap: 16px; align-content: start; }
-  .lead-meta .label.red { color: var(--signal); }
-  .lead-bio { max-width: 60ch; font-size: 16px; }
-  .lead-bio :global(p) { margin: 0; }
+  /* The whole card opens the person's page through the name's link, stretched
+     over the card; the email and profile links sit above it and stay separate. */
+  .open { text-decoration: none; }
+  .open::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+  .open:focus-visible { outline: none; }
+  .people > li:has(.open:focus-visible) { outline: 2px solid var(--signal); outline-offset: -2px; }
+  li:hover .open { text-decoration: underline; text-decoration-color: var(--signal); }
+  .links { position: relative; z-index: 2; list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; }
+  .links a { overflow-wrap: anywhere; }
+  .focus { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .bio { font-size: 14px; color: var(--grey); }
+  .bio :global(p) { margin: 0; }
   .stats { display: flex; flex-wrap: wrap; gap: 16px 32px; margin: 8px 0 0; }
   .stats div { display: grid; gap: 8px; }
   .stats dd { margin: 0; font-size: clamp(32px, 1rem + 2vw, 48px); line-height: 1; }
-  .lead .links { font-size: 14px; gap: 24px; }
-  .lead .links a { text-decoration-color: var(--signal); text-underline-offset: 4px; }
-  @media (max-width: 800px) { .lead { grid-template-columns: minmax(0, 1fr); } .avatar.big { max-width: 192px; } .avatar.big .dot { font-size: 64px; } }
-  .focus { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
-  .bio { font-size: 14px; color: var(--grey); }
-  .links { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; }
-  .links a { overflow-wrap: anywhere; }
 </style>

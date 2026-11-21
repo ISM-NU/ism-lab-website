@@ -1,0 +1,73 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import PersonHead from "../../components/PersonHead.astro";
+import ProjectCards from "../../components/ProjectCards.astro";
+import PaperList from "../../components/PaperList.astro";
+import { papersOf } from "../../lib/pubs";
+import { initials } from "../../lib/people";
+
+export async function getStaticPaths() {
+  const people = await getCollection("people");
+  const names = people.map((p) => p.data.name);
+  return people.map((p) => ({ params: { id: p.id }, props: { p, names } }));
+}
+const { p, names } = Astro.props;
+const { Content } = await render(p);
+const lines = p.data.lines.map((l) => l.id);
+const items = papersOf(p.data.name);
+---
+
+<Base title={p.data.name} description={`${p.data.name}, ${p.data.role.toLowerCase()} in the interstellar medium group at Nazarbayev University: ${p.data.focus}.`}>
+  <PersonHead p={p} initials={initials(p.data.name, names)} level="h1">
+    <Content slot="bio" />
+    <p class="back"><a href="/people/">&larr; All people</a></p>
+  </PersonHead>
+
+  {lines.length > 0 && (
+    <section class="sec tight" aria-labelledby="lines-h" style="padding-top: clamp(32px,6vw,64px)">
+      <div class="gut max">
+        <div class="head"><h2 class="brut" id="lines-h" data-scramble>Research</h2></div>
+        <ProjectCards ids={lines} />
+      </div>
+    </section>
+  )}
+
+  {p.data.work.length > 0 && (
+    <section class="sec tight" aria-labelledby="work-h">
+      <div class="gut max">
+        <div class="head"><h2 class="brut" id="work-h" data-scramble>Code and contributions</h2></div>
+        <ul class="work">
+          {p.data.work.map((w) => (
+            <li>
+              {w.href ? <a href={w.href} rel="noopener">{w.title}</a> : <span class="t">{w.title}</span>}
+              <span class="note">{w.note}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  {items.length > 0 && (
+    <section class="slab sec" aria-labelledby="papers-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="papers-h">Papers</h2>
+          <p><a href="/publications">All publications &rarr;</a></p>
+        </div>
+        <div style="margin-top: 32px"><PaperList items={items} /></div>
+      </div>
+    </section>
+  )}
+</Base>
+
+<style>
+  .back { font-size: 14px; margin: 0; }
+  .back a { text-decoration-color: var(--signal); text-underline-offset: 4px; }
+  .work { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 24px 32px; }
+  .work li { display: grid; gap: 4px; align-content: start; }
+  .work a, .work .t { font-size: 16px; font-weight: 600; }
+  .work a { text-decoration-color: var(--signal); text-underline-offset: 4px; }
+  .note { font-size: 14px; color: var(--grey); }
+</style>

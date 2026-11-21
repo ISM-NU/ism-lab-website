@@ -1,0 +1,42 @@
+---
+// The large block for one person: photo, role, name, focus, bio and links.
+// The PI's block on /people and every /people/<id>/ page use it. The default
+// slot goes between the bio and the links (the PI's stats).
+import type { CollectionEntry } from "astro:content";
+import Avatar from "./Avatar.astro";
+import { personLinks } from "../lib/people";
+interface Props { p: CollectionEntry<"people">; initials: string; level?: "h1" | "h2"; href?: string; top?: boolean }
+const { p, initials, level = "h2", href, top = true } = Astro.props;
+const H = level;
+const links = personLinks(p);
+---
+
+<section class:list={["lead-sec", { top }]} id={p.id} aria-labelledby={`${p.id}-h`}>
+  <div class="gut max lead hover-clear">
+    <Avatar photo={p.data.photo} initials={initials} big eager />
+    <div class="lead-meta">
+      <span class="label red">{p.data.role}</span>
+      <H class:list={["brut", "name", { page: level === "h1" }]} id={`${p.id}-h`}>{href ? <a href={href}>{p.data.name}</a> : p.data.name}</H>
+      <span class="focus">{p.data.focus}</span>
+      <div class="lead-bio"><slot name="bio" /></div>
+      <slot />
+      {links.length > 0 && <ul class="links">{links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>}
+    </div>
+  </div>
+</section>
+
+<style>
+  .lead-sec { padding: clamp(32px, 6vw, 64px) 0; border-bottom: 1px solid var(--hair); }
+  .lead-sec.top { padding-top: calc(var(--bar-h) + clamp(32px, 5vw, 64px)); }
+  .lead { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
+  .lead-meta { display: grid; gap: 16px; align-content: start; }
+  .red { color: var(--signal); }
+  .name a { text-decoration: none; }
+  .name a:hover, .name a:focus-visible { text-decoration: underline; text-decoration-color: var(--signal); text-decoration-thickness: 2px; }
+  .focus { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .lead-bio { max-width: 60ch; font-size: 16px; }
+  .lead-bio :global(p) { margin: 0; }
+  .links { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; }
+  .links a { overflow-wrap: anywhere; text-decoration-color: var(--signal); text-underline-offset: 4px; }
+  @media (max-width: 800px) { .lead { grid-template-columns: minmax(0, 1fr); } }
+</style>

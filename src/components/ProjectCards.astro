@@ -1,7 +1,9 @@
 ---
 import { getCollection } from "astro:content";
 import { byBibcode, shortCite } from "../lib/pubs";
-const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+// `ids` limits the cards to these research lines (a person's page); default all.
+const { ids } = Astro.props as { ids?: string[] };
+const projects = (await getCollection("projects")).filter((p) => !ids || ids.includes(p.id)).sort((a, b) => a.data.order - b.data.order);
 ---
 
 <div class="proj cells">

@@ -1,4 +1,4 @@
-import { defineCollection } from "astro:content";
+import { defineCollection, reference } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import publications from "./data/publications.json";
@@ -18,6 +18,13 @@ const people = defineCollection({
     alumni: z.boolean().default(false),
     photo: z.string().optional(),
     links: z.array(z.object({ label: z.string(), href: z.url() })).default([]),
+    // Research lines this person works on; ids must exist in src/content/projects.
+    // Set only from their own bio or authorship.
+    lines: z.array(reference("projects")).default([]),
+    // Card text when the full bio (the Markdown body, shown on the person's page) is long.
+    short: z.string().optional(),
+    // Code, tools and contributions outside the papers. No href for private work.
+    work: z.array(z.object({ title: z.string(), note: z.string(), href: z.url().optional() })).default([]),
   }),
 });
 

@@ -4,6 +4,7 @@ role: "Principal investigator"
 focus: "Magnetic fields, dust polarization, filaments"
 order: 1
 photo: "/people/dana-alina.webp"
+lines: [lmc, filaments, star-formation, dust-polarization, optical-polarimetry, hub-filament-systems, machine-learning]
 ---
 Dana Alina leads the interstellar medium group at Nazarbayev University and
 supervises its students. Her PhD at IRAP, Toulouse (2015) analysed polarized

@@ -1,0 +1,31 @@
+---
+// A member's photo, or their dot-matrix initials, in the bracketed frame.
+// Tone and colour are baked into the files by scripts/people_photos.py; no
+// filters here. A faint scanline screen makes photos read as frames on the
+// console and clears when the enclosing card or block (.hover-clear) is hovered.
+// Keep it this light: every stronger screen (vignette, bottom fade, 8-16% lines)
+// made faces look dim.
+interface Props { photo?: string; initials: string; big?: boolean; eager?: boolean }
+const { photo, initials, big = false, eager = false } = Astro.props;
+---
+
+<div class:list={["avatar", { big }]} aria-hidden="true">
+  {photo ? <img src={photo} alt="" loading={eager ? "eager" : "lazy"} decoding="async" /> : <span class="dot">{initials}</span>}
+  <i class="b tl"></i><i class="b br"></i>
+</div>
+
+<style>
+  .avatar { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: radial-gradient(circle, rgba(243, 243, 239, 0.14) 1px, transparent 1.5px) 0 0 / 12px 12px, var(--panel); overflow: hidden; }
+  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .avatar:has(img)::after { content: ""; position: absolute; inset: 0; pointer-events: none; transition: opacity 0.3s; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.06) 0 1px, transparent 1px 3px); }
+  :global(.hover-clear:hover) .avatar::after { opacity: 0; }
+  :global(.hover-clear:hover) .dot { color: var(--signal); }
+  .dot { font-size: clamp(4rem, 10vw, 8rem); line-height: 1; color: var(--ink); }
+  .big { border: 1px solid var(--hair); }
+  .big .dot { font-size: clamp(6rem, 16vw, 8rem); }
+  .b { position: absolute; z-index: 1; width: 18px; height: 18px; border: 0 solid var(--signal); }
+  .tl { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
+  .br { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
+  @media (max-width: 800px) { .big { max-width: 192px; } .big .dot { font-size: 64px; } }
+  @media (prefers-reduced-motion: reduce) { .avatar::after { transition: none; } }
+</style>
