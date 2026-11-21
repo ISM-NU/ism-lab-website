@@ -254,6 +254,5 @@ before the site goes public.
       kept only with Dana Alina, a member at NU, or ALLOW; member filter
 - [x] Photos graded by scripts/people_photos.py from originals in
       assets/people-src/ (untracked; copy them back from Downloads if lost)
-- [ ] Adel: does she work on the Assy polarimeter? (her page lists optical
-      polarimetry from her bio's instrument work)
+- [x] Adel works on the Assy polarimeter (Denis, 2026-11-21)
 - [x] Denis is an undergraduate student
