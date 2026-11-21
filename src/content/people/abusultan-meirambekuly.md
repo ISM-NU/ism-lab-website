@@ -1,8 +1,8 @@
 ---
 name: "Abusultan Meirambekuly"
 role: "Undergraduate student"
-focus: "LMC polarization, magnetic fields in clouds"
+focus: "LMC magnetic fields, molecular clouds"
 order: 9
 photo: "/people/abusultan-meirambekuly.webp"
 ---
-Analyses polarization angles in the Large Magellanic Cloud. Applies the velocity gradient technique to GASKAP-HI 21 cm and Mopra CO data towards its molecular clouds, and compares the result with Planck 353 GHz and optical polarization catalogues.
+Measures magnetic field directions in molecular clouds of the Large Magellanic Cloud with the velocity gradient technique, which reads the field direction from gas motions in GASKAP-HI 21 cm and Mopra CO data. Compares the result with Planck 353 GHz dust polarization and with optical polarization catalogues.
