@@ -28,6 +28,11 @@
   --gut-r: max(16px, env(safe-area-inset-right, 0px));
   --bar-h: 40px;
   color-scheme: dark;
+  /* The browser's own scrollbar is the only scroll indicator (a decorative
+     tick ruler on the right edge used to sit under it and clash). Thin, grey
+     on black. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--grey) var(--void);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
