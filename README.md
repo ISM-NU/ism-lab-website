@@ -44,6 +44,8 @@ build needs none of this. Rerun the scripts when a source changes.
 | `scripts/render_lmc.py` | Planck 353 GHz, GASS H I and MAGMA CO from the LMC workspace data | `assets/lmc/` (not tracked) |
 | `scripts/web_assets.py` | `assets/lmc/` | `public/sky/*.webp`, `src/data/sky.json` |
 | `scripts/composites.py` | Herschel, Spitzer, WISE (HiPS tiles), SHASSA H-alpha (SkyView), Planck; HiPS cutouts cached in `.cache/hips/` | `public/sky/comp-*.webp`, `src/data/composites.json`; with `insets`, the finer renders around R136 for the scroll zoom (`public/sky/lmc-30dor-*`, `lmc-tarantula-*`, `src/data/zoom-insets.json`) |
+| `scripts/assy_map.py` | Natural Earth 1:50m countries GeoJSON (path as argument) | `src/data/assy-map.json` |
+| `scripts/ml_card.py` | `public/sky/unet-herschel.webp`, `public/sky/unet-data.png` | `public/sky/ml-card-960.webp` |
 
     python3 scripts/fetch_publications.py
     python3 scripts/webb_images.py

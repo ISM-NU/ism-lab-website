@@ -14,6 +14,8 @@ const people = defineCollection({
     order: z.number(),
     // Placeholder entry: shown with a MOCK tag, never with a real-looking face.
     mock: z.boolean().default(false),
+    // Former member: listed under Alumni on the people page.
+    alumni: z.boolean().default(false),
     photo: z.string().optional(),
     links: z.array(z.object({ label: z.string(), href: z.url() })).default([]),
   }),
@@ -26,10 +28,17 @@ const projects = defineCollection({
     code: z.string(),
     summary: z.string(),
     order: z.number(),
-    image: z.string(),
+    // Optional: a line with no picture yet shows a dot-matrix panel on its card.
+    image: z.string().optional(),
+    // Says what the header image shows. Without it the header lists `instruments`,
+    // which is only right when the image comes from those instruments.
+    imageCaption: z.string().optional(),
     instruments: z.array(z.string()),
     // ADS bibcodes of the published papers behind this line of work.
     papers: z.array(z.string()).default([]),
+    // The papers Dana chose to name on the card ("Alina et al. 2023"). Each must
+    // also be in `papers`, which is checked by the research page build.
+    keyPapers: z.array(z.string().refine((b) => bibcodes.has(b), { message: "bibcode not in src/data/publications.json" })).default([]),
     // Published results, each stated as the paper states it. The bibcode must be in
     // publications.json; the source sentence goes in a YAML comment above each item.
     // value: the number with its uncertainty as printed, if the paper gives one.

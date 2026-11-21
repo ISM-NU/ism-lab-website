@@ -249,6 +249,6 @@ export const bars: Bar[] = [
     size: 10 * DEG,
     sizeNote: "assumed to match the 10 degree LMC field of the other LMC bars",
     papers: ["2024IAUGA..32P.103A"],
-    soon: "In progress: the group's analysis of GASKAP-HI is not published yet",
+    soon: "In progress: our analysis of GASKAP-HI is not published yet",
   },
 ];

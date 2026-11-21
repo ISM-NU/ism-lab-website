@@ -1,0 +1,35 @@
+---
+// Where the Assy-Turgen Observatory is: Kazakhstan outline from Natural Earth,
+// built by scripts/assy_map.py. Almaty is drawn only as a reference point; at
+// this scale it sits almost on top of the observatory.
+import map from "../data/assy-map.json";
+const { width: w, height: h, path, points: pt } = map;
+---
+
+<figure class="assy">
+  <svg viewBox={`0 0 ${w} ${h}`} role="img" aria-labelledby="assy-t">
+    <title id="assy-t">Map of Kazakhstan with the Assy-Turgen Observatory, 85 km east of Almaty, and Astana</title>
+    <path d={path} class="land" />
+    <circle cx={pt.astana.x} cy={pt.astana.y} r="6" class="city" />
+    <text x={pt.astana.x - 18} y={pt.astana.y + 11} class="t" text-anchor="end">Astana</text>
+    <text x={pt.astana.x - 18} y={pt.astana.y + 49} class="t dim" text-anchor="end">Nazarbayev University</text>
+    <circle cx={pt.almaty.x} cy={pt.almaty.y} r="4" class="city" />
+    <text x={pt.almaty.x - 14} y={pt.almaty.y - 22} class="t dim" text-anchor="end">Almaty</text>
+    <g class="mark" transform={`translate(${pt.assy.x} ${pt.assy.y})`}>
+      <circle r="14" /><path d="M-26 0H-18M18 0H26M0 -26V-18M0 18V26" />
+    </g>
+    <text x={pt.assy.x + 26} y={pt.assy.y + 62} class="t red" text-anchor="end">Assy-Turgen Observatory</text>
+    <text x={pt.assy.x + 26} y={pt.assy.y + 100} class="t dim" text-anchor="end">43.23° N 77.87° E · 2750 m</text>
+  </svg>
+</figure>
+
+<style>
+  .assy { margin: 32px 0 0; max-width: 960px; }
+  svg { width: 100%; height: auto; display: block; }
+  .land { fill: var(--panel); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+  .city { fill: var(--ink); }
+  .mark circle, .mark path { fill: none; stroke: var(--signal); stroke-width: 3; }
+  .t { font: 600 32px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; fill: var(--ink); paint-order: stroke; stroke: var(--void); stroke-width: 8; stroke-linejoin: round; }
+  .dim { fill: var(--grey); }
+  .red { fill: var(--signal); }
+</style>

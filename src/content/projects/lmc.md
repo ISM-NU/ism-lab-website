@@ -1,10 +1,11 @@
 ---
-title: "The magnetic field of the Large Magellanic Cloud"
+title: "The Large Magellanic Cloud"
 code: "LMC"
-summary: "Mapping the magnetic field of the Large Magellanic Cloud from polarized dust and from the motions of its atomic hydrogen, and separating its cold neutral phase."
+summary: "Mapping the magnetic field of the Large Magellanic Cloud from polarized dust and the motion of its atomic hydrogen, with careful foreground subtraction."
 order: 1
 image: "/sky/comp-lmc-field-960.webp"
 instruments: ["Planck", "ASKAP", "Parkes"]
+keyPapers: ["2023MNRAS.518.4466A"]
 papers:
   - "2023MNRAS.518.4466A"
   - "2026IAUS..392..179A"

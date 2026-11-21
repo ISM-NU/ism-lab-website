@@ -3,6 +3,7 @@ name: "Dana Alina"
 role: "Principal investigator"
 focus: "Magnetic fields, dust polarization, filaments"
 order: 1
+photo: "/people/dana-alina.webp"
 links:
   - label: "dana.alina@nu.edu.kz"
     href: "mailto:dana.alina@nu.edu.kz"

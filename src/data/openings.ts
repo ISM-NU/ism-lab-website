@@ -18,7 +18,7 @@ export interface Direction {
 export const directions: Direction[] = [
   {
     title: "Magnetic field from velocity gradients",
-    exists: "The group's velocity-gradient code turns H I and CO spectral-line cubes into plane-of-sky field orientation maps. The method gave the foreground direction in the LMC paper (Alina et al. 2023).",
+    exists: "Our velocity-gradient code turns H I and CO spectral-line cubes into plane-of-sky field orientation maps. The method gave the foreground direction in the LMC paper (Alina et al. 2023).",
     open: "Testing the method on more cubes, and checking its angles against dust and starlight polarization.",
     data: "GASS H I (Parkes), MAGMA CO (Mopra), Planck 353 GHz",
     line: "lmc",

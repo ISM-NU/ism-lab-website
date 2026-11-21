@@ -44,8 +44,7 @@ news/announcements, contacts.
   Planck alone (5' beam) is too soft for large images.
 - Publications come from ADS through `scripts/fetch_publications.py`, which
   writes `src/data/publications.json`. The build never calls ADS.
-- Members are mock placeholders (`mock: true`) until real photos and bios
-  arrive. There are 9 members.
+- Members are real entries since 2026-11-21: Dana Alina and 8 students.
 - Develop on localhost for now. Domain and hosting come later.
 
 ## Done means
@@ -60,7 +59,7 @@ news/announcements, contacts.
 - [x] Render script for all-sky and LMC layers
 - [x] Direction chosen (v2 console)
 - [x] Site scaffold (Astro), content model, all pages, publications from ADS
-- [ ] Real member data (photos, roles, bios) from Denis
+- [x] Real member data (photos, roles, bios) from Denis (2026-11-21)
 - [ ] Dana's sign-off on research graph links and COMING SOON items
 - [x] Multi-band composites for LMC, Galactic centre, Mon OB1
 - [ ] IViS pilot on SB33047 (needs VPN and OPAL login)
@@ -214,3 +213,33 @@ before the site goes public.
 - [ ] Re-render the R136 inset (lmc-tarantula) with a stretch that does not
       clip 30 Dor's core; it reads as a pale wash around 1 000 ly on every
       screen
+
+## Dana's feedback on the home page (2026-11-21, 4Denis.docx)
+- [x] Hero sentence replaced with Dana's wording (also the home meta description)
+- [x] LMC, filaments, star formation: Dana's titles and summaries; the papers
+      she named show on the card (`keyPapers`), full lists stay on the pages
+- [x] POL card left as it is (her item 4)
+- [x] New lines: optical polarimetry (Assy-Turgen map from
+      scripts/assy_map.py), hub-filament systems, machine learning
+      (card image from scripts/ml_card.py; virial-parameter network as
+      Coming soon)
+- [x] Members: Dana Alina's photo; six new students with bios (five with
+      photos) plus Temirkul Umetaliev (no photo or bio from him yet);
+      placeholders deleted
+- [ ] Assy photos from Dana for the optical polarimetry card and page
+- [ ] FILDREAMS collaboration papers for the filaments line (Dana: "можно")
+- [ ] Dana to approve the summaries and page text for hub-filament systems,
+      machine learning and optical polarimetry (written by Denis from the
+      members' bios and the papers)
+- [x] Site copy speaks as "we" (Denis, 2026-11-21); people bios stay in the
+      third person
+- [x] Temirkul Umetaliev listed under Alumni (`alumni: true`); no photo or bio
+      from him yet
+- [x] Collaborators on every project page: co-authors on our group-led papers
+      in that line, minus members and alumni (collaborators() in pubs.ts);
+      ORCID link from ADS, else their ADS author search; institution from the
+      ADS affiliation. Former NU students without a site entry stay listed as
+      collaborators until someone says they were group members.
+- [ ] Optical polarimetry has no papers, so no collaborators yet; Dana to name
+      the Assy partners if they should appear
+- [ ] Ali Tussupov has no photo

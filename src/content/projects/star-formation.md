@@ -1,10 +1,11 @@
 ---
 title: "Magnetic fields in star-forming clouds"
 code: "SF"
-summary: "Magnetic fields, cores and gas flows inside individual molecular clouds: Orion, Monoceros OB1, infrared dark clouds and the centre of NGC 253."
+summary: "We investigate the role of magnetic fields in individual molecular clouds using spectroscopic and polarimetric observations across different wavelengths."
 order: 3
 image: "/sky/comp-monoceros_ob1-960.webp"
 instruments: ["ALMA", "JCMT", "JWST", "TRAO"]
+keyPapers: ["2022A&A...658A..90A", "2025AJ....170..152A"]
 papers:
   - "2026MNRAS.552g1764D"
   - "2026arXiv260800441M"

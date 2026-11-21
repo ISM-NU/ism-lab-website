@@ -1,7 +1,7 @@
 ---
 title: "Measuring polarized dust"
 code: "POL"
-summary: "Methods used across the group's work: estimating polarization fraction and angle without bias, and the Planck and PILOT instruments that measure them."
+summary: "Methods used across our work: estimating polarization fraction and angle without bias, and the Planck and PILOT instruments that measure them."
 order: 4
 image: "/sky/comp-galactic_centre-960.webp"
 instruments: ["Planck", "PILOT"]
@@ -46,7 +46,7 @@ findings:
 ---
 
 Polarization fraction and angle are noisy, non-linear quantities, and naive
-estimates are biased at low signal to noise. Part of the group's work is the
+estimates are biased at low signal to noise. Part of our work is the
 statistics needed to read such maps without bias, and part is the
 instruments: the Planck all-sky survey and PILOT, a balloon that measured dust
 polarization towards the Galactic centre.

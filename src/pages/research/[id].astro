@@ -13,8 +13,9 @@ import ForegroundWipe from "../../components/ForegroundWipe.astro";
 import FilamentNet from "../../components/FilamentNet.astro";
 import OrientationExplorer from "../../components/OrientationExplorer.astro";
 import EstimatorBench from "../../components/EstimatorBench.astro";
+import AssyMap from "../../components/AssyMap.astro";
 import { flags } from "../../data/flags";
-import { byBibcode, type Paper } from "../../lib/pubs";
+import { byBibcode, collaborators, type Paper } from "../../lib/pubs";
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
@@ -25,10 +26,14 @@ const { Content } = await render(p);
 const items = p.data.papers.map((b) => byBibcode.get(b)).filter((x): x is Paper => !!x).sort((a, b) => b.year - a.year);
 const missing = p.data.papers.filter((b) => !byBibcode.has(b));
 if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json: ${missing.join(", ")}`);
+const people = (await getCollection("people")).map((m) => m.data.name);
+const collab = collaborators(p.data.papers, people);
+const unlisted = p.data.keyPapers.filter((b) => !p.data.papers.includes(b));
+if (unlisted.length) throw new Error(`${p.id}: keyPapers not in papers: ${unlisted.join(", ")}`);
 ---
 
 <Base title={p.data.title} description={p.data.summary}>
-  <PageHead title={p.data.title} intro={p.data.summary} image={p.data.image} caption={p.data.instruments.join(" · ")} />
+  <PageHead title={p.data.title} intro={p.data.summary} image={p.data.image} caption={p.data.imageCaption ?? p.data.instruments.join(" · ")} />
 
   <section class="sec" style="padding-top: clamp(32px,6vw,64px)">
     <div class="gut max">
@@ -50,6 +55,18 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
   {/* Extra sections for one research line go below, one block per project id,
       each a <section class="sec tight"> with a .head. Keep them after Results
       and before "In progress". */}
+
+  {p.id === "optical-polarimetry" && (
+    <section class="sec tight" aria-labelledby="assy-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="assy-h" data-scramble>Assy-Turgen Observatory</h2>
+          <p>The observatory is about 1000 km south-east of Nazarbayev University in Astana.</p>
+        </div>
+        <AssyMap />
+      </div>
+    </section>
+  )}
 
   {p.id === "lmc" && (
     <section class="sec tight" aria-labelledby="lens-h">
@@ -104,7 +121,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
       <div class="gut max">
         <div class="head">
           <h2 class="brut" id="fn-h" data-scramble>U-Net filament detection in Mon OB1</h2>
-          <p>The group's network run on Herschel 250 µm in Mon OB1, with the Planck field for comparison.</p>
+          <p>Our network run on Herschel 250 µm in Mon OB1, with the Planck field for comparison.</p>
         </div>
         <FilamentNet preview />
       </div>
@@ -128,7 +145,7 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
       <div class="gut max">
         <div class="head">
           <h2 class="brut" id="bench-h" data-scramble>Bias at low signal to noise</h2>
-          <p>Noise biases the polarization fraction and the angle dispersion function. Compare the estimators the group has studied.</p>
+          <p>Noise biases the polarization fraction and the angle dispersion function. Compare the estimators we have studied.</p>
         </div>
         <EstimatorBench />
       </div>
@@ -178,15 +195,37 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
     </section>
   )}
 
-  <section class="slab sec" aria-labelledby="papers-h">
-    <div class="gut max">
-      <div class="head">
-        <h2 class="brut" id="papers-h">Papers</h2>
-        <p><a href="/publications">All publications &rarr;</a></p>
+  {collab.length > 0 && (
+    <section class="sec tight" aria-labelledby="collab-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="collab-h" data-scramble>Collaborators</h2>
+          <p>Co-authors on our papers in this line. Names link to ORCID where the author has one, otherwise to NASA ADS.</p>
+        </div>
+        <ul class="collab">
+          {collab.map((c) => (
+            <li>
+              <a href={c.href} rel="noopener">{c.name}</a>
+              {c.affiliation && <span class="aff">{c.affiliation}</span>}
+              <span class="label">{c.papers} {c.papers === 1 ? "paper" : "papers"}{c.orcid ? " · ORCID" : " · ADS"}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-      <div style="margin-top: 32px"><PaperList items={items} /></div>
-    </div>
-  </section>
+    </section>
+  )}
+
+  {items.length > 0 && (
+    <section class="slab sec" aria-labelledby="papers-h">
+      <div class="gut max">
+        <div class="head">
+          <h2 class="brut" id="papers-h">Papers</h2>
+          <p><a href="/publications">All publications &rarr;</a></p>
+        </div>
+        <div style="margin-top: 32px"><PaperList items={items} /></div>
+      </div>
+    </section>
+  )}
 </Base>
 
 <style>
@@ -194,4 +233,8 @@ if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json:
   .soon > div { padding: 24px 16px 24px; display: grid; gap: 12px; align-content: start; background-image: repeating-linear-gradient(-45deg, transparent 0 10px, rgba(243, 243, 239, 0.03) 10px 11px); }
   .soon .tag { justify-self: start; }
   .soon p { font-size: 14px; color: var(--grey); }
+  .collab { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 24px 32px; }
+  .collab li { display: grid; gap: 4px; align-content: start; }
+  .collab a { font-size: 16px; text-decoration-color: var(--signal); text-underline-offset: 4px; }
+  .collab .aff { font-size: 14px; color: var(--grey); }
 </style>

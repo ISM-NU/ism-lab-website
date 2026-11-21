@@ -19,7 +19,7 @@ OUT = ROOT / "src" / "data" / "publications.json"
 PUB = ROOT / "public" / "publications.bib"
 
 QUERY = 'author:"Alina, D" collection:astronomy'
-FIELDS = "bibcode,title,author,year,pub,volume,page,doi,identifier,doctype,citation_count,orcid_pub,aff,pubdate,abstract"
+FIELDS = "bibcode,title,author,year,pub,volume,page,doi,identifier,doctype,citation_count,orcid_pub,orcid_user,orcid_other,aff,pubdate,abstract"
 # Name forms that are Dana Alina. Anything else matching "Alina, D" is a
 # namesake and is dropped.
 NAMES = {"alina, d.", "alina, dana", "alina, d"}
@@ -44,14 +44,22 @@ def token():
     return (Path.home() / ".ads" / "dev_key").read_text().split()[0]
 
 
-def search():
-    q = urllib.parse.urlencode({"q": QUERY, "fl": FIELDS, "rows": 200, "sort": "date desc"})
-    req = urllib.request.Request(
-        f"https://api.adsabs.harvard.edu/v1/search/query?{q}",
-        headers={"Authorization": f"Bearer {token()}"},
-    )
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.load(r)["response"]["docs"]
+def search(rows=40):
+    """All matching records, in pages: with per-author affiliations the Planck
+    papers make one 200-row response large enough that ADS resets the connection."""
+    docs, start = [], 0
+    while True:
+        q = urllib.parse.urlencode({"q": QUERY, "fl": FIELDS, "rows": rows, "start": start, "sort": "date desc"})
+        req = urllib.request.Request(
+            f"https://api.adsabs.harvard.edu/v1/search/query?{q}",
+            headers={"Authorization": f"Bearer {token()}"},
+        )
+        with urllib.request.urlopen(req, timeout=60) as r:
+            res = json.load(r)["response"]
+        docs += res["docs"]
+        start += rows
+        if start >= res["numFound"]:
+            return docs
 
 
 def bibtex(bibcodes):
@@ -110,6 +118,14 @@ def is_group_led(authors, members):
     return norm(authors[0]) in members or norm(authors[-1]) in members
 
 
+def orcids(doc):
+    """One ORCID iD or None per author. ADS keeps three aligned lists (from the
+    publisher, claimed by the author, claimed by someone else); "-" means none."""
+    n = len(doc.get("author", []))
+    lists = [doc.get(k) or ["-"] * n for k in ("orcid_pub", "orcid_user", "orcid_other")]
+    return [next((x for x in col if x and x != "-"), None) for col in zip(*lists)]
+
+
 def arxiv_id(doc):
     for ident in doc.get("identifier", []):
         if ident.startswith("arXiv:"):
@@ -133,6 +149,9 @@ def main():
             "bibcode": d["bibcode"],
             "title": d["title"][0],
             "authors": authors,
+            # Aligned with authors; "-" or "" when ADS has no affiliation.
+            "aff": d.get("aff") or [""] * len(authors),
+            "orcid": orcids(d),
             "alina_index": idx,
             "year": int(d["year"]),
             "pub": d.get("pub", ""),

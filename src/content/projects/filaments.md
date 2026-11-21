@@ -1,10 +1,11 @@
 ---
-title: "Filaments and the field"
+title: "Interstellar filaments and magnetic fields"
 code: "FIL"
-summary: "Star-forming gas collects in long filaments. The group measures their orientation relative to the magnetic field and trains neural networks to find them and measure their position angles."
+summary: "We study the relative orientation between magnetic fields and interstellar filaments, and the properties of the turbulence in filaments. We train neural networks for effective identification of filamentary structures and their position angles."
 order: 2
 image: "/sky/region-orion.webp"
 instruments: ["Planck", "Herschel", "Neural networks"]
+keyPapers: ["2019MNRAS.485.2825A", "2025AJ....170..207U", "2026Galax..14...53A", "2026A&A...711A..97O"]
 papers:
   - "2019MNRAS.485.2825A"
   - "2020IAUGA..30..104A"
@@ -50,6 +51,6 @@ depends on density. Low-contrast filaments in diffuse surroundings tend to run
 parallel to the field. In nearby filaments, where volume density can be
 estimated, the off-clump parts change from mostly parallel to mostly
 perpendicular at about 10^3 cm^-3 (Alina et al. 2019). Measuring that angle in
-large samples needs automatic detection, so the group builds neural networks,
+large samples needs automatic detection, so we build neural networks,
 trained on Planck, Herschel and HI4PI maps or on synthetic images, that find
 filaments and return their position angle.

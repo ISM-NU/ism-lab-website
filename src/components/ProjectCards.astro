@@ -1,24 +1,29 @@
 ---
 import { getCollection } from "astro:content";
+import { byBibcode, shortCite } from "../lib/pubs";
 const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
 ---
 
 <div class="proj cells">
   {projects.map((p) => (
     <a class="card" href={`/research/${p.id}`}>
-      <figure><img src={p.data.image} alt="" loading="lazy" decoding="async" />{p.data.upcoming.length > 0 && <span class="tag soon wip">Work in progress</span>}</figure>
+      <figure>{p.data.image ? <img src={p.data.image} alt="" loading="lazy" decoding="async" /> : <span class="dot blank" aria-hidden="true">{p.data.code}</span>}{p.data.upcoming.length > 0 && <span class="tag soon wip">Work in progress</span>}</figure>
       <div class="meta">
         <span class="dot code">{p.data.code}</span>
         <h3 class="brut">{p.data.title}</h3>
         <p>{p.data.summary}</p>
-        <span class="label pinned">{p.data.instruments.join(" · ")} &middot; {p.data.papers.length} papers</span>
+        {p.data.keyPapers.length > 0 && <p class="cites">{p.data.keyPapers.map((b) => shortCite(byBibcode.get(b)!)).join("; ")}</p>}
+        <span class="label pinned">{[...p.data.instruments, ...(p.data.papers.length ? [`${p.data.papers.length} ${p.data.papers.length === 1 ? "paper" : "papers"}`] : [])].join(" · ")}</span>
       </div>
     </a>
   ))}
 </div>
 
 <style>
-  .proj { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin-top: 32px; }
+  /* Hairlines per card rather than the grid gap, so a short last row leaves
+     blank page instead of a grey cell (same as the people grid). */
+  .proj { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); margin-top: 32px; gap: 0; background: none; border-width: 1px 0 0 1px; }
+  .proj > .card { border: solid var(--hair); border-width: 0 1px 1px 0; }
   .card { display: grid; grid-template-rows: auto 1fr; text-decoration: none; }
   figure { margin: 0; aspect-ratio: 4 / 3; overflow: hidden; background: var(--panel); position: relative; }
   img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s; filter: grayscale(0.35); }
@@ -27,6 +32,8 @@ const projects = (await getCollection("projects")).sort((a, b) => a.data.order -
   .card:hover figure::after { opacity: 1; }
   .meta { padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 12px; }
   .pinned { margin-top: auto; }
+  .blank { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(4rem, 8vw, 6rem); background: radial-gradient(circle, rgba(243, 243, 239, 0.14) 1px, transparent 1.5px) 0 0 / 12px 12px; color: var(--grey); }
+  .cites { font-size: 14px; color: var(--grey); }
   .wip { position: absolute; left: 12px; top: 12px; background: var(--void); }
   .code { font-size: 24px; line-height: 1; }
   h3 { font-size: clamp(24px, 1rem + 1vw, 32px); line-height: 0.9; }
