@@ -242,7 +242,7 @@ before the site goes public.
       collaborators until someone says they were group members.
 - [ ] Optical polarimetry has no papers, so no collaborators yet; Dana to name
       the Assy partners if they should appear
-- [ ] Ali Tussupov has no photo
+- [x] Ali Tussupov photo (2026-11-21)
 
 ## Person pages, group publications, photo grading (2026-11-21)
 - [x] /people/<id>/ for everyone: bio, research lines (`lines`, set only from

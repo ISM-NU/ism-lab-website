@@ -40,6 +40,7 @@ CROPS = {
     "denis-andreyev": (470, 380, 2460),
     "abusultan-meirambekuly": (663, 130, 780),
     "eldana-rustem": None,
+    "ali-tussupov": (287, 157, 1745),
 }
 # Face box as fractions of the cropped square (x0, y0, x1, y1).
 FACE = (0.32, 0.22, 0.68, 0.58)

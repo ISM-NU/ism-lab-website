@@ -3,6 +3,7 @@ name: "Ali Tussupov"
 role: "Master's student"
 focus: "Neural networks, virial parameter"
 order: 6
+photo: "/people/ali-tussupov.webp"
 # Both from his bio (virial-parameter network, Assy polarimeter software).
 lines: [machine-learning, optical-polarimetry]
 ---
