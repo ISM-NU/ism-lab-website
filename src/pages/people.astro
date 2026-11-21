@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import Base from "../layouts/Base.astro";
-import { papers } from "../lib/pubs";
+import { papers, profileLinks } from "../lib/pubs";
 
 const people = (await getCollection("people")).sort((a, b) => a.data.order - b.data.order);
 const rendered = await Promise.all(people.map(async (p) => ({ p, Content: (await render(p)).Content })));
@@ -23,6 +23,13 @@ const groups = [
 const since = Math.min(...papers.map((p) => p.year));
 const led = papers.filter((p) => p.led).length;
 const avatar = (p: (typeof people)[number]) => initials(p.data.name);
+// NU addresses follow name.surname@nu.edu.kz. Alumni lose theirs, so they get none.
+const email = (p: (typeof people)[number]) =>
+  p.data.alumni ? null : `${p.data.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/\s+/).join(".")}@nu.edu.kz`;
+const links = (p: (typeof people)[number]) => {
+  const e = email(p);
+  return [...(e ? [{ label: e, href: `mailto:${e}` }] : []), ...profileLinks(p.data.name), ...p.data.links];
+};
 ---
 
 <Base title="People" description="Dana Alina's interstellar medium group at Nazarbayev University: the principal investigator, her students and alumni.">
@@ -44,7 +51,7 @@ const avatar = (p: (typeof people)[number]) => initials(p.data.name);
           <div><dt class="label">Group-led</dt><dd class="dot">{led}</dd></div>
           <div><dt class="label">Since</dt><dd class="dot">{since}</dd></div>
         </dl>
-        {lead.p.data.links.length > 0 && <ul class="links">{lead.p.data.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>}
+        {links(lead.p).length > 0 && <ul class="links">{links(lead.p).map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>}
       </div>
     </div>
   </section>
@@ -67,7 +74,7 @@ const avatar = (p: (typeof people)[number]) => initials(p.data.name);
               <h3 class="brut">{p.data.name}</h3>
               <span class="focus">{p.data.focus}</span>
               <div class="bio"><Content /></div>
-              {p.data.links.length > 0 && <ul class="links">{p.data.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>}
+              {links(p).length > 0 && <ul class="links">{links(p).map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>}
             </div>
           </li>
         ))}
@@ -122,5 +129,6 @@ const avatar = (p: (typeof people)[number]) => initials(p.data.name);
   @media (max-width: 800px) { .lead { grid-template-columns: minmax(0, 1fr); } .avatar.big { max-width: 192px; } .avatar.big .dot { font-size: 64px; } }
   .focus { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
   .bio { font-size: 14px; color: var(--grey); }
-  .links { list-style: none; padding: 0; margin: 4px 0 0; display: flex; gap: 16px; font-size: 12px; }
+  .links { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; }
+  .links a { overflow-wrap: anywhere; }
 </style>

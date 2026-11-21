@@ -164,9 +164,27 @@ export function collaborators(bibcodes: string[], memberNames: string[]): Collab
         orcid: !!e.orcid,
         href: e.orcid
           ? `https://orcid.org/${e.orcid}`
-          : `https://ui.adsabs.harvard.edu/search/q=${encodeURIComponent(`author:"${last}, ${initial}"`)}`,
+          : adsAuthor(last, initial),
         papers: n,
       };
     })
     .sort((a, b) => b.papers - a.papers || a.name.split(" ").at(-1)!.localeCompare(b.name.split(" ").at(-1)!));
+}
+
+/** NASA ADS author search for "Surname, Initial". */
+const adsAuthor = (last: string, initial: string) =>
+  `https://ui.adsabs.harvard.edu/search/q=${encodeURIComponent(`author:"${last}, ${initial}"`)}`;
+
+/**
+ * Profile links for a member ("First Last") who appears on any of our papers:
+ * ORCID when ADS has it, and their NASA ADS author search. Empty for members
+ * with no papers yet.
+ */
+export function profileLinks(name: string): { label: string; href: string }[] {
+  const w = name.split(/\s+/);
+  const e = directory.get(personKey(`${w.at(-1)}, ${w[0]}`));
+  if (!e) return [];
+  const [last, first = ""] = e.names[0].split(",").map((s) => s.trim());
+  const initial = first.normalize("NFD").replace(/[^A-Za-z]/g, "").slice(0, 1);
+  return [...(e.orcid ? [{ label: "ORCID", href: `https://orcid.org/${e.orcid}` }] : []), { label: "NASA ADS", href: adsAuthor(last, initial) }];
 }
