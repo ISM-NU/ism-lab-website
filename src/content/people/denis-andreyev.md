@@ -1,14 +1,14 @@
 ---
 name: "Denis Andreyev"
 role: "Undergraduate student"
-focus: "LMC magnetic field, velocity gradients, cold gas"
+focus: "LMC magnetic field, Milky Way foreground, cold gas"
 order: 8
 photo: "/people/denis-andreyev.webp"
 links:
   - label: "GitHub"
     href: "https://github.com/unsound-mint"
 lines: [lmc]
-short: "Rewrote our velocity gradient code as a parallel Julia package, parallelised ROHSA, and uses both to study the magnetic field and cold atomic gas of the Large Magellanic Cloud. Also builds this website."
+short: "Rewrote our velocity gradient code as a parallel Julia package and parallelised ROHSA. Uses both to separate the Milky Way foreground from the Large Magellanic Cloud and to study the LMC's magnetic field and cold atomic gas. Also builds this website."
 work:
   - title: "VGT.jl"
     note: "The velocity gradient technique in Julia: a parallel rewrite with validated estimators, noise models and sky-frame angles, tested on synthetic cubes from MHD simulations. Private until publication."
@@ -34,4 +34,4 @@ work:
     note: "Static Astro site built on real sky data."
     href: "https://github.com/ISM-NU/ism-lab-website"
 ---
-Rewrote our velocity gradient code, which turns H I and CO spectral cubes into magnetic-field maps, as a parallel Julia package tested on synthetic cubes from MHD simulations, and parallelised ROHSA, which splits H I spectra into Gaussian components. Uses both to map the field of the Large Magellanic Cloud and its Milky Way foreground against starlight and Planck polarization, and to find its cold atomic gas. Also builds this website.
+Rewrote our velocity gradient code, which turns H I and CO spectral cubes into magnetic-field maps, as a parallel Julia package tested on synthetic cubes from MHD simulations, and parallelised ROHSA, which splits H I spectra into Gaussian components. Uses both to separate the Milky Way foreground from the Large Magellanic Cloud, checking each against starlight and Planck polarization, and to study the LMC's magnetic field and cold atomic gas. Also builds this website.
