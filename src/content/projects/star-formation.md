@@ -4,6 +4,7 @@ code: "SF"
 summary: "We investigate the role of magnetic fields in individual molecular clouds using spectroscopic and polarimetric observations across different wavelengths."
 order: 3
 image: "/sky/comp-monoceros_ob1-960.webp"
+field: { l: 202.9, b: 1.9, width: 3 }
 instruments: ["ALMA", "JCMT", "JWST", "TRAO"]
 keyPapers: ["2022A&A...658A..90A", "2025AJ....170..152A"]
 papers:

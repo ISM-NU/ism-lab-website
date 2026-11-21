@@ -40,6 +40,10 @@ const projects = defineCollection({
     // Says what the header image shows. Without it the header lists `instruments`,
     // which is only right when the image comes from those instruments.
     imageCaption: z.string().optional(),
+    // Sky field the card image shows: Galactic centre (deg) and width (deg), copied
+    // from the script that renders it (composites.py REGIONS, render_lmc.py
+    // REGIONS and GRID, unet_filaments.py CENTRE). Shown as a readout on the card.
+    field: z.object({ l: z.number(), b: z.number(), width: z.number() }).optional(),
     instruments: z.array(z.string()),
     // ADS bibcodes of the published papers behind this line of work.
     papers: z.array(z.string()).default([]),

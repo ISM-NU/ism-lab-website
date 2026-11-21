@@ -4,6 +4,7 @@ code: "FIL"
 summary: "We study the relative orientation between magnetic fields and interstellar filaments, and the properties of the turbulence in filaments. We train neural networks for effective identification of filamentary structures and their position angles."
 order: 2
 image: "/sky/region-orion.webp"
+field: { l: 209.0, b: -19.0, width: 24 }
 instruments: ["Planck", "Herschel", "Neural networks"]
 keyPapers: ["2019MNRAS.485.2825A", "2025AJ....170..207U", "2026Galax..14...53A", "2026A&A...711A..97O"]
 papers:

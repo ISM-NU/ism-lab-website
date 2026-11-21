@@ -1,6 +1,8 @@
 ---
 import { getCollection } from "astro:content";
 import { byBibcode, shortCite } from "../lib/pubs";
+// Signed, one decimal, true minus sign: "−33.0°".
+const deg = (x: number) => `${x < 0 ? "−" : ""}${Math.abs(x).toFixed(1)}°`;
 // `ids` limits the cards to these research lines (a person's page); default all.
 const { ids } = Astro.props as { ids?: string[] };
 const projects = (await getCollection("projects")).filter((p) => !ids || ids.includes(p.id)).sort((a, b) => a.data.order - b.data.order);
@@ -9,7 +11,7 @@ const projects = (await getCollection("projects")).filter((p) => !ids || ids.inc
 <div class="proj cells">
   {projects.map((p) => (
     <a class="card" href={`/research/${p.id}`}>
-      <figure>{p.data.image ? <img src={p.data.image} alt="" loading="lazy" decoding="async" /> : <span class="dot blank" aria-hidden="true">{p.data.code}</span>}{p.data.upcoming.length > 0 && <span class="tag soon wip">Work in progress</span>}</figure>
+      <figure>{p.data.image ? <img src={p.data.image} alt="" loading="lazy" decoding="async" /> : <span class="dot blank" aria-hidden="true">{p.data.code}</span>}{p.data.upcoming.length > 0 && <span class="tag soon wip">Work in progress</span>}{p.data.field && <span class="fld" aria-label={`Field centred at Galactic longitude ${p.data.field.l}, latitude ${p.data.field.b} degrees, ${p.data.field.width} degrees wide`}>l {deg(p.data.field.l)} b {deg(p.data.field.b)} · {p.data.field.width}°</span>}</figure>
       <div class="meta">
         <span class="dot code">{p.data.code}</span>
         <h3 class="brut">{p.data.title}</h3>
@@ -36,6 +38,8 @@ const projects = (await getCollection("projects")).filter((p) => !ids || ids.inc
   .pinned { margin-top: auto; }
   .blank { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(4rem, 8vw, 6rem); background: radial-gradient(circle, rgba(243, 243, 239, 0.14) 1px, transparent 1.5px) 0 0 / 12px 12px; color: var(--grey); }
   .cites { font-size: 14px; color: var(--grey); }
+  /* Sky-field readout in the image's lower-left corner, like the detection labels. */
+  .fld { position: absolute; left: 12px; bottom: 12px; font: 600 12px/1 var(--mono); letter-spacing: 0.08em; color: var(--ink); text-shadow: 0 0 6px #000, 0 0 2px #000; font-variant-numeric: tabular-nums; }
   .wip { position: absolute; left: 12px; top: 12px; background: var(--void); }
   .code { font-size: 24px; line-height: 1; }
   h3 { font-size: clamp(24px, 1rem + 1vw, 32px); line-height: 0.9; }

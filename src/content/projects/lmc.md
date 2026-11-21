@@ -4,6 +4,7 @@ code: "LMC"
 summary: "Mapping the magnetic field of the Large Magellanic Cloud from polarized dust and the motion of its atomic hydrogen, with careful foreground subtraction."
 order: 1
 image: "/sky/comp-lmc-field-960.webp"
+field: { l: 279.0, b: -33.0, width: 12.1 }
 instruments: ["Planck", "ASKAP", "Parkes"]
 keyPapers: ["2023MNRAS.518.4466A"]
 papers:
