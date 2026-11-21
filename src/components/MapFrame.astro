@@ -2,7 +2,9 @@
 // Map furniture for a square sky image (or the cover-fitted canvas in
 // FieldDots): scale bar in angle and parsecs, N/E compass at the true
 // orientation, beam circles at true size, a colour bar for single-quantity
-// layers, and a "Method" drawer (bands, stretch, smoothing, script, FITS).
+// layers, and a "Method" drawer (bands, stretch, smoothing, scale, FITS).
+// The drawer is for readers of the science: it never names our scripts or
+// commits (those stay in maps.json and the FITS headers).
 // Everything is read from src/data/maps.json (scripts/map_meta.py).
 //
 // ids     image keys or /sky/ paths; every id gets its own beams, bar and
@@ -120,7 +122,6 @@ const fmtBeam = (arcsec: number) => (arcsec >= 60 ? `${+(arcsec / 60).toFixed(1)
                   {m.smoothing && <><dt>Smoothing</dt><dd>{m.smoothing}</dd></>}
                   {sn && <><dt>Polarized S/N</dt><dd>Above 3 over {Math.round(sn.frac_gt3 * 100)}% of the field (median {sn.median}). Noise from the PR4 covariances, white between pixels; a lower bound.</dd></>}
                   <dt>Scale</dt><dd>{fr.name}, width {+fr.fov_deg.toFixed(1)}° at {fr.dist_text} (<a href={ads(fr.dist_ref)}>{ref(fr.dist_ref).label}</a>)</dd>
-                  <dt>Script</dt><dd>{m.script}, scripts at {maps.commit}</dd>
                   {m.fits.length > 0 && <><dt>Download</dt><dd>{m.fits.map((f: any) => <span class="ln"><a href={f.href} download>{f.href.split("/").pop()}</a> {mb(f.bytes)} &middot; {f.what}</span>)}<span class="ln">Credits and licence are in the FITS header.</span></dd></>}
                 </dl>
               </section>

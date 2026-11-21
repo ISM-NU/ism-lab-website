@@ -46,6 +46,9 @@ news/announcements, contacts.
   writes `src/data/publications.json`. The build never calls ADS.
 - Members are real entries since 2026-11-21: Dana Alina and 8 students.
 - Develop on localhost for now. Domain and hosting come later.
+- Site text never explains how the site is built: no script names, queries,
+  commits or repository paths in visible copy (2026-11-21, Denis). Method
+  drawers keep the science (data, beams, stretch, scale, FITS).
 
 ## Done means
 
@@ -124,8 +127,7 @@ before the site goes public.
 
 - [x] A: MapFrame (scale, compass, beam, colour bar), Planck S/N fade, method
       drawer with FITS downloads (2, 13). S/N > 3 over 87% of the LMC grid.
-      Re-run scripts/map_meta.py (under the Planck flock) after committing so
-      the drawer shows a clean commit hash. For Dana: FITS licence wording;
+      The drawer no longer shows scripts or commits (2026-11-21). For Dana: FITS licence wording;
       Mon OB1 distance now 745 pc (Zucker et al. 2019).
 - [x] B: WebGL field from Stokes Q/U (FieldGL, fieldgl.ts), LMC foreground
       wipe (ForegroundWipe). Wipe stays behind flags.foregroundWipe = false

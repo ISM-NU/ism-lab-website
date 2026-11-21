@@ -385,7 +385,7 @@ def main():
         return dict(label=f"Planck field {stats[sn]['fwhm_arcmin']:.0f}′", arcmin=stats[sn]["fwhm_arcmin"], layer="field")
 
     comp_stretch = ("Per band: background removal, asinh stretch from a percentile black point, starlet sharpening, "
-                    "colour screen blend (scripts/composites.py).")
+                    "colour screen blend.")
     images = {}
 
     def add(key, frame, title, script, stretch, smoothing="", bands=(), beams=(), bar=None, files=(), snr_key=None, native=None, note=""):
