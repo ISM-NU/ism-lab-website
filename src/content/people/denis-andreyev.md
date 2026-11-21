@@ -1,6 +1,6 @@
 ---
 name: "Denis Andreyev"
-role: "Student"
+role: "Undergraduate student"
 focus: "LMC magnetic field, velocity gradients, cold gas"
 order: 8
 photo: "/people/denis-andreyev.webp"
@@ -8,7 +8,7 @@ links:
   - label: "GitHub"
     href: "https://github.com/unsound-mint"
 lines: [lmc]
-short: "Wrote our velocity gradient code and studies the magnetic field and cold atomic gas of the Large Magellanic Cloud. Also builds this website."
+short: "Rewrote our velocity gradient code as a parallel Julia package, parallelised ROHSA, and uses both to study the magnetic field and cold atomic gas of the Large Magellanic Cloud. Also builds this website."
 work:
   - title: "VGT.jl"
     note: "The velocity gradient technique in Julia: a parallel rewrite with validated estimators, noise models and sky-frame angles, tested on synthetic cubes from MHD simulations. Private until publication."

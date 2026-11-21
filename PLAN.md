@@ -256,4 +256,4 @@ before the site goes public.
       assets/people-src/ (untracked; copy them back from Downloads if lost)
 - [ ] Adel: does she work on the Assy polarimeter? (her page lists optical
       polarimetry from her bio's instrument work)
-- [ ] Denis's role still reads "Student"
+- [x] Denis is an undergraduate student
