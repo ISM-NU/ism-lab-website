@@ -2,9 +2,9 @@
 import { authorLine, instrumentsOf, link, resultOf, titleHtml, venue, type Paper } from "../lib/pubs";
 // `meta` switches on the publications page extras: filter attributes, the
 // one-line result, the group-led marker on the year, and a BibTeX button.
-// `lines` maps bibcode -> research line slugs.
-interface Props { items: Paper[]; dense?: boolean; meta?: boolean; lines?: Map<string, string[]> }
-const { items, dense = false, meta = false, lines } = Astro.props;
+// `lines` maps bibcode -> research line slugs, `members` bibcode -> person ids.
+interface Props { items: Paper[]; dense?: boolean; meta?: boolean; lines?: Map<string, string[]>; members?: Map<string, string[]> }
+const { items, dense = false, meta = false, lines, members } = Astro.props;
 ---
 
 <ol class:list={["papers", { dense }]}>
@@ -14,6 +14,7 @@ const { items, dense = false, meta = false, lines } = Astro.props;
       data-line={meta ? (lines?.get(p.bibcode) ?? []).join(" ") : undefined}
       data-inst={meta ? instrumentsOf(p).map((n) => n.toLowerCase().replace(/[^a-z]+/g, "-")).join(" ") : undefined}
       data-role={meta ? p.role : undefined}
+      data-member={meta ? (members?.get(p.bibcode) ?? []).join(" ") : undefined}
     >
       <span class="yr dot">{p.year}</span>
       <div class="body">

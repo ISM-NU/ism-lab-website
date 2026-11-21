@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import PageHead from "../components/PageHead.astro";
 import PaperList from "../components/PaperList.astro";
-import { papers, groups, isBig, instrumentNames, instrumentsOf, STELLAR, STELLAR_BIBCODES, BIG_COLLAB } from "../lib/pubs";
+import { papers, papersOf, query, groups, isBig, instrumentNames, instrumentsOf, STELLAR, STELLAR_BIBCODES, BIG_COLLAB } from "../lib/pubs";
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z]+/g, "-");
 
@@ -26,6 +26,11 @@ const lines = [
 const insts = instrumentNames
   .map((n) => ({ id: slug(n), label: n, n: papers.filter((p) => instrumentsOf(p).includes(n)).length }))
   .filter((i) => i.n > 0);
+// Group members with at least one entry, PI first, for the member filter.
+const people = (await getCollection("people")).sort((a, b) => a.data.order - b.data.order);
+const byMember = people.map((m) => ({ id: m.id, label: m.data.name, list: papersOf(m.data.name) })).filter((m) => m.list.length > 0);
+const memberOf = new Map<string, string[]>();
+for (const m of byMember) for (const p of m.list) memberOf.set(p.bibcode, [...(memberOf.get(p.bibcode) ?? []), m.id]);
 const nFirst = papers.filter((p) => p.role === "first").length;
 const nLed = papers.filter((p) => p.led).length;
 const roles = [
@@ -105,6 +110,11 @@ const maxN = Math.max(...perYear.map((d) => d.n));
           <button type="button" class="tag" data-v="" aria-pressed="true">All</button>
           {roles.map((r) => <button type="button" class="tag" data-v={r.id} aria-pressed="false">{r.label} &middot; {r.n}</button>)}
         </fieldset>
+        <fieldset data-key="member">
+          <legend class="label">Group member</legend>
+          <button type="button" class="tag" data-v="" aria-pressed="true">All</button>
+          {byMember.map((m) => <button type="button" class="tag" data-v={m.id} aria-pressed="false">{m.label} &middot; {m.list.length}</button>)}
+        </fieldset>
         <p class="status" id="status" role="status" aria-live="polite">{papers.length} of {papers.length} entries</p>
       </form>
       <p class="fine">Instruments are matched from each title and abstract, so a paper that only uses a Planck-selected sample is also listed under Planck. Download all entries as <a href="/publications.bib" download>publications.bib</a>; author lists are cut at ten.</p>
@@ -118,13 +128,13 @@ const maxN = Math.max(...perYear.map((d) => d.n));
           <h2 class="brut" id={`${s.id}-h`}>{s.g}</h2>
           <p><span class="count">{s.items.length}</span> entries{s.g === STELLAR && ". Spectropolarimetry of Sirius and Vega, before the move to interstellar magnetic fields."}</p>
         </div>
-        <div style="margin-top: 24px"><PaperList items={s.items} meta lines={lineOf} /></div>
+        <div style="margin-top: 24px"><PaperList items={s.items} meta lines={lineOf} members={memberOf} /></div>
       </div>
     </section>
   ))}
 
   <section class="sec tight">
-    <div class="gut max"><p class="src">Source: NASA ADS, query <code>{`author:"Alina, D"`}</code>, refreshed with scripts/fetch_publications.py. One-line results are quoted from the abstracts.</p></div>
+    <div class="gut max"><p class="src">Source: NASA ADS, query <code>{query}</code>, keeping entries with Dana Alina or a member listed at Nazarbayev University; refreshed with scripts/fetch_publications.py. One-line results are quoted from the abstracts.</p></div>
   </section>
 </Base>
 
@@ -161,7 +171,7 @@ const maxN = Math.max(...perYear.map((d) => d.n));
   const form = document.getElementById("filters")!;
   const items = [...document.querySelectorAll<HTMLLIElement>("li[data-role]")];
   const groups = [...document.querySelectorAll<HTMLElement>(".grp")];
-  const state: Record<string, string> = { line: "", inst: "", role: "" };
+  const state: Record<string, string> = { line: "", inst: "", role: "", member: "" };
   const status = document.getElementById("status")!;
   function apply() {
     let shown = 0;
@@ -169,7 +179,8 @@ const maxN = Math.max(...perYear.map((d) => d.n));
       const ok =
         (!state.line || li.dataset.line!.split(" ").includes(state.line)) &&
         (!state.inst || li.dataset.inst!.split(" ").includes(state.inst)) &&
-        (!state.role || (state.role === "led" ? li.dataset.role !== "collab" : li.dataset.role === state.role));
+        (!state.role || (state.role === "led" ? li.dataset.role !== "collab" : li.dataset.role === state.role)) &&
+        (!state.member || li.dataset.member!.split(" ").includes(state.member));
       li.hidden = !ok;
       if (ok) shown++;
     }

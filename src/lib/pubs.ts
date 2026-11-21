@@ -3,6 +3,8 @@ import data from "../data/publications.json";
 export type Paper = (typeof data.papers)[number];
 export const papers: Paper[] = data.papers;
 export const groups: string[] = data.groups;
+/** The ADS query the list came from (every member's name; see fetch_publications.py). */
+export const query: string = data.query;
 export const byBibcode = new Map(papers.map((p) => [p.bibcode, p]));
 
 /** ADS titles carry a little HTML (<SUP>, <SUB>, entities). Keep only those. */
@@ -13,13 +15,14 @@ export function titleHtml(t: string): string {
     .replace(/<(\/?)(sup|sub)>/gi, (_m, s, tag) => `<${s}${tag.toLowerCase()}>`);
 }
 
-/** "Alina, D.; Smith, J. et al." with Alina kept visible when she is far down the list. */
+/** "Alina, Smith, Lee et al." with the first group member kept visible when they are far down the list. */
 export function authorLine(p: Paper, max = 3): string {
   const short = (a: string) => a.split(",")[0];
   const a = p.authors;
   if (a.length <= max + 1) return a.map(short).join(", ");
   const head = a.slice(0, max).map(short);
-  if (p.alina_index >= max) head.push(`… ${short(a[p.alina_index])} (${p.alina_index + 1} of ${a.length})`);
+  const m = p.members.find((i) => i >= max);
+  if (m !== undefined && !p.members.some((i) => i < max)) head.push(`… ${short(a[m])} (${m + 1} of ${a.length})`);
   return head.join(", ") + " et al.";
 }
 
@@ -188,3 +191,13 @@ export function profileLinks(name: string): { label: string; href: string }[] {
   const initial = first.normalize("NFD").replace(/[^A-Za-z]/g, "").slice(0, 1);
   return [...(e.orcid ? [{ label: "ORCID", href: `https://orcid.org/${e.orcid}` }] : []), { label: "NASA ADS", href: adsAuthor(last, initial) }];
 }
+
+/** Papers on which a site member ("First Last") is an author, newest first. */
+export function papersOf(name: string): Paper[] {
+  const w = name.split(/\s+/);
+  const k = personKey(`${w.at(-1)}, ${w[0]}`);
+  return papers.filter((p) => p.members.some((i) => personKey(p.authors[i]) === k)).sort((a, b) => b.year - a.year);
+}
+
+/** Dana Alina's own entries: the ones she is an author on. */
+export const alinaPapers = papers.filter((p) => p.alina_index !== null);

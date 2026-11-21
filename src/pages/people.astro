@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import Base from "../layouts/Base.astro";
-import { papers, profileLinks } from "../lib/pubs";
+import { alinaPapers, profileLinks } from "../lib/pubs";
 
 const people = (await getCollection("people")).sort((a, b) => a.data.order - b.data.order);
 const rendered = await Promise.all(people.map(async (p) => ({ p, Content: (await render(p)).Content })));
@@ -20,8 +20,9 @@ const groups = [
   { id: "students", title: "Students", list: others.filter(({ p }) => !p.data.alumni) },
   { id: "alumni", title: "Alumni", list: others.filter(({ p }) => p.data.alumni) },
 ].filter((g) => g.list.length > 0);
-const since = Math.min(...papers.map((p) => p.year));
-const led = papers.filter((p) => p.led).length;
+// Dana Alina's own record (entries she is an author on), not the whole group's.
+const since = Math.min(...alinaPapers.map((p) => p.year));
+const led = alinaPapers.filter((p) => p.led).length;
 const avatar = (p: (typeof people)[number]) => initials(p.data.name);
 // NU addresses follow name.surname@nu.edu.kz. Alumni lose theirs, so they get none.
 const email = (p: (typeof people)[number]) =>
@@ -47,7 +48,7 @@ const links = (p: (typeof people)[number]) => {
         <span class="focus">{lead.p.data.focus}</span>
         <div class="lead-bio"><lead.Content /></div>
         <dl class="stats">
-          <div><dt class="label">Entries in NASA ADS</dt><dd class="dot">{papers.length}</dd></div>
+          <div><dt class="label">Entries in NASA ADS</dt><dd class="dot">{alinaPapers.length}</dd></div>
           <div><dt class="label">Group-led</dt><dd class="dot">{led}</dd></div>
           <div><dt class="label">Since</dt><dd class="dot">{since}</dd></div>
         </dl>

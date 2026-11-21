@@ -11,18 +11,55 @@ import json
 import os
 import re
 import urllib.parse
+import urllib.error
 import urllib.request
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "src" / "data" / "publications.json"
 PUB = ROOT / "public" / "publications.bib"
 
-QUERY = 'author:"Alina, D" collection:astronomy'
+PEOPLE = ROOT / "src" / "content" / "people"
+
+
+def site_members():
+    """(Surname, First) for everyone with a page on the site, PI included."""
+    out = []
+    for f in sorted(PEOPLE.glob("*.md")):
+        m = re.search(r'^name: "(.*)"', f.read_text(), re.M)
+        if m:
+            w = m.group(1).split()
+            out.append((w[-1], w[0]))
+    return out
+
+
+MEMBERS = site_members()
+QUERY = "author:(" + " OR ".join(f'"{last}, {first[0]}"' for last, first in MEMBERS) + ") collection:astronomy"
+# Records ADS has no affiliations for (fresh preprints, Zenodo deposits) that a
+# member wrote here. Without Dana on them they need to be listed by hand.
+ALLOW = set()
 FIELDS = "bibcode,title,author,year,pub,volume,page,doi,identifier,doctype,citation_count,orcid_pub,orcid_user,orcid_other,aff,pubdate,abstract"
 # Name forms that are Dana Alina. Anything else matching "Alina, D" is a
 # namesake and is dropped.
 NAMES = {"alina, d.", "alina, dana", "alina, d"}
+
+
+def member_indices(authors):
+    """Author positions that match a site member by surname and first initial."""
+    keys = {f"{last.lower()} {first[0].lower()}" for last, first in MEMBERS}
+    return [i for i, a in enumerate(authors) if norm(a) in keys]
+
+
+def is_ours(doc):
+    """The author query also finds namesakes ("Andreev, D." for Andreyev, other
+    Makarovas). A record is ours if Dana Alina is on it, if a member is listed
+    at Nazarbayev University on it, or if it is in ALLOW."""
+    authors = doc.get("author", [])
+    if any(a.lower() in NAMES for a in authors) or doc["bibcode"] in ALLOW:
+        return True
+    affs = doc.get("aff") or []
+    return any(i < len(affs) and "nazarbayev" in affs[i].lower() for i in member_indices(authors))
 
 # ADS doctype -> site group. Order is the order on the page.
 GROUPS = {
@@ -44,7 +81,7 @@ def token():
     return (Path.home() / ".ads" / "dev_key").read_text().split()[0]
 
 
-def search(rows=40):
+def search(rows=20):
     """All matching records, in pages: with per-author affiliations the Planck
     papers make one 200-row response large enough that ADS resets the connection."""
     docs, start = [], 0
@@ -54,8 +91,15 @@ def search(rows=40):
             f"https://api.adsabs.harvard.edu/v1/search/query?{q}",
             headers={"Authorization": f"Bearer {token()}"},
         )
-        with urllib.request.urlopen(req, timeout=60) as r:
-            res = json.load(r)["response"]
+        for attempt in range(3):
+            try:
+                with urllib.request.urlopen(req, timeout=60) as r:
+                    res = json.load(r)["response"]
+                break
+            except (ConnectionResetError, TimeoutError, urllib.error.URLError):
+                if attempt == 2:
+                    raise
+                time.sleep(2 * (attempt + 1))
         docs += res["docs"]
         start += rows
         if start >= res["numFound"]:
@@ -135,13 +179,13 @@ def arxiv_id(doc):
 
 def main():
     papers = []
-    docs = search()
+    # Filter first: nu_members() spreads membership by name across the whole
+    # set, so a namesake's paper would otherwise make its authors "members".
+    docs = [d for d in search() if is_ours(d)]
     members = nu_members(docs)
     for d in docs:
         authors = d.get("author", [])
         idx = next((i for i, a in enumerate(authors) if a.lower() in NAMES), None)
-        if idx is None:
-            continue
         group = GROUPS.get(d.get("doctype"))
         if group is None:
             continue
@@ -152,7 +196,9 @@ def main():
             # Aligned with authors; "-" or "" when ADS has no affiliation.
             "aff": d.get("aff") or [""] * len(authors),
             "orcid": orcids(d),
-            "alina_index": idx,
+            "alina_index": idx,  # None on a paper without Dana Alina
+            # Positions of authors who have a page on the site.
+            "members": member_indices(authors),
             "year": int(d["year"]),
             "pub": d.get("pub", ""),
             "volume": d.get("volume"),

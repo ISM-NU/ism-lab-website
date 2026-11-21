@@ -1,5 +1,5 @@
 {
- "query": "author:\"Alina, D\" collection:astronomy",
+ "query": "author:(\"Meirambekuly, A\" OR \"Umirbayeva, A\" OR \"Tussupov, A\" OR \"Kumarioldanov, B\" OR \"Alina, D\" OR \"Makarova, D\" OR \"Andreyev, D\" OR \"Rustem, E\" OR \"Umetaliev, T\") collection:astronomy",
  "groups": [
   "Papers",
   "Preprints",
@@ -79,6 +79,10 @@
     "0000-0001-9822-7817"
    ],
    "alina_index": 8,
+   "members": [
+    8,
+    18
+   ],
    "year": 2026,
    "pub": "Monthly Notices of the Royal Astronomical Society",
    "volume": "552",
@@ -124,6 +128,11 @@
     null
    ],
    "alina_index": 1,
+   "members": [
+    0,
+    1,
+    3
+   ],
    "year": 2026,
    "pub": "arXiv e-prints",
    "volume": null,
@@ -163,6 +172,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2026,
    "pub": "IAU Symposium",
    "volume": "20",
@@ -208,6 +220,9 @@
     "0000-0001-7032-632X"
    ],
    "alina_index": 5,
+   "members": [
+    5
+   ],
    "year": 2026,
    "pub": "Astronomy and Astrophysics",
    "volume": "711",
@@ -283,6 +298,9 @@
     "0000-0002-5310-4212"
    ],
    "alina_index": 6,
+   "members": [
+    6
+   ],
    "year": 2026,
    "pub": "Astronomy and Astrophysics",
    "volume": "711",
@@ -310,6 +328,9 @@
     "0000-0001-5403-356X"
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2026,
    "pub": "Galaxies",
    "volume": "14",
@@ -445,6 +466,9 @@
     null
    ],
    "alina_index": 17,
+   "members": [
+    17
+   ],
    "year": 2026,
    "pub": "Monthly Notices of the Royal Astronomical Society",
    "volume": "547",
@@ -478,6 +502,10 @@
     "0009-0004-2953-2171"
    ],
    "alina_index": 1,
+   "members": [
+    0,
+    1
+   ],
    "year": 2025,
    "pub": "The Astronomical Journal",
    "volume": "170",
@@ -550,6 +578,10 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0,
+    1
+   ],
    "year": 2025,
    "pub": "The Astronomical Journal",
    "volume": "170",
@@ -583,6 +615,10 @@
     "0009-0004-2953-2171"
    ],
    "alina_index": 1,
+   "members": [
+    0,
+    1
+   ],
    "year": 2025,
    "pub": "Zenodo",
    "volume": null,
@@ -637,6 +673,9 @@
     null
    ],
    "alina_index": 4,
+   "members": [
+    4
+   ],
    "year": 2025,
    "pub": "Astronomy and Astrophysics",
    "volume": "697",
@@ -694,6 +733,9 @@
     null
    ],
    "alina_index": 1,
+   "members": [
+    1
+   ],
    "year": 2025,
    "pub": "JWST Proposal. Cycle 4",
    "volume": null,
@@ -787,6 +829,9 @@
     "0000-0002-9289-2450"
    ],
    "alina_index": 21,
+   "members": [
+    21
+   ],
    "year": 2024,
    "pub": "The Astrophysical Journal",
    "volume": "976",
@@ -832,6 +877,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2024,
    "pub": "32nd General Assembly International Union (IAUGA 2024)",
    "volume": null,
@@ -862,6 +910,10 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0,
+    1
+   ],
    "year": 2024,
    "pub": "32nd General Assembly International Union (IAUGA 2024)",
    "volume": null,
@@ -997,6 +1049,9 @@
     "0000-0002-5310-4212"
    ],
    "alina_index": 23,
+   "members": [
+    23
+   ],
    "year": 2024,
    "pub": "The Astrophysical Journal Letters",
    "volume": "963",
@@ -1036,6 +1091,9 @@
     "0000-0003-3328-6300"
    ],
    "alina_index": 2,
+   "members": [
+    2
+   ],
    "year": 2023,
    "pub": "Monthly Notices of the Royal Astronomical Society",
    "volume": "524",
@@ -1171,6 +1229,9 @@
     null
    ],
    "alina_index": 4,
+   "members": [
+    4
+   ],
    "year": 2023,
    "pub": "Experimental Astronomy",
    "volume": "56",
@@ -1240,6 +1301,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2023,
    "pub": "EAS2023, European Astronomical Society Annual Meeting",
    "volume": null,
@@ -1288,6 +1352,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2023,
    "pub": "Monthly Notices of the Royal Astronomical Society",
    "volume": "518",
@@ -1321,6 +1388,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2022,
    "pub": "arXiv e-prints",
    "volume": null,
@@ -1375,6 +1445,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2022,
    "pub": "Astronomy and Astrophysics",
    "volume": "658",
@@ -1417,6 +1490,9 @@
     null
    ],
    "alina_index": 4,
+   "members": [
+    4
+   ],
    "year": 2021,
    "pub": "Astronomy and Astrophysics",
    "volume": "647",
@@ -1564,6 +1640,9 @@
     "0000-0003-0356-818X"
    ],
    "alina_index": 9,
+   "members": [
+    9
+   ],
    "year": 2021,
    "pub": "The Astrophysical Journal Letters",
    "volume": "907",
@@ -1600,6 +1679,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2020,
    "pub": "IAU General Assembly",
    "volume": null,
@@ -1705,6 +1787,9 @@
     "0000-0002-7237-3856"
    ],
    "alina_index": 16,
+   "members": [
+    16
+   ],
    "year": 2019,
    "pub": "Astronomy and Astrophysics",
    "volume": "631",
@@ -1810,6 +1895,9 @@
     "0000-0002-7237-3856"
    ],
    "alina_index": 16,
+   "members": [
+    16
+   ],
    "year": 2019,
    "pub": "Astronomy and Astrophysics",
    "volume": "631",
@@ -1954,6 +2042,9 @@
     "0000-0002-1851-3918"
    ],
    "alina_index": 16,
+   "members": [
+    16
+   ],
    "year": 2019,
    "pub": "Astronomy and Astrophysics",
    "volume": "630",
@@ -2107,6 +2198,9 @@
     "0000-0001-8509-1818"
    ],
    "alina_index": 33,
+   "members": [
+    33
+   ],
    "year": 2019,
    "pub": "The Astrophysical Journal",
    "volume": "883",
@@ -2155,6 +2249,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2019,
    "pub": "Monthly Notices of the Royal Astronomical Society",
    "volume": "485",
@@ -2668,6 +2765,9 @@
     null
    ],
    "alina_index": 61,
+   "members": [
+    61
+   ],
    "year": 2019,
    "pub": "Monthly Notices of the Royal Astronomical Society",
    "volume": "485",
@@ -2755,6 +2855,9 @@
     "0000-0002-4428-3183"
    ],
    "alina_index": 5,
+   "members": [
+    5
+   ],
    "year": 2018,
    "pub": "Astronomy and Astrophysics",
    "volume": "620",
@@ -2857,6 +2960,9 @@
     "0000-0003-2412-7092"
    ],
    "alina_index": 21,
+   "members": [
+    21
+   ],
    "year": 2018,
    "pub": "The Astrophysical Journal Supplement Series",
    "volume": "236",
@@ -3052,6 +3158,9 @@
     null
    ],
    "alina_index": 36,
+   "members": [
+    36
+   ],
    "year": 2018,
    "pub": "The Astrophysical Journal",
    "volume": "859",
@@ -3544,6 +3653,9 @@
     "0000-0002-5682-2906"
    ],
    "alina_index": 50,
+   "members": [
+    50
+   ],
    "year": 2018,
    "pub": "The Astrophysical Journal Supplement Series",
    "volume": "234",
@@ -3721,6 +3833,9 @@
     "0000-0002-1851-3918"
    ],
    "alina_index": 5,
+   "members": [
+    5
+   ],
    "year": 2017,
    "pub": "Experimental Astronomy",
    "volume": "43",
@@ -3763,6 +3878,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2016,
    "pub": "Astronomy and Astrophysics",
    "volume": "595",
@@ -4396,6 +4514,9 @@
     null
    ],
    "alina_index": 3,
+   "members": [
+    3
+   ],
    "year": 2015,
    "pub": "Astronomy and Astrophysics",
    "volume": "576",
@@ -4987,6 +5108,9 @@
     null
    ],
    "alina_index": 3,
+   "members": [
+    3
+   ],
    "year": 2015,
    "pub": "Astronomy and Astrophysics",
    "volume": "576",
@@ -5599,6 +5723,9 @@
     null
    ],
    "alina_index": 3,
+   "members": [
+    3
+   ],
    "year": 2015,
    "pub": "Astronomy and Astrophysics",
    "volume": "576",
@@ -5644,6 +5771,9 @@
     "0000-0001-5124-891X"
    ],
    "alina_index": 4,
+   "members": [
+    4
+   ],
    "year": 2015,
    "pub": "Astronomy and Astrophysics",
    "volume": "574",
@@ -5692,6 +5822,9 @@
     "0000-0002-8881-3094"
    ],
    "alina_index": 4,
+   "members": [
+    4
+   ],
    "year": 2015,
    "pub": "Astronomy and Astrophysics",
    "volume": "574",
@@ -5719,6 +5852,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2015,
    "pub": "Ph.D. Thesis",
    "volume": null,
@@ -5746,6 +5882,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2014,
    "pub": "40th COSPAR Scientific Assembly",
    "volume": "40",
@@ -5794,6 +5933,9 @@
     null
    ],
    "alina_index": 0,
+   "members": [
+    0
+   ],
    "year": 2012,
    "pub": "Stellar Polarimetry: from Birth to Death",
    "volume": "1429",
@@ -5839,6 +5981,9 @@
     null
    ],
    "alina_index": 4,
+   "members": [
+    4
+   ],
    "year": 2011,
    "pub": "Astronomische Nachrichten",
    "volume": "332",
@@ -5896,6 +6041,9 @@
     null
    ],
    "alina_index": 4,
+   "members": [
+    4
+   ],
    "year": 2011,
    "pub": "Astronomy and Astrophysics",
    "volume": "532",
