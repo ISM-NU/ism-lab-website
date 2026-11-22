@@ -1,0 +1,109 @@
+---
+// Brand kit for group members. Shared by link only: not in the navigation and
+// kept out of search (noindex). Files in public/brand/ come from
+// brand/build_share.py, which also writes their sizes to src/data/brand-files.json; the Canva links are template links made in Canva
+// (Share > Template link) for the designs listed in brand/README.md.
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import sizes from "../data/brand-files.json";
+
+const size = (f: keyof typeof sizes) => `${(sizes[f] / 1e6).toFixed(1)} MB`;
+
+const templates = [
+  { t: "Slides", use: "16:9, fifteen layouts: title, section, text, figures, table, key number, closing", canva: "https://canva.link/5qsknzxjkkag381", brand: "https://canva.link/d66qsi8nnuufbxx" },
+  { t: "Announcement post", use: "1080 × 1350 for Telegram and Instagram", canva: "https://canva.link/mz60wbo1lpekuja", brand: "https://canva.link/twaglz60parvzmc" },
+  { t: "Announcement A4", use: "Seminar poster for print or PDF", canva: "https://canva.link/a03dqiwxcsxifnp", brand: "https://canva.link/k9p5a3g6z8kbuo8" },
+  { t: "Poster A0", use: "Conference poster, three columns", canva: "https://canva.link/gafs5010unnjcdc", brand: "https://canva.link/96jvlj5wmioy802" },
+];
+const files = [
+  { t: "Brand guide", f: "ism-nu-brand-guide.pdf", use: "Logo use, colours, type, images and examples of every template. Twelve pages." },
+  { t: "Logos", f: "ism-nu-logos.zip", use: "Wordmark, stacked logo and icon in SVG and PNG, for dark and light backgrounds. The avatar file is for round profile pictures." },
+  { t: "Fonts", f: "ism-nu-fonts.zip", use: "Archivo and Doto, with their licences. Install them before using the PowerPoint files." },
+  { t: "PowerPoint templates", f: "ism-nu-powerpoint.zip", use: "The same four templates for PowerPoint or Keynote." },
+];
+const colours = [
+  ["Void", "#000000", "Dark grounds"],
+  ["Paper", "#F3F3EF", "Text pages, plots, tables"],
+  ["Signal", "#FF3D24", "The one red thing, on dark"],
+  ["Signal on paper", "#D42A12", "The one red thing, on paper"],
+];
+---
+
+<Base title="Brand kit" description="Logo, templates and fonts of the ISM group." noindex>
+  <PageHead title="Brand kit" intro="Logo, templates and fonts for the group's talks, posters and seminar announcements.">
+    <div class="marks">
+      <img src="/favicon.svg" alt="ISM group icon" width="64" height="64" />
+      <img src="/brand/ism-nu-wordmark-on-dark.svg" alt="ISM/NU" height="40" />
+    </div>
+  </PageHead>
+
+  <section class="sec" style="padding-top: clamp(32px,6vw,64px)">
+    <div class="gut max">
+      <div class="head">
+        <h2 class="brut">Canva templates</h2>
+        <p>Each link makes a copy in your own Canva account, so the originals stay as they are. Canva fonts work on any account and support Russian. Brand fonts match the website but need the group's Brand Kit, so pick them only if you are on the ISM/NU Canva team.</p>
+      </div>
+      <ul class="rows">
+        {templates.map((x) => (
+          <li>
+            <span class="t">{x.t}</span>
+            <span class="ref">{x.use}</span>
+            <span class="go"><a class="more" href={x.canva} rel="noopener">Canva fonts &rarr;</a><a class="more dim" href={x.brand} rel="noopener">Brand fonts &rarr;</a></span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="gut max">
+      <div class="head"><h2 class="brut">Downloads</h2></div>
+      <ul class="rows">
+        {files.map((x) => (
+          <li>
+            <span class="t">{x.t}</span>
+            <span class="ref">{x.use}</span>
+            <span class="go"><a class="more" href={`/brand/${x.f}`} download>{x.f.split(".").pop()!.toUpperCase()} · {size(x.f as keyof typeof sizes)} &darr;</a></span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="slab sec">
+    <div class="gut max">
+      <div class="head">
+        <h2 class="brut">Colours</h2>
+        <p>Black, white and grey, with red for the single thing a page is about.</p>
+      </div>
+      <div class="cells sw">
+        {colours.map(([n, hex, use]) => (
+          <div>
+            <span class="chip" style={`background:${hex}`}></span>
+            <p class="t">{n}</p>
+            <p class="ref">{hex}</p>
+            <p class="label">{use}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .marks { display: flex; gap: 24px; align-items: center; }
+  .rows { list-style: none; margin: 24px 0 0; padding: 0; }
+  .rows li { display: grid; grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr) auto; gap: 8px 24px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
+  .t { font-weight: 600; margin: 0; }
+  .ref { font: 400 14px/1.45 var(--mono); opacity: 0.75; margin: 0; }
+  .go { display: flex; gap: 24px; justify-content: end; white-space: nowrap; }
+  .more { font: 600 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal); }
+  .more.dim { color: var(--ink); }
+  .sw { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); margin-top: 24px; }
+  .sw > div { padding: 16px; display: grid; gap: 8px; align-content: start; }
+  .chip { display: block; height: 96px; border: 1px solid rgba(10, 10, 11, 0.18); }
+  @media (max-width: 760px) {
+    .rows li { grid-template-columns: minmax(0, 1fr); }
+    .go { justify-content: start; }
+  }
+</style>

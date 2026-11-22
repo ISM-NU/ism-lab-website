@@ -62,6 +62,11 @@ internal to the collaboration. Single GASKAP fields are public in CASDA, but
 the site uses GASS until Dana and the collaboration agree to show GASKAP
 images.
 
+## Brand kit
+
+`brand/` builds the logo files, fonts, Canva and PowerPoint templates and the
+brand guide from this site's colours and fonts. See `brand/README.md`.
+
 ## Deploy
 
 `deploy/deploy.sh` runs the checks and tests, builds `dist/`, rsyncs it with

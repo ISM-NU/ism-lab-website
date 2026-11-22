@@ -8,8 +8,10 @@ import archivo from "@fontsource-variable/archivo/files/archivo-latin-wdth-norma
 interface Props {
   title: string;
   description: string;
+  // For pages shared by link only (the brand kit): keep them out of search.
+  noindex?: boolean;
 }
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 const nav = [
   ["/research", "Research"],
@@ -29,6 +31,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#000000" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href={archivo} as="font" type="font/woff2" crossorigin />

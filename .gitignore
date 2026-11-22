@@ -1,7 +1,8 @@
 node_modules/
 dist/
 .astro/
-assets/
+/assets/
 __pycache__/
 .cache/
 .claude/worktrees/
+brand/out/
