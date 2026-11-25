@@ -111,7 +111,6 @@ const mapImageSchema = z.object({
 
 export const mapsSchema = z
   .object({
-    commit: z.string(),
     refs: z.record(z.string(), z.object({ label: z.string(), bib: z.string() })),
     frames: z.record(z.string(), frameSchema),
     images: z.record(z.string(), mapImageSchema),
