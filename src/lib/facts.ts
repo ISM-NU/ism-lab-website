@@ -27,5 +27,5 @@ export const roundSig = (x: number, sig: number) => {
 /** Light-years rounded to `sig` figures, as "162 000". */
 export const lyLabel = (ly: number, sig: number) => roundSig(ly, sig).toLocaleString("en-US").replace(/,/g, " ");
 
-/** Distance in parsecs as kiloparsecs with a unit, e.g. "8.2 kpc". */
+/** Distance in parsecs as kiloparsecs with a unit, e.g. "3.4 kpc". */
 export const kpcLabel = (pc: number, digits = 1) => `${(pc / 1000).toFixed(digits)} kpc`;

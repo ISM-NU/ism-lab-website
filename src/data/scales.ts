@@ -120,7 +120,7 @@ export const bars: Bar[] = [
   },
   {
     // Vorster et al. 2026 (2605.21101, B-FROST): TRAO 12CO/13CO, beam 46-48",
-    // 2.5 x 3 deg, MBM 12 at 252 +4 -6 +-12 pc (Zucker et al. 2019, Sect. 2).
+    // 2.5 x 3 deg, MBM 12 at the facts.json distance, +4 -6 +-12 pc (Zucker et al. 2019, Sect. 2).
     id: "trao-mbm12",
     name: "TRAO 12CO / 13CO",
     target: `MBM 12 · ${facts.mbm12.distance_pc} pc`,
