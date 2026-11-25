@@ -27,9 +27,7 @@ lower bound on the noise. The signal includes Milky Way foreground.
 """
 
 import json
-import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import healpy as hp
@@ -217,7 +215,8 @@ def save_mask(snr, name):
     im = Image.fromarray(np.ascontiguousarray(snr[::-1]).astype(np.float32), mode="F").resize((256, 256), Image.BILINEAR)
     s = np.asarray(im)
     m = 0.12 + 0.88 * np.clip((s - 1.0) / (SNR_MIN - 1.0), 0, 1)
-    Image.fromarray((m * 255).astype(np.uint8)).save(SKY / f"snr-{name}.webp", quality=80, method=6)
+    with rl.atomic(SKY / f"snr-{name}.webp") as tmp:
+        Image.fromarray((m * 255).astype(np.uint8)).save(tmp, quality=80, method=6)
 
 
 def save_snr_layer(snr):
@@ -228,7 +227,8 @@ def save_snr_layer(snr):
     rgb[edge] = (1.0, 0.24, 0.14)
     im = Image.fromarray((rgb * 255).astype(np.uint8)).transpose(Image.FLIP_TOP_BOTTOM)
     im.thumbnail((1000, 1000))
-    im.save(SKY / "lmc-snr.webp", quality=85, method=6)
+    with rl.atomic(SKY / "lmc-snr.webp") as tmp:
+        im.save(tmp, quality=85, method=6)
 
 
 def binned(a, f=FITS_BIN, circular=False):
@@ -253,7 +253,6 @@ def write_fits(name, data, bunit, what, extra=()):
     hh["OBJECT"] = "LMC"
     hh["ORIGIN"] = "ISM group, Nazarbayev University"
     hh["CREATOR"] = "scripts/map_meta.py"
-    hh["DATE"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     hh["COMMENT"] = what
     for line in extra:
         hh["COMMENT"] = line
@@ -262,7 +261,8 @@ def write_fits(name, data, bunit, what, extra=()):
     hh["COMMENT"] = "Please credit this derived product to the ISM group, Nazarbayev University, and cite Alina et al. 2023, MNRAS 518, 4466."
     hh["COMMENT"] = "Grid: 12.08 deg TAN, 2x2 binned from the site's 40 arcsec analysis grid. Includes Milky Way foreground."
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    hdu.writeto(DATA_DIR / name, overwrite=True)
+    with rl.atomic(DATA_DIR / name) as tmp:
+        hdu.writeto(tmp, overwrite=True)
     return f"/data/{name}", (DATA_DIR / name).stat().st_size
 
 
@@ -444,10 +444,10 @@ def main():
             f"Q and U smoothed with a {stats[sk]['sigma_arcmin']:.0f}′ sigma Gaussian, FWHM {stats[sk]['fwhm_arcmin']:.0f}′ with the beam.",
             bands=[planck_band()], beams=[field_beam(sk)], snr_key=sk, native=900)
 
-    commit = subprocess.run(["git", "describe", "--always", "--dirty", "--exclude=*"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    out = dict(commit=commit, refs={k: dict(label=v[0], bib=v[1]) for k, v in REFS.items()}, frames=frames, images=images,
+    out = dict(refs={k: dict(label=v[0], bib=v[1]) for k, v in REFS.items()}, frames=frames, images=images,
                snr_stats=stats, snr=snr_json)
-    OUT_JSON.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
+    with rl.atomic(OUT_JSON) as tmp:
+        tmp.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
     print("fits", {k: (v[0], round(v[1] / 1e6, 2)) for k, v in fits_files.items()})
     print("bars", {k: (b["lo"], b["hi"]) for k, b in bars.items()})
     print("wrote", OUT_JSON, OUT_JSON.stat().st_size)

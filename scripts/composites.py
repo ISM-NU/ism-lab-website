@@ -169,8 +169,7 @@ def sample_hips(url, order, wcs, n, ss=2):
                 return t, fits.getdata(io.BytesIO(raw)).astype(np.float32)
             except OSError:  # a server error page instead of a tile
                 time.sleep(3)
-        print(f"    tile {t} unreadable, left blank", flush=True)
-        return t, None
+        raise RuntimeError(f"HiPS tile {u} is unreadable after 3 tries")
 
     with ThreadPoolExecutor(4) as ex:  # servers reset connections under more
         data = dict(ex.map(tile, sorted(tiles)))
@@ -192,10 +191,17 @@ def sample_hips(url, order, wcs, n, ss=2):
 
 
 def fetch(name, survey, r, wcs):
-    path = CACHE / f"{name}_{survey}.fits"
-    if path.exists():
-        return fits.getdata(path)
     url, max_order, _ = SURVEYS[survey]
+    path = CACHE / f"{name}_{survey}.fits"
+    # The grid and the survey decide the pixels; a cache from other inputs is refetched.
+    key = rl.input_key(url, max_order, r["frame"], r["centre"], r["fov"], r["n"], wcs.to_header().tostring())
+    if path.exists():
+        try:
+            data, hdr = fits.getdata(path, header=True)
+            if hdr.get("INPUTKEY") == key:
+                return data
+        except OSError:
+            pass
     if max_order is None:
         # SkyView resamples onto its own TAN grid; match centre and size, then
         # reproject to ours. Its native SHASSA pixels are 48", so 1024 px is plenty.
@@ -211,7 +217,10 @@ def fetch(name, survey, r, wcs):
         a = sample_hips(url, order, wcs, r["n"])
     a = a.astype(np.float32)
     CACHE.mkdir(parents=True, exist_ok=True)
-    fits.writeto(path, a, wcs.to_header(), overwrite=True)
+    hdr = wcs.to_header()
+    hdr["INPUTKEY"] = key
+    with rl.atomic(path) as tmp:
+        fits.writeto(tmp, a, hdr, overwrite=True)
     print(f"  {survey} order {order}", flush=True)
     return a
 
@@ -330,7 +339,8 @@ def save(rgb, stem, widths=(960, 1920), vignette=False):
             im = im.convert("RGBA")
             im.putalpha(Image.fromarray((np.clip((1 - rad) / 0.35, 0, 1) ** 1.5 * 255).astype(np.uint8)))
             name = f"{stem}-v-{w}.webp"
-        im.save(OUT / name, quality=86, method=6)
+        with rl.atomic(OUT / name) as tmp:
+            im.save(tmp, quality=86, method=6)
 
 
 def ridges(a, sigmas=(1.5, 3, 6)):
@@ -484,12 +494,14 @@ def insets():
         ramp = ramp * ramp * (3 - 2 * ramp)
         img.putalpha(Image.fromarray((np.outer(ramp, ramp) * 255).astype(np.uint8)))
         for w in (1024, 2048):
-            img.resize((w, w), Image.LANCZOS).save(OUT / f"{stem}-{w}.webp", quality=84, method=6)
+            with rl.atomic(OUT / f"{stem}-{w}.webp") as tmp:
+                img.resize((w, w), Image.LANCZOS).save(tmp, quality=84, method=6)
         # Position in the LMC image (fractions of its width, y down), pixel edges.
         x0 = (cb + (-0.5 - ci[0]) * s + 0.5) / nb
         y1 = (cb + (n - 0.5 - ci[1]) * s + 0.5) / nb
         boxes.append(dict(src=f"/sky/{stem}", x=round(x0, 6), y=round(1 - y1, 6), w=round(n * s / nb, 6)))
-    INSET_JSON.write_text(json.dumps(boxes, indent=1) + "\n")
+    with rl.atomic(INSET_JSON) as tmp:
+        tmp.write_text(json.dumps(boxes, indent=1) + "\n")
 
 
 def main():
@@ -500,7 +512,8 @@ def main():
     credits = json.loads(CREDITS.read_text()) if CREDITS.exists() else {}
     for name in names:
         credits[name] = composite(name, planck) + ["Planck 353 GHz (field)"]
-    CREDITS.write_text(json.dumps(credits, indent=1, ensure_ascii=False) + "\n")
+    with rl.atomic(CREDITS) as tmp:
+        tmp.write_text(json.dumps(credits, indent=1, ensure_ascii=False, sort_keys=True) + "\n")
 
 
 if __name__ == "__main__":

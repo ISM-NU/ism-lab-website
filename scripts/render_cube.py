@@ -54,7 +54,7 @@ out = np.stack([map_coordinates(np.nan_to_num(c), coords, order=1).reshape(N, N)
 q = np.clip(np.round(out / STEP), -32768, 32767).astype("<i2")
 raw = q.view(np.uint8).reshape(-1, 2)
 packed = np.concatenate([raw[:, 1], raw[:, 0]]).tobytes()
-gz = gzip.compress(packed, 9)
+gz = gzip.compress(packed, 9, mtime=0)  # the default stamps the current time in the header
 (ROOT / "public/sky/cube").mkdir(parents=True, exist_ok=True)
 (ROOT / "public/sky/cube/hi.i16.gz").write_bytes(gz)
 

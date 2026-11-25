@@ -139,10 +139,13 @@ def cut_planck(grids):
     CACHE.mkdir(parents=True, exist_ok=True)
     out = {}
     todo = []
-    for name, (wcs, shape) in grids.items():
+    keys = {name: rl.input_key(wcs.to_header().tostring(), shape, K2MJY, rl.PLANCK.name, rl.PLANCK.stat().st_size)
+            for name, (wcs, shape) in grids.items()}
+    for name in grids:
         f = CACHE / f"planck_{name}.npz"
-        if f.exists():
-            out[name] = dict(np.load(f))
+        cached = dict(np.load(f)) if f.exists() else {}
+        if str(cached.pop("key", "")) == keys[name]:
+            out[name] = cached
         else:
             todo.append(name)
     if not todo:
@@ -168,7 +171,8 @@ def cut_planck(grids):
     for n in todo:
         wcs, shape = grids[n]
         rotate(st[n], galactic_north_on_grid(wcs, shape))
-        np.savez(CACHE / f"planck_{n}.npz", **st[n])
+        with rl.atomic(CACHE / f"planck_{n}.npz") as tmp:
+            np.savez(tmp, key=keys[n], **st[n])
         out[n] = st[n]
     return out
 
@@ -370,7 +374,8 @@ def write_plane(name, x):
     TEX.mkdir(parents=True, exist_ok=True)
     lo, hi = float(np.min(x)), float(np.max(x))
     q = np.round((x - lo) / (hi - lo) * 65535).astype(np.uint16)
-    Image.fromarray(q, mode="I;16").save(TEX / f"{name}.png", optimize=True)
+    with rl.atomic(TEX / f"{name}.png") as tmp:
+        Image.fromarray(q, mode="I;16").save(tmp, optimize=True)
     return {"file": f"/sky/stokes/{name}.png", "n": int(x.shape[0]), "lo": lo, "hi": hi}
 
 
@@ -506,7 +511,8 @@ def main():
             "method": "2023MNRAS.518.4466A",
         },
     }
-    JSON_OUT.write_text(json.dumps(meta, indent=1))
+    with rl.atomic(JSON_OUT) as tmp:
+        tmp.write_text(json.dumps(meta, indent=1))
     print(json.dumps(meta["validation"], indent=1))
     print("stars used", len(used), "mean PA", star_mean, "B_fg PA", b_fg_pa)
     tot = sum((TEX / Path(f).name).stat().st_size for f in {p["file"] for p in planes.values()})
