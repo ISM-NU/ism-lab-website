@@ -27,7 +27,7 @@ const fmtLon = (v: number) => `${Math.abs(v).toFixed(2)}° ${v < 0 ? "W" : "E"}`
       </li>
     ))}
   </ul>
-  <p class="key"><i class="k"></i> Altitude above the horizon, darker to brighter up to 60°. Time runs from now to 24 hours ahead, in UTC. Centre of the LMC (RA 80.894°, Dec −69.756°).</p>
+  <p class="key"><i class="k"></i> Altitude above the horizon, darker to brighter up to 60°. Time runs from now to 24 hours ahead, in UTC. Centre of the LMC (RA {LMC.ra}°, Dec −{-LMC.dec}°).</p>
 </div>
 
 <style>

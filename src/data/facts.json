@@ -1,0 +1,33 @@
+{
+  "grid": {
+    "naxis": 1087,
+    "cdelt_deg": 0.0111111,
+    "crval_deg": [81.1893661273, -68.5259351087],
+    "crpix": 543.75
+  },
+  "planck": {
+    "beam_arcmin": 4.94
+  },
+  "allsky_width_px": 2400,
+  "lmc": {
+    "distance_pc": 49590,
+    "distance_ref": "Pietrzynski et al. 2019",
+    "distance_text": "49.59 ± 0.09 (stat) ± 0.54 (sys) kpc"
+  },
+  "galactic_centre": {
+    "distance_pc": 8178,
+    "distance_ref": "GRAVITY Collaboration 2019",
+    "distance_text": "8.178 ± 0.013 ± 0.022 kpc"
+  },
+  "mon_ob1": {
+    "cluster_distance_pc": 723,
+    "cluster_distance_ref": "Cantat-Gaudin et al. 2018, as adopted by Alina et al. 2022",
+    "cloud_distance_pc": 745,
+    "cloud_distance_err_pc": 37,
+    "cloud_distance_ref": "Zucker et al. 2019, Mon OB1 box l 199-204, b 0-3"
+  },
+  "mbm12": {
+    "distance_pc": 252,
+    "distance_ref": "Zucker et al. 2019"
+  }
+}
