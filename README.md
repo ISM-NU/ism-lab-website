@@ -12,7 +12,9 @@ Needs Node 22.23 or newer.
 
     npm install
     npm run dev        # http://localhost:4321 with live reload
-    npm run check      # spacing/type scale check, then type and template check
+    npm run check      # scale, viewport and shared-fact checks, then type and template check
+    npm test           # JS tests, plus the Python test of the render helpers
+                       # (it skips with a notice when healpy is not installed)
     npm run build      # static site in dist/
     npm run preview    # serves dist/ in the background on localhost:4321;
                        # stop it with `npx astro preview stop`
@@ -66,11 +68,32 @@ build needs none of this. Rerun the scripts when a source changes.
     LMC_DATA=/path/to/lmc-data python3 scripts/composites.py [lmc galactic_centre monoceros_ob1]
     python3 scripts/composites.py insets      # after lmc; reuses its levels
 
+The scripts that read survey files from the LMC workspace (`render_lmc.py` and
+every script that imports it) need `LMC_DATA`, the folder holding `exp_raw/`
+and `external/`. `render_stokes.py` also needs `STARLIGHT_DIR`, the folder with
+the `*_j2000.txt` starlight catalogues. Neither has a default: when one is
+unset the script exits and names it.
+
 `render_lmc.py` reads the H I cube named by `HI_CUBE` (default: the GASS LMC
 subcube). The combined GASKAP + Parkes LMC cube the group works with is
 internal to the collaboration. Single GASKAP fields are public in CASDA, but
 the site uses GASS until Dana and the collaboration agree to show GASKAP
 images.
+
+### Checked shapes and shared facts
+
+The generated JSON is read through `src/lib/data.ts`, which parses each file
+against its schema in `src/lib/schemas.ts`. A script that writes a changed
+shape fails the build with the file and field named. Client scripts import the
+JSON file itself and take only the types from the schemas, so zod stays out of
+the browser bundle.
+
+Numbers that both the site and the scripts use (the 12 deg grid and its
+centre, the LMC, Galactic centre and Mon OB1 distances, the Planck beam, the
+sky fields on the cards) are typed once, in `src/data/facts.json`.
+`src/lib/facts.ts` and `scripts/facts.py` read it. `scripts/check_facts.py`
+runs in `npm run check` and fails when a source file types one of those values
+again.
 
 ## Brand kit
 
