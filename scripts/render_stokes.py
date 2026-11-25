@@ -14,7 +14,7 @@ to 20 deg on this 12 deg TAN grid (render_lmc.north_tilt); rotating Q and U into
 the grid frame before smoothing removes that, so the shader draws psi directly.
 The sky position angle is psi - tilt, with the tilt map in sky.json.
 
-Inputs (LMC_DATA, default ~/Projects/LMC/lmc-data)
+Inputs (LMC_DATA, required)
   external/HFI_SkyMap_353-BPassCorrected_2048_R4.00_full.fits   Planck PR4
   external/hi4pi/parts/*  rows of the HI4PI N_HI HEALPix table (LAMBDA,
       https://lambda.gsfc.nasa.gov/data/foregrounds/HI4PI/NHI_HPX.fits),
@@ -24,10 +24,10 @@ Inputs (LMC_DATA, default ~/Projects/LMC/lmc-data)
         curl -r <start>-<end> -o parts/part00 <url>; echo "<start> <end>" > parts/range_bytes
       (any split into several part files works; they are concatenated in order)
   exp_raw/gass_279_-33_LMC_range_1444812272.fits  GASS III, 182-366 km/s LSR
-  ~/Projects/LMC/LMC-foreground/starlight_polarization/*_j2000.txt
+  $STARLIGHT_DIR/*_j2000.txt, the foreground starlight catalogues (required)
 
 Run (loads the full-sky Planck map once, then caches the cut-outs):
-  flock /tmp/ism-planck.lock python3 scripts/render_stokes.py
+  flock /tmp/ism-planck.lock env LMC_DATA=... STARLIGHT_DIR=... python3 scripts/render_stokes.py
 """
 
 import json
@@ -53,7 +53,7 @@ DATA = rl.DATA
 CACHE = ROOT / ".cache" / "stokes"
 TEX = ROOT / "public" / "sky" / "stokes"
 JSON_OUT = ROOT / "src" / "data" / "stokes.json"
-STARS = Path("~/Projects/LMC/LMC-foreground/starlight_polarization").expanduser()
+STARS = rl.env_path("STARLIGHT_DIR", "the folder with the *_j2000.txt starlight catalogues")
 HI4PI_PARTS = DATA / "external" / "hi4pi" / "parts"
 GASS_LMC = DATA / "exp_raw" / "gass_279_-33_LMC_range_1444812272.fits"
 

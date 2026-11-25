@@ -12,7 +12,7 @@ pixels), so the layers line up pixel for pixel and can be stacked or
 cross-faded in the browser. Outputs go to OUT as 8-bit images plus a small JSON
 with the grid. scripts/web_assets.py turns them into the site's files.
 
-Run: LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/render_lmc.py
+Run: LMC_DATA=/path/to/lmc-data python3 scripts/render_lmc.py
 """
 
 import hashlib
@@ -32,7 +32,23 @@ from PIL import Image
 from reproject import reproject_from_healpix, reproject_interp
 from scipy.ndimage import gaussian_filter, map_coordinates
 
-DATA = Path(os.environ.get("LMC_DATA", "~/Projects/LMC/lmc-data")).expanduser()
+
+
+def env_path(name, what):
+    """Path named by an environment variable; exit with a clear message when unset."""
+    value = os.environ.get(name)
+    if not value:
+        raise SystemExit(f"{name} is not set: point it at {what}.")
+    return Path(value).expanduser()
+
+
+def require_files(*paths):
+    missing = [str(p) for p in paths if not p.exists()]
+    if missing:
+        raise SystemExit("missing input files:\n  " + "\n  ".join(missing))
+
+
+DATA = env_path("LMC_DATA", "the LMC data folder (it holds exp_raw/ and external/)")
 OUT = Path(os.environ.get("OUT", Path(__file__).resolve().parent.parent / "assets" / "lmc"))
 N_CHANNEL_FRAMES = 48
 
@@ -376,6 +392,7 @@ def regions(planck, size=900):
 
 
 def main():
+    require_files(HI_CUBE, CO_CUBE, CO_RMS, PLANCK)
     OUT.mkdir(parents=True, exist_ok=True)
     print("H I cube", HI_CUBE.name, "...", flush=True)
     wcs = grid_wcs()
@@ -431,6 +448,7 @@ if __name__ == "__main__":
     import sys
 
     if "--regions" in sys.argv:
+        require_files(PLANCK)
         OUT.mkdir(parents=True, exist_ok=True)
         regions(read_planck())
     else:

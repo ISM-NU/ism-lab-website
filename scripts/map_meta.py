@@ -9,7 +9,7 @@ Writes
 Uses the render scripts' own functions (grid, Planck reader, stretches) so the
 numbers describe the images as drawn. Needs the full-sky Planck map in memory:
 
-    flock /tmp/ism-planck.lock env LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/map_meta.py
+    flock /tmp/ism-planck.lock env LMC_DATA=/path/to/lmc-data python3 scripts/map_meta.py
 
 Signal to noise. P = sqrt(Qs^2 + Us^2) with Qs, Us the Gaussian-smoothed maps
 the field drawings use. The noise comes from the PR4 per-pixel covariances

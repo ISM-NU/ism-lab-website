@@ -14,8 +14,8 @@ with a screen blend, so overlapping emission adds light the way it does on a
 detector rather than mixing to grey. Point sources come from a short-wavelength
 band with the extended emission subtracted.
 
-    LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/composites.py [region ...]
-    python3 scripts/composites.py insets   # zoom insets around R136, after lmc
+    LMC_DATA=/path/to/lmc-data python3 scripts/composites.py [region ...]
+    LMC_DATA=/path/to/lmc-data python3 scripts/composites.py insets   # zoom insets around R136, after lmc
 
 HiPS reprojections are cached in .cache/hips/; images go to public/sky/.
 """
