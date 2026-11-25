@@ -13,7 +13,7 @@ const instruments = (id: keyof typeof compCredits) => [...new Set(compCredits[id
 // Scale, compass, beams and the Method drawer come from maps.json (distances
 // and their references are cited there). zoom: the LMC composite shares the
 // 12 degree analysis grid; the card crops in, and the scale bar accounts for it.
-// The field layer is faded where the polarized S/N is below 3 (mask from map_meta.py).
+// The field layer is faded where the polarized S/N is below 3 (mask from map_meta.py, written only below the 0.99 used here).
 const mask = (id: string) => {
   const k = maps.images[`comp-${id}-field`]?.snr;
   return k && maps.snr_stats[k].frac_gt3 < 0.99 ? `mask-image:url(/sky/snr-${k}.webp);mask-size:100% 100%;mask-mode:luminance;-webkit-mask-image:url(/sky/snr-${k}.webp);-webkit-mask-size:100% 100%;` : "";
