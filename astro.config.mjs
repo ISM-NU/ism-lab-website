@@ -2,8 +2,9 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  // Set to the public URL when the domain is live. Link previews need absolute
-  // URLs, and the og:image tag in Base.astro is built from this.
+  // Placeholder until the domain's DNS record exists. Set it to the public URL
+  // then: Base.astro emits an absolute og:image only when this is not localhost,
+  // so a build with the placeholder never publishes a localhost link.
   site: "http://localhost:4321",
   trailingSlash: "ignore",
   prefetch: { prefetchAll: true },
