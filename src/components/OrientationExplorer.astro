@@ -9,11 +9,12 @@
 // those quantities are not in the published table (see the note rendered below).
 // Built for a dark section: the colour ramp runs from red (parallel) to paper white.
 import data from "../data/orientations.json";
-import { byBibcode } from "../lib/pubs";
+import { byBibcode, link } from "../lib/pubs";
 import { ALLSKY_W, ALLSKY_H } from "../lib/facts";
 
 const bib = "2019MNRAS.485.2825A";
-if (!byBibcode.has(bib)) throw new Error(`OrientationExplorer: ${bib} is not in publications.json`);
+const paper = byBibcode.get(bib);
+if (!paper) throw new Error(`OrientationExplorer: ${bib} is not in publications.json`);
 const total = data.rows.length;
 const withField = data.rows.filter((r) => r[8] !== null).length;
 ---
@@ -71,7 +72,7 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
   <div class="notes">
     <p>The angle is the difference between the filament position angle from the SupRHT detection and the mean Planck 353 GHz field angle inside the filament, folded to 0 to 90°. Zero is a field along the filament, 90° is a field across it. The table lists {total} filaments; {withField} have a field angle. The spread is the dispersion of the field angle in the filament, from circular statistics.</p>
     <p>The published table does not carry what the paper binned: the field angle in the background, the column density of the environment, or the contrast. Its background column density column repeats the filament column density, so neither the environment split at 1.2 × 10<sup>21</sup> cm<sup>-2</sup> nor the contrast split at 4 × 10<sup>20</sup> cm<sup>-2</sup> can be rebuilt from it, and the paper's histograms count pixels, not filaments. This view is therefore a per-filament look at the field inside filaments, not a reproduction of Figures 5 to 8.</p>
-    <p>Data: Alina, D., Ristorcelli, I., Montier, L., et al. 2019, <a href={`https://ui.adsabs.harvard.edu/abs/${bib}`} rel="noopener">MNRAS 485, 2825</a>, <a href="https://arxiv.org/abs/1712.09325" rel="noopener">arXiv:1712.09325</a>, table A1 via <a href="https://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/MNRAS/485/2825" rel="noopener">VizieR J/MNRAS/485/2825</a>.</p>
+    <p>Data: Alina, D., Ristorcelli, I., Montier, L., et al. 2019, <a href={link(paper)} rel="noopener">MNRAS 485, 2825</a>, <a href="https://arxiv.org/abs/1712.09325" rel="noopener">arXiv:1712.09325</a>, table A1 via <a href="https://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/MNRAS/485/2825" rel="noopener">VizieR J/MNRAS/485/2825</a>.</p>
   </div>
 </div>
 
