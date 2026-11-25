@@ -91,15 +91,7 @@ REGIONS = {
 
 
 def target_wcs(r):
-    n, fov = r["n"], r["fov"]
-    ctype = ("RA---TAN", "DEC--TAN") if r["frame"] == "icrs" else ("GLON-TAN", "GLAT-TAN")
-    h = fits.Header()
-    h.update(NAXIS=2, NAXIS1=n, NAXIS2=n, CTYPE1=ctype[0], CTYPE2=ctype[1],
-             CRVAL1=r["centre"][0], CRVAL2=r["centre"][1], CRPIX1=n / 2 + 0.5, CRPIX2=n / 2 + 0.5,
-             CDELT1=-fov / n, CDELT2=fov / n)
-    if r["frame"] == "icrs":
-        h.update(RADESYS="FK5", EQUINOX=2000.0)
-    return WCS(h)
+    return rl.tan_wcs(r["frame"], r["centre"], r["n"], r["fov"] / r["n"])
 
 
 def hips_order(pix_deg, max_order):
@@ -313,7 +305,7 @@ def field_angle(r, wcs, planck):
         _, ang, _ = rl.planck_maps(planck, wcs, (n, n), smooth_px=smooth)
         return ang
     proj = lambda m: reproject_from_healpix((m, "galactic"), wcs, shape_out=(n, n), nested=False)[0]
-    Q, U = proj(planck[1]), -proj(planck[2])
+    Q, U = proj(planck[1]), rl.cosmo_to_iau(proj(planck[2]))
     return 0.5 * np.arctan2(gaussian_filter(np.nan_to_num(U), smooth), gaussian_filter(np.nan_to_num(Q), smooth)) + np.pi / 2
 
 

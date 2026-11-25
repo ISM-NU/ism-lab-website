@@ -37,10 +37,9 @@ import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 import astropy.units as u
-from astropy.wcs import WCS
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from render_lmc import PLANCK, read_planck  # noqa: E402
+from render_lmc import PLANCK, cosmo_to_iau, read_planck, tan_wcs  # noqa: E402
 
 OUT = Path(__file__).resolve().parent.parent / "src" / "data" / "bench_patch.json"
 FWHM_ARCMIN = 10.0
@@ -49,12 +48,7 @@ BEAM_ARCMIN = 5.0  # native 353 GHz resolution, "~5 arcmin" (Alina et al. 2023, 
 
 def tan_grid(ra, dec, size_deg, pix_arcmin):
     n = int(round(size_deg * 60 / pix_arcmin))
-    w = WCS(naxis=2)
-    w.wcs.ctype = ["RA---TAN", "DEC--TAN"]
-    w.wcs.crval = [ra, dec]
-    w.wcs.crpix = [(n + 1) / 2, (n + 1) / 2]
-    w.wcs.cdelt = [-pix_arcmin / 60, pix_arcmin / 60]
-    return w, n
+    return tan_wcs("icrs", (ra, dec), n, pix_arcmin / 60, radesys=None), n
 
 
 def smooth_patch(maps, cov_cols, nside, wcs, n, fwhm_arcmin):
@@ -82,12 +76,11 @@ def smooth_patch(maps, cov_cols, nside, wcs, n, fwhm_arcmin):
 def load():
     I, Q, U = read_planck()
     del I
-    # COSMO to IAU: U changes sign, and so does every covariance with one U factor.
-    maps = {"q": Q, "u": -U}
+    maps = {"q": Q, "u": cosmo_to_iau(U)}
     h = fits.open(PLANCK, memmap=True)
     d = h[1].data
     cov = {"qq": np.asarray(d["QQ_COV"]).ravel(), "uu": np.asarray(d["UU_COV"]).ravel(),
-           "qu": -np.asarray(d["QU_COV"]).ravel()}
+           "qu": cosmo_to_iau(np.asarray(d["QU_COV"]).ravel())}
     assert h[1].header["ORDERING"].strip() == "NESTED"
     return maps, cov, hp.get_nside(Q)
 

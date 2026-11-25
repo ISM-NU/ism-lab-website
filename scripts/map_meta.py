@@ -112,11 +112,7 @@ def frame_wcs(fid, n=None):
     key = {"gc12": "galactic_centre", "mon8": "monoceros_ob1"}.get(fid, fid)
     l, b, width = rl.REGIONS[key]
     size = n or 900
-    hdr = fits.Header()
-    hdr.update(NAXIS=2, NAXIS1=size, NAXIS2=size, CTYPE1="GLON-TAN", CTYPE2="GLAT-TAN",
-               CRVAL1=l, CRVAL2=b, CRPIX1=size / 2 + 0.5, CRPIX2=size / 2 + 0.5,
-               CDELT1=-width / size, CDELT2=width / size)
-    return WCS(hdr), size, width, (l, b)
+    return rl.tan_wcs("galactic", (l, b), size, width / size), size, width, (l, b)
 
 
 def tilt_samples(wcs, n, k=9):
@@ -249,10 +245,8 @@ def write_fits(name, data, bunit, what, extra=()):
     d = data.astype(np.float32)
     m = d.shape[0]
     f = FITS_BIN
-    h = fits.Header()
-    h.update(NAXIS=2, CTYPE1="RA---TAN", CTYPE2="DEC--TAN", CRVAL1=rl.GRID["CRVAL1"], CRVAL2=rl.GRID["CRVAL2"],
-             CRPIX1=(rl.GRID["CRPIX1"] - 0.5) / f + 0.5, CRPIX2=(rl.GRID["CRPIX2"] - 0.5) / f + 0.5,
-             CDELT1=rl.GRID["CDELT1"] * f, CDELT2=rl.GRID["CDELT2"] * f, RADESYS="FK5", EQUINOX=2000.0)
+    c = rl.GRID
+    h = rl.tan_header("icrs", (c["CRVAL1"], c["CRVAL2"]), m, c["CDELT2"] * f, crpix=(c["CRPIX1"] - 0.5) / f + 0.5)
     hdu = fits.PrimaryHDU(d, header=h)
     hh = hdu.header
     hh["BUNIT"] = bunit
@@ -281,14 +275,14 @@ def main():
     planck = rl.read_planck()
     I_lmc, b_eq, _ = rl.planck_maps(planck, wcs, rl.SHAPE)
     proj = lambda m, w, s: reproject_from_healpix((m, "galactic"), w, shape_out=s, nested=False)[0]
-    QU = {k: (proj(planck[1], w, s), -proj(planck[2], w, s)) for k, (w, s, _, _) in targets.items()}
+    QU = {k: (proj(planck[1], w, s), rl.cosmo_to_iau(proj(planck[2], w, s))) for k, (w, s, _, _) in targets.items()}
     del planck
     cov = {}
     for col, key in ((7, "qq"), (8, "qu"), (9, "uu")):
         m = hp.read_map(rl.PLANCK, field=col, dtype=np.float32)
         for k, (w, s, _, _) in targets.items():
             c = proj(m, w, s)
-            cov.setdefault(k, {})[key] = -c if key == "qu" else c  # U was negated
+            cov.setdefault(k, {})[key] = rl.cosmo_to_iau(c) if key == "qu" else c
         del m
     snr = {}
     stats = {}

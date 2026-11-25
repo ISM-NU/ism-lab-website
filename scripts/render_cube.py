@@ -11,7 +11,7 @@ Run: python3 scripts/render_cube.py
 """
 import gzip
 import json
-import os
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -19,8 +19,11 @@ from astropy.io import fits
 from astropy.wcs import WCS
 from scipy.ndimage import map_coordinates
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import render_lmc as rl  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-DATA = Path(os.environ.get("LMC_DATA", "~/Projects/LMC/lmc-data")).expanduser()
+DATA = rl.DATA
 CUBE = DATA / "exp_raw/gass_279_-33_LMC_range_1444812272.fits"
 VMAX = 340.0          # above this the GASS channels are noise
 STEP = 0.04           # K per Int16 count, about one noise sigma (0.04 K)
@@ -30,12 +33,8 @@ D_KPC = 49.59              # Pietrzynski et al. 2019
 CRVAL = (81.1893661273, -68.5259351087)
 
 pix = FIELD / N
-tan = WCS(naxis=2)
-tan.wcs.ctype = ["RA---TAN", "DEC--TAN"]
-tan.wcs.crval = CRVAL
-tan.wcs.cdelt = [-pix, pix]
 # the site grid has CRVAL 0.25 px (of 0.0111 deg) left of the field centre
-tan.wcs.crpix = [(N + 1) / 2 - 0.25 * 0.0111111 / pix] * 2
+tan = rl.tan_wcs("icrs", CRVAL, N, pix, crpix=(N + 1) / 2 - 0.25 * 0.0111111 / pix, radesys=None)
 
 with fits.open(CUBE) as h:
     hdr, cube = h[0].header, np.asarray(h[0].data, dtype=np.float32)

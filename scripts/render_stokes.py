@@ -155,15 +155,15 @@ def cut_planck(grids):
     for n in todo:
         st[n]["I"] = cut(i_map, n, False) * K2MJY
         st[n]["Q"] = cut(q_map, n, False) * K2MJY
-        st[n]["U"] = -cut(u_map, n, False) * K2MJY  # COSMO -> IAU
+        st[n]["U"] = rl.cosmo_to_iau(cut(u_map, n, False)) * K2MJY
     del i_map, q_map, u_map
-    # Covariance columns (0-based fields of the FREQ-MAP table). The U sign
-    # flip from COSMO to IAU flips IU and QU.
-    cols = {"II": (4, 1), "IQ": (5, 1), "IU": (6, -1), "QQ": (7, 1), "QU": (8, -1), "UU": (9, 1)}
-    for key, (field, sign) in cols.items():
+    # Covariance columns (0-based fields of the FREQ-MAP table).
+    cols = {"II": 4, "IQ": 5, "IU": 6, "QQ": 7, "QU": 8, "UU": 9}
+    for key, field in cols.items():
         m = hp.read_map(rl.PLANCK, field=field, nest=True, dtype=np.float32)
         for n in todo:
-            st[n][key] = sign * cut(m, n, True) * K2MJY**2
+            c = cut(m, n, True)
+            st[n][key] = (rl.cosmo_to_iau(c) if key.count("U") == 1 else c) * K2MJY**2
         del m
     for n in todo:
         wcs, shape = grids[n]

@@ -185,7 +185,7 @@ def run_field():
 
     planck = rl.read_planck()
     proj = lambda m: reproject_from_healpix((m, "galactic"), wcs, shape_out=shape, nested=False)[0]
-    Q, U = proj(planck[1]), -proj(planck[2])  # COSMO to IAU
+    Q, U = proj(planck[1]), rl.cosmo_to_iau(proj(planck[2]))
     del planck
     sig = PLANCK_FWHM_SMOOTH_ARCMIN / 2.3548 / pix_arcmin
     Qs, Us = gaussian_filter(np.nan_to_num(Q), sig), gaussian_filter(np.nan_to_num(U), sig)
