@@ -16,6 +16,7 @@
 // prefers-reduced-motion the noise is still and the view is drawn once.
 // Without WebGL2 a Canvas 2D fallback draws beam-spaced segments.
 import { reduce, watchVisible, onFrame } from "./motion";
+import { GRID_ARCMIN } from "../lib/facts";
 
 export type Plane = { file: string; n: number; lo: number; hi: number };
 export type StokesMeta = {
@@ -28,8 +29,6 @@ export type StokesMeta = {
   mask_I: number;
 };
 
-// Grid width in arcmin (render_lmc.GRID: 1087 px of 0.0111111 deg).
-export const GRID_ARCMIN = 1087 * 0.0111111 * 60;
 // Copper dust palette, render_lmc.DUST_STOPS.
 const DUST_STOPS: [number, string][] = [[0, "#000000"], [0.18, "#1c0a06"], [0.38, "#5a1e0e"], [0.58, "#a8461a"], [0.76, "#e08a3c"], [0.9, "#f6c98a"], [1, "#fff6e6"]];
 // Q, U, sigma and I_fg are uploaded in units of 1e-3 MJy/sr to sit well inside half-float range.

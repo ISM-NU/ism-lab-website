@@ -8,7 +8,15 @@ export default facts;
 export const GRID_DEG = facts.grid.naxis * facts.grid.cdelt_deg;
 export const GRID_ARCMIN = GRID_DEG * 60;
 
+/** Width and height of the all-sky Mollweide image, pixels. */
+export const ALLSKY_W = facts.allsky_width_px;
+export const ALLSKY_H = ALLSKY_W / 2;
+
 export const LY_PER_PC = 3.26156;
+export const pcToLy = (pc: number) => pc * LY_PER_PC;
+
+/** The grid's width at the LMC distance, light-years. */
+export const LY_PER_GRID = pcToLy(((GRID_DEG * Math.PI) / 180) * facts.lmc.distance_pc);
 
 /** Round to `sig` significant figures. */
 export const roundSig = (x: number, sig: number) => {
@@ -16,9 +24,8 @@ export const roundSig = (x: number, sig: number) => {
   return Math.round(x / p) * p;
 };
 
-/** Light-years for a distance in parsecs, as "162 000". */
-export const lyLabel = (pc: number, sig: number) =>
-  roundSig(pc * LY_PER_PC, sig).toLocaleString("en-US").replace(/,/g, " ");
+/** Light-years rounded to `sig` figures, as "162 000". */
+export const lyLabel = (ly: number, sig: number) => roundSig(ly, sig).toLocaleString("en-US").replace(/,/g, " ");
 
 /** "49.6 kpc" style label for a distance in parsecs. */
 export const kpcLabel = (pc: number, digits = 1) => `${(pc / 1000).toFixed(digits)} kpc`;

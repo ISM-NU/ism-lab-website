@@ -11,7 +11,7 @@
   "allsky_width_px": 2400,
   "lmc": {
     "distance_pc": 49590,
-    "distance_ref": "Pietrzynski et al. 2019",
+    "distance_ref": "Pietrzyński et al. 2019",
     "distance_text": "49.59 ± 0.09 (stat) ± 0.54 (sys) kpc"
   },
   "galactic_centre": {

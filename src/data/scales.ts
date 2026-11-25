@@ -30,7 +30,14 @@ export interface Bar {
   note?: string;
 }
 
+import facts, { GRID_DEG, kpcLabel } from "../lib/facts";
+
 const AM = 60, DEG = 3600;
+export const AS_PER_RAD = 206264.806;
+const LMC_PC = facts.lmc.distance_pc;
+const LMC_TARGET = `LMC · ${kpcLabel(LMC_PC)}`;
+const MON_PC = facts.mon_ob1.cluster_distance_pc;
+const PLANCK_BEAM = facts.planck.beam_arcmin * AM;
 
 export const bars: Bar[] = [
   {
@@ -116,9 +123,9 @@ export const bars: Bar[] = [
     // 2.5 x 3 deg, MBM 12 at 252 +4 -6 +-12 pc (Zucker et al. 2019, Sect. 2).
     id: "trao-mbm12",
     name: "TRAO 12CO / 13CO",
-    target: "MBM 12 · 252 pc",
-    dist: 252,
-    distSrc: "Zucker et al. 2019, as adopted by Vorster et al. 2026",
+    target: `MBM 12 · ${facts.mbm12.distance_pc} pc`,
+    dist: facts.mbm12.distance_pc,
+    distSrc: `${facts.mbm12.distance_ref}, as adopted by Vorster et al. 2026`,
     beam: 48,
     beamNote: "TRAO beam at 110 to 115 GHz (46 to 48 arcsec)",
     size: 3 * DEG,
@@ -127,14 +134,14 @@ export const bars: Bar[] = [
   },
   {
     // Alina et al. 2022 (2007.15344): TRAO 13CO beam 47", 6 deg2 analysed in
-    // the eastern part; d = 723 pc (Cantat-Gaudin et al. 2018). Map size is
+    // the eastern part, at the distance Alina et al. adopted. Map size is
     // the side of a square of 6 deg2 (2.45 deg), derived here; the real
     // footprint is not square.
     id: "trao-mon",
     name: "TRAO 13CO",
-    target: "Mon OB1 east · 723 pc",
-    dist: 723,
-    distSrc: "Cantat-Gaudin et al. 2018, as adopted by Alina et al. 2022",
+    target: `Mon OB1 east · ${MON_PC} pc`,
+    dist: MON_PC,
+    distSrc: facts.mon_ob1.cluster_distance_ref,
     beam: 47,
     beamNote: "TRAO beam (47 arcsec)",
     size: Math.sqrt(6) * DEG,
@@ -146,9 +153,9 @@ export const bars: Bar[] = [
     // extraction), "70 or 1.5 pc". Same 6 deg2 region.
     id: "planck-mon",
     name: "Planck 353 GHz",
-    target: "Mon OB1 east · 723 pc",
-    dist: 723,
-    distSrc: "Cantat-Gaudin et al. 2018, as adopted by Alina et al. 2022",
+    target: `Mon OB1 east · ${MON_PC} pc`,
+    dist: MON_PC,
+    distSrc: facts.mon_ob1.cluster_distance_ref,
     beam: 7 * AM,
     beamNote: "smoothed from the native 5 arcmin to 7 arcmin (1.5 pc in the paper)",
     size: Math.sqrt(6) * DEG,
@@ -189,31 +196,29 @@ export const bars: Bar[] = [
   {
     // Alina et al. 2023 (2205.01275): GASS H I, 16.2' effective resolution
     // (Sect. 2.1). Region: mask built on a circle of 5 deg radius around the
-    // LMC centre (Sect. 5). Distance 49.59 kpc, Pietrzynski et al. 2019
-    // (the paper quotes 200 pc for 16', which would need 43 kpc; 16.2' at
-    // 49.59 kpc is 234 pc).
+    // LMC centre (Sect. 5). The site's LMC distance (the paper quotes 200 pc
+    // for 16', which would need 43 kpc; the note below gives the value here).
     id: "gass-lmc",
     name: "GASS H I 21 cm",
-    target: "LMC · 49.6 kpc",
-    dist: 49590,
-    distSrc: "Pietrzynski et al. 2019 (the site's adopted LMC distance)",
+    target: LMC_TARGET,
+    dist: LMC_PC,
+    distSrc: `${facts.lmc.distance_ref} (the site's adopted LMC distance)`,
     beam: 16.2 * AM,
     beamNote: "GASS effective resolution (16.2 arcmin)",
     size: 10 * DEG,
     sizeNote: "diameter of the 5 degree radius circle used for the analysis",
     papers: ["2023MNRAS.518.4466A", "2026IAUS..392..179A"],
-    note: "Alina et al. 2023 state 200 pc for 16 arcmin; at 49.59 kpc it is 234 pc.",
+    note: `Alina et al. 2023 state 200 pc for 16 arcmin; at ${kpcLabel(LMC_PC, 2)} it is ${Math.round((16.2 * AM / AS_PER_RAD) * LMC_PC)} pc.`,
   },
   {
     // Same paper: Planck 353 GHz at nominal ~5' ("nominal angular resolution
-    // (~5 arcmin)"); the instrument beam is quoted as 4.9' in the brief, from
-    // the HFI beam tables (not rechecked against the paper).
+    // (~5 arcmin)"); the beam is the site's Planck effective beam (facts.json).
     id: "planck-lmc",
     name: "Planck 353 GHz, native",
-    target: "LMC · 49.6 kpc",
-    dist: 49590,
-    distSrc: "Pietrzynski et al. 2019",
-    beam: 4.9 * AM,
+    target: LMC_TARGET,
+    dist: LMC_PC,
+    distSrc: facts.lmc.distance_ref,
+    beam: PLANCK_BEAM,
     beamNote: "native Planck HFI beam at 353 GHz (about 5 arcmin)",
     size: 10 * DEG,
     sizeNote: "diameter of the 5 degree radius circle used for the analysis",
@@ -221,16 +226,16 @@ export const bars: Bar[] = [
   },
   {
     // scripts/render_lmc.py planck_maps(): Gaussian sigma = 12 pixels of the
-    // 40" output grid = 480" -> FWHM 18.8'; with the native 4.9' beam in
-    // quadrature, 19.5'. Grid is 1087 px x 40" = 12.08 deg.
+    // sigma = 12 pixels of the output grid; combined with the native beam in
+    // quadrature.
     id: "planck-lmc-site",
     name: "Planck 353 GHz, as drawn here",
-    target: "LMC · 49.6 kpc",
-    dist: 49590,
-    distSrc: "Pietrzynski et al. 2019",
-    beam: Math.hypot(2.3548 * 12 * 40, 4.9 * AM),
-    beamNote: "smoothing of the maps on this site (Gaussian σ = 12 pixels of 40 arcsec) combined with the native beam, in quadrature",
-    size: 12.08 * DEG,
+    target: LMC_TARGET,
+    dist: LMC_PC,
+    distSrc: facts.lmc.distance_ref,
+    beam: Math.hypot(2.3548 * 12 * facts.grid.cdelt_deg * DEG, PLANCK_BEAM),
+    beamNote: `smoothing of the maps on this site (Gaussian σ = 12 pixels of ${Math.round(facts.grid.cdelt_deg * DEG)} arcsec) combined with the native beam, in quadrature`,
+    size: GRID_DEG * DEG,
     sizeNote: "width of the image grid used on this site",
     papers: [],
     note: "Derived from the site's own render script, not from a paper.",
@@ -241,9 +246,9 @@ export const bars: Bar[] = [
     // same 10 deg LMC field as the other LMC bars (an assumption).
     id: "gaskap-lmc",
     name: "GASKAP-HI 21 cm",
-    target: "LMC · 49.6 kpc",
-    dist: 49590,
-    distSrc: "Pietrzynski et al. 2019",
+    target: LMC_TARGET,
+    dist: LMC_PC,
+    distSrc: facts.lmc.distance_ref,
     beam: 30,
     beamNote: "ASKAP 30 arcsec beam, as quoted on the LMC project page",
     size: 10 * DEG,

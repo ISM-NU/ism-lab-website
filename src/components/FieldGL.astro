@@ -10,6 +10,7 @@
 // slot    overlays drawn over the map in a 1000 x 1000 box (e.g. contours)
 import stokes from "../data/stokes.json";
 import sky from "../data/sky.json";
+import { GRID_ARCMIN } from "../lib/facts";
 
 interface Props { view?: "observed" | "subtracted"; wipe?: boolean; scale?: number; controls?: boolean; label?: string }
 const { view = "observed", wipe = false, scale = 15, controls = true, label } = Astro.props;
@@ -26,7 +27,6 @@ const meta = {
   },
 };
 const tilt = { n: sky.tilt_n, t: sky.north_tilt };
-const GRID_ARCMIN = 1087 * 0.0111111 * 60;
 const split = wipe ? 0.5 : view === "observed" ? 1 : 0;
 const fmtScale = (s: number) => (s >= 60 ? `${s / 60}°` : `${s}′`);
 // Compass near the top right; local north there is tilted by the projection.
@@ -104,7 +104,8 @@ const name = label ?? (wipe ? "LMC magnetic field, Planck as observed and after 
 </style>
 
 <script>
-  import { FieldView, getStore, GRID_ARCMIN, type StokesMeta } from "../scripts/fieldgl";
+  import { FieldView, getStore, type StokesMeta } from "../scripts/fieldgl";
+  import { GRID_ARCMIN } from "../lib/facts";
 
   document.querySelectorAll<HTMLElement>(".fgl").forEach((fig) => {
     const { meta, tilt } = JSON.parse((fig.nextElementSibling as HTMLElement).textContent!) as { meta: StokesMeta; tilt: { n: number; t: number[] } };

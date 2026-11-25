@@ -10,6 +10,7 @@
 // Built for a dark section: the colour ramp runs from red (parallel) to paper white.
 import data from "../data/orientations.json";
 import { byBibcode } from "../lib/pubs";
+import { ALLSKY_W, ALLSKY_H } from "../lib/facts";
 
 const bib = "2019MNRAS.485.2825A";
 if (!byBibcode.has(bib)) throw new Error(`OrientationExplorer: ${bib} is not in publications.json`);
@@ -56,9 +57,9 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
       <figcaption id="oeStats" class="stats" aria-live="polite"></figcaption>
     </figure>
     <figure class="map">
-      <svg id="oeMap" viewBox="0 0 2400 1200" role="img" aria-labelledby="oeMapT">
+      <svg id="oeMap" viewBox={`0 0 ${ALLSKY_W} ${ALLSKY_H}`} role="img" aria-labelledby="oeMapT">
         <title id="oeMapT">Selected filaments on a Mollweide map of Planck 353 GHz dust in Galactic coordinates</title>
-        <image href="/sky/allsky.webp" width="2400" height="1200" />
+        <image href="/sky/allsky.webp" width={ALLSKY_W} height={ALLSKY_H} />
         <g id="oeDots"></g>
       </svg>
       <figcaption class="mapcap">Galactic coordinates, centre at the Galactic centre, longitude increasing to the left. Filled circles are the selected filaments, coloured by angle as in the histogram. Open grey circles are filaments outside the selection or without a field angle.</figcaption>
@@ -128,6 +129,7 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
 </style>
 
 <script>
+  import { ALLSKY_W, ALLSKY_H } from "../lib/facts";
   // Row layout is the "columns" list in orientations.json:
   // id, l, b, len, wid, pa, nh, nhfil, psi1, psi2, sig
   type Row = (number | null)[];
@@ -176,8 +178,8 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
   const dotEls = rows.map((r) => {
     const [u, v] = moll(r[1] as number, r[2] as number);
     const c = document.createElementNS(NS, "circle");
-    c.setAttribute("cx", String(u * 2400));
-    c.setAttribute("cy", String(v * 1200));
+    c.setAttribute("cx", String(u * ALLSKY_W));
+    c.setAttribute("cy", String(v * ALLSKY_H));
     dots.appendChild(c);
     return c;
   });
