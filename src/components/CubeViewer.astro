@@ -129,6 +129,7 @@ import meta from "../data/cube.json";
 </style>
 
 <script>
+  import { $ } from "../scripts/dom";
   import { canvasFit, clamp, watchVisible, reduce } from "../scripts/motion";
 
   const meta = JSON.parse(document.getElementById("cvMeta")!.textContent!);
@@ -142,7 +143,6 @@ import meta from "../data/cube.json";
   const KPC_PER_DEG = meta.d_kpc * D2R;
   const vOf = (k: number) => V0 + k * DV;
 
-  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const root = $("cube"), wrap = $("cvMapWrap");
   const mapC = $<HTMLCanvasElement>("cvMap"), barC = $<HTMLCanvasElement>("cvBar");
   const specC = $<HTMLCanvasElement>("cvSpec"), pvC = $<HTMLCanvasElement>("cvPV");

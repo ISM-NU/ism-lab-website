@@ -134,11 +134,11 @@ const m = patchMeta;
 </style>
 
 <script>
+  import { $ } from "../scripts/dom";
   import * as E from "../lib/estimators";
   import { canvasFit } from "../scripts/motion";
 
   const DEG = Math.PI / 180;
-  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const css = getComputedStyle(document.documentElement);
   const C = {
     ink: css.getPropertyValue("--ink").trim() || "#f3f3ef",

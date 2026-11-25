@@ -1,5 +1,4 @@
 ---
-import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import Hero from "../components/Hero.astro";
 import PullBack from "../components/PullBack.astro";
@@ -9,9 +8,10 @@ import Archive from "../components/Archive.astro";
 import ProjectCards from "../components/ProjectCards.astro";
 import PaperList from "../components/PaperList.astro";
 import { papers } from "../lib/pubs";
+import { getNews } from "../lib/news";
 
 const latest = papers.filter((p) => p.group === "Papers").slice(0, 5);
-const news = (await getCollection("news", (n) => !n.data.mock)).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
+const news = (await getNews()).slice(0, 3);
 const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
 ---
 
@@ -65,7 +65,6 @@ const fmtDate = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
             <span class="dot">{fmtDate(n.data.date)}</span>
             <span class={n.data.kind === "event" ? "tag fill" : "tag"}>{n.data.kind}</span>
             <a href={`/news#${n.id}`}>{n.data.title}</a>
-            {n.data.mock && <span class="tag soon">Placeholder</span>}
           </li>
         ))}
       </ul>

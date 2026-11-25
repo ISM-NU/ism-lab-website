@@ -128,12 +128,12 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
 </style>
 
 <script>
+  import { $ } from "../scripts/dom";
   // Row layout is the "columns" list in orientations.json:
   // id, l, b, len, wid, pa, nh, nhfil, psi1, psi2, sig
   type Row = (number | null)[];
   const root = document.getElementById("oe")!;
   const rows: Row[] = JSON.parse(root.dataset.rows!);
-  const $ = <T extends Element>(id: string) => document.getElementById(id) as unknown as T;
   const lo = $<HTMLInputElement>("oeLo"), hi = $<HTMLInputElement>("oeHi");
   const loV = $("oeLoV"), hiV = $("oeHiV");
   const sigSel = $<HTMLSelectElement>("oeSig");
