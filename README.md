@@ -21,14 +21,15 @@ Needs Node 22.23 or newer.
 
 Text lives in Markdown with typed front matter (`src/content.config.ts`):
 
-- `src/content/people/` has one file per member. `mock: true` marks a
-  placeholder, shown with a Mock tag and dot-matrix initials.
+- `src/content/people/` has one file per member.
 - `src/content/projects/` has the research lines. `papers` lists ADS bibcodes
   that must exist in `src/data/publications.json`, or the build fails.
   `upcoming` items are work in progress and show as Coming soon until Dana
   approves them.
 - `src/content/news/` has news and events. An event dated in the future shows
-  its `registration` link.
+  its `registration` link. Items with `mock: true` are templates and are not
+  listed. The News menu entry and the home page block appear once one real
+  item exists.
 
 Only published or otherwise public material goes on the site.
 
@@ -47,6 +48,15 @@ build needs none of this. Rerun the scripts when a source changes.
 | `scripts/assy_map.py` | Natural Earth 1:50m countries GeoJSON (path as argument) | `src/data/assy-map.json` |
 | `scripts/ml_card.py` | `public/sky/unet-herschel.webp`, `public/sky/unet-data.png` | `public/sky/ml-card-960.webp` |
 | `scripts/people_photos.py` | member photos as sent, in `assets/people-src/` (not tracked) | `public/people/*.webp` (crop, sRGB, exposure, vibrance) |
+| `scripts/fetch_catalogues.py` | VizieR table of Alina et al. 2019 (CfA mirror) | `src/data/orientations.json` |
+| `scripts/map_meta.py` | the render scripts' grids and the Planck map | `src/data/maps.json`, `public/sky/snr-*.webp`, `public/data/*.fits` |
+| `scripts/render_stokes.py` | Planck PR4 Q and U, HI4PI, starlight polarization | `public/sky/stokes/*.png`, `src/data/stokes.json` |
+| `scripts/render_cube.py` | GASS H I cube of the LMC | `public/sky/cube/hi.i16.gz`, `src/data/cube.json` |
+| `scripts/render_bench.py` | Planck PR4 Q, U and covariances on a small LMC patch | `src/data/bench_patch.json` |
+| `scripts/render_gc.py` | Planck PR4 Q and U at the Galactic centre | `src/data/gc-field.json` |
+| `scripts/render_mon.py` | Planck PR4 Q and U at Mon OB1 East | `src/data/mon-ob1.json` |
+| `scripts/field_segments.py` | not run directly: the segment code shared by `render_gc.py` and `render_mon.py` | |
+| `scripts/unet_filaments.py` | Herschel cutout from `.cache/hips/`, the group's U-Net weights in `.cache/unet/`, Planck | `public/sky/unet-*`, `src/data/unet.json` |
 
     python3 scripts/fetch_publications.py
     python3 scripts/webb_images.py
