@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "python3 scripts/check_scale.py && python3 scripts/check_viewport.py && python3 scripts/check_facts.py && astro check",
-    "test": "node --test src/lib/*.test.mjs"
+    "test": "node --test src/lib/*.test.mjs && python3 scripts/test_render_lmc.py"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",

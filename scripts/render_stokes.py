@@ -14,7 +14,7 @@ to 20 deg on this 12 deg TAN grid (render_lmc.north_tilt); rotating Q and U into
 the grid frame before smoothing removes that, so the shader draws psi directly.
 The sky position angle is psi - tilt, with the tilt map in sky.json.
 
-Inputs (LMC_DATA, default ~/Projects/LMC/lmc-data)
+Inputs (LMC_DATA, required)
   external/HFI_SkyMap_353-BPassCorrected_2048_R4.00_full.fits   Planck PR4
   external/hi4pi/parts/*  rows of the HI4PI N_HI HEALPix table (LAMBDA,
       https://lambda.gsfc.nasa.gov/data/foregrounds/HI4PI/NHI_HPX.fits),
@@ -24,10 +24,10 @@ Inputs (LMC_DATA, default ~/Projects/LMC/lmc-data)
         curl -r <start>-<end> -o parts/part00 <url>; echo "<start> <end>" > parts/range_bytes
       (any split into several part files works; they are concatenated in order)
   exp_raw/gass_279_-33_LMC_range_1444812272.fits  GASS III, 182-366 km/s LSR
-  ~/Projects/LMC/LMC-foreground/starlight_polarization/*_j2000.txt
+  $STARLIGHT_DIR/*_j2000.txt, the foreground starlight catalogues (required)
 
 Run (loads the full-sky Planck map once, then caches the cut-outs):
-  flock /tmp/ism-planck.lock python3 scripts/render_stokes.py
+  flock /tmp/ism-planck.lock env LMC_DATA=... STARLIGHT_DIR=... python3 scripts/render_stokes.py
 """
 
 import json
@@ -54,7 +54,7 @@ DATA = rl.DATA
 CACHE = ROOT / ".cache" / "stokes"
 TEX = ROOT / "public" / "sky" / "stokes"
 JSON_OUT = ROOT / "src" / "data" / "stokes.json"
-STARS = Path("~/Projects/LMC/LMC-foreground/starlight_polarization").expanduser()
+STARS = rl.env_path("STARLIGHT_DIR", "the folder with the *_j2000.txt starlight catalogues")
 HI4PI_PARTS = DATA / "external" / "hi4pi" / "parts"
 GASS_LMC = DATA / "exp_raw" / "gass_279_-33_LMC_range_1444812272.fits"
 
@@ -140,10 +140,13 @@ def cut_planck(grids):
     CACHE.mkdir(parents=True, exist_ok=True)
     out = {}
     todo = []
-    for name, (wcs, shape) in grids.items():
+    keys = {name: rl.input_key(wcs.to_header().tostring(), shape, K2MJY, rl.PLANCK.name, rl.PLANCK.stat().st_size)
+            for name, (wcs, shape) in grids.items()}
+    for name in grids:
         f = CACHE / f"planck_{name}.npz"
-        if f.exists():
-            out[name] = dict(np.load(f))
+        cached = dict(np.load(f)) if f.exists() else {}
+        if str(cached.pop("key", "")) == keys[name]:
+            out[name] = cached
         else:
             todo.append(name)
     if not todo:
@@ -156,20 +159,21 @@ def cut_planck(grids):
     for n in todo:
         st[n]["I"] = cut(i_map, n, False) * K2MJY
         st[n]["Q"] = cut(q_map, n, False) * K2MJY
-        st[n]["U"] = -cut(u_map, n, False) * K2MJY  # COSMO -> IAU
+        st[n]["U"] = rl.cosmo_to_iau(cut(u_map, n, False)) * K2MJY
     del i_map, q_map, u_map
-    # Covariance columns (0-based fields of the FREQ-MAP table). The U sign
-    # flip from COSMO to IAU flips IU and QU.
-    cols = {"II": (4, 1), "IQ": (5, 1), "IU": (6, -1), "QQ": (7, 1), "QU": (8, -1), "UU": (9, 1)}
-    for key, (field, sign) in cols.items():
+    # Covariance columns (0-based fields of the FREQ-MAP table).
+    cols = {"II": 4, "IQ": 5, "IU": 6, "QQ": 7, "QU": 8, "UU": 9}
+    for key, field in cols.items():
         m = hp.read_map(rl.PLANCK, field=field, nest=True, dtype=np.float32)
         for n in todo:
-            st[n][key] = sign * cut(m, n, True) * K2MJY**2
+            c = cut(m, n, True)
+            st[n][key] = (rl.cosmo_to_iau(c) if key.count("U") == 1 else c) * K2MJY**2
         del m
     for n in todo:
         wcs, shape = grids[n]
         rotate(st[n], galactic_north_on_grid(wcs, shape))
-        np.savez(CACHE / f"planck_{n}.npz", **st[n])
+        with rl.atomic(CACHE / f"planck_{n}.npz") as tmp:
+            np.savez(tmp, key=keys[n], **st[n])
         out[n] = st[n]
     return out
 
@@ -371,7 +375,8 @@ def write_plane(name, x):
     TEX.mkdir(parents=True, exist_ok=True)
     lo, hi = float(np.min(x)), float(np.max(x))
     q = np.round((x - lo) / (hi - lo) * 65535).astype(np.uint16)
-    Image.fromarray(q, mode="I;16").save(TEX / f"{name}.png", optimize=True)
+    with rl.atomic(TEX / f"{name}.png") as tmp:
+        Image.fromarray(q, mode="I;16").save(tmp, optimize=True)
     return {"file": f"/sky/stokes/{name}.png", "n": int(x.shape[0]), "lo": lo, "hi": hi}
 
 
@@ -507,7 +512,8 @@ def main():
             "method": "2023MNRAS.518.4466A",
         },
     }
-    JSON_OUT.write_text(json.dumps(meta, indent=1))
+    with rl.atomic(JSON_OUT) as tmp:
+        tmp.write_text(json.dumps(meta, indent=1))
     print(json.dumps(meta["validation"], indent=1))
     print("stars used", len(used), "mean PA", star_mean, "B_fg PA", b_fg_pa)
     tot = sum((TEX / Path(f).name).stat().st_size for f in {p["file"] for p in planes.values()})

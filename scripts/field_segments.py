@@ -52,10 +52,10 @@ def sample(m, lon, lat, kernel_fwhm_arcmin):
         w = np.exp(-0.5 * (d / sig) ** 2)
         w /= w.sum()
         Q = w @ m["Q"][pix]
-        U = -(w @ m["U"][pix])
+        U = rl.cosmo_to_iau(w @ m["U"][pix])
         cqq = (w * w) @ m["QQ"][pix]
         cuu = (w * w) @ m["UU"][pix]
-        cqu = -((w * w) @ m["QU"][pix])
+        cqu = rl.cosmo_to_iau((w * w) @ m["QU"][pix])
         out[k] = Q, U, cqq, cuu, cqu
     return out
 

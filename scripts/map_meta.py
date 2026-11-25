@@ -3,13 +3,13 @@ colour bars, distances, a polarized signal-to-noise map and FITS downloads.
 
 Writes
   src/data/maps.json            read by MapFrame.astro, FieldDots.astro
-  public/sky/snr-*.webp         small S/N masks (white: S/N >= 3) and lmc-snr.webp
+  public/sky/snr-*.webp         small S/N masks (white: S/N >= 3) for MASKS, and lmc-snr.webp
   public/data/*.fits            derived LMC maps on the 12 deg grid, 2x binned
 
 Uses the render scripts' own functions (grid, Planck reader, stretches) so the
 numbers describe the images as drawn. Needs the full-sky Planck map in memory:
 
-    flock /tmp/ism-planck.lock env LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/map_meta.py
+    flock /tmp/ism-planck.lock env LMC_DATA=/path/to/lmc-data python3 scripts/map_meta.py
 
 Signal to noise. P = sqrt(Qs^2 + Us^2) with Qs, Us the Gaussian-smoothed maps
 the field drawings use. The noise comes from the PR4 per-pixel covariances
@@ -27,9 +27,7 @@ lower bound on the noise. The signal includes Milky Way foreground.
 """
 
 import json
-import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import healpy as hp
@@ -115,11 +113,7 @@ def frame_wcs(fid, n=None):
     key = {"gc12": "galactic_centre", "mon8": "monoceros_ob1"}.get(fid, fid)
     l, b, width = rl.REGIONS[key]
     size = n or 900
-    hdr = fits.Header()
-    hdr.update(NAXIS=2, NAXIS1=size, NAXIS2=size, CTYPE1="GLON-TAN", CTYPE2="GLAT-TAN",
-               CRVAL1=l, CRVAL2=b, CRPIX1=size / 2 + 0.5, CRPIX2=size / 2 + 0.5,
-               CDELT1=-width / size, CDELT2=width / size)
-    return WCS(hdr), size, width, (l, b)
+    return rl.tan_wcs("galactic", (l, b), size, width / size), size, width, (l, b)
 
 
 def tilt_samples(wcs, n, k=9):
@@ -220,11 +214,16 @@ def block_grid(a, n=SNR_N):
     return s[::-1]
 
 
+# Archive.astro loads these three; the other grids only feed the numbers in maps.json.
+MASKS = ("lmc10", "gc2", "mon3")
+
+
 def save_mask(snr, name):
     im = Image.fromarray(np.ascontiguousarray(snr[::-1]).astype(np.float32), mode="F").resize((256, 256), Image.BILINEAR)
     s = np.asarray(im)
     m = 0.12 + 0.88 * np.clip((s - 1.0) / (SNR_MIN - 1.0), 0, 1)
-    Image.fromarray((m * 255).astype(np.uint8)).save(SKY / f"snr-{name}.webp", quality=80, method=6)
+    with rl.atomic(SKY / f"snr-{name}.webp") as tmp:
+        Image.fromarray((m * 255).astype(np.uint8)).save(tmp, quality=80, method=6)
 
 
 def save_snr_layer(snr):
@@ -235,7 +234,8 @@ def save_snr_layer(snr):
     rgb[edge] = (1.0, 0.24, 0.14)
     im = Image.fromarray((rgb * 255).astype(np.uint8)).transpose(Image.FLIP_TOP_BOTTOM)
     im.thumbnail((1000, 1000))
-    im.save(SKY / "lmc-snr.webp", quality=85, method=6)
+    with rl.atomic(SKY / "lmc-snr.webp") as tmp:
+        im.save(tmp, quality=85, method=6)
 
 
 def binned(a, f=FITS_BIN, circular=False):
@@ -252,17 +252,14 @@ def write_fits(name, data, bunit, what, extra=()):
     d = data.astype(np.float32)
     m = d.shape[0]
     f = FITS_BIN
-    h = fits.Header()
-    h.update(NAXIS=2, CTYPE1="RA---TAN", CTYPE2="DEC--TAN", CRVAL1=rl.GRID["CRVAL1"], CRVAL2=rl.GRID["CRVAL2"],
-             CRPIX1=(rl.GRID["CRPIX1"] - 0.5) / f + 0.5, CRPIX2=(rl.GRID["CRPIX2"] - 0.5) / f + 0.5,
-             CDELT1=rl.GRID["CDELT1"] * f, CDELT2=rl.GRID["CDELT2"] * f, RADESYS="FK5", EQUINOX=2000.0)
+    c = rl.GRID
+    h = rl.tan_header("icrs", (c["CRVAL1"], c["CRVAL2"]), m, c["CDELT2"] * f, crpix=(c["CRPIX1"] - 0.5) / f + 0.5)
     hdu = fits.PrimaryHDU(d, header=h)
     hh = hdu.header
     hh["BUNIT"] = bunit
     hh["OBJECT"] = "LMC"
     hh["ORIGIN"] = "ISM group, Nazarbayev University"
     hh["CREATOR"] = "scripts/map_meta.py"
-    hh["DATE"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     hh["COMMENT"] = what
     for line in extra:
         hh["COMMENT"] = line
@@ -271,7 +268,8 @@ def write_fits(name, data, bunit, what, extra=()):
     hh["COMMENT"] = "Please credit this derived product to the ISM group, Nazarbayev University, and cite Alina et al. 2023, MNRAS 518, 4466."
     hh["COMMENT"] = f"Grid: {rl.GRID_DEG:.2f} deg TAN, 2x2 binned from the site's {abs(rl.GRID['CDELT1']) * 3600:.0f} arcsec analysis grid. Includes Milky Way foreground."
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    hdu.writeto(DATA_DIR / name, overwrite=True)
+    with rl.atomic(DATA_DIR / name) as tmp:
+        hdu.writeto(tmp, overwrite=True)
     return f"/data/{name}", (DATA_DIR / name).stat().st_size
 
 
@@ -284,14 +282,14 @@ def main():
     planck = rl.read_planck()
     I_lmc, b_eq, _ = rl.planck_maps(planck, wcs, rl.SHAPE)
     proj = lambda m, w, s: reproject_from_healpix((m, "galactic"), w, shape_out=s, nested=False)[0]
-    QU = {k: (proj(planck[1], w, s), -proj(planck[2], w, s)) for k, (w, s, _, _) in targets.items()}
+    QU = {k: (proj(planck[1], w, s), rl.cosmo_to_iau(proj(planck[2], w, s))) for k, (w, s, _, _) in targets.items()}
     del planck
     cov = {}
     for col, key in ((7, "qq"), (8, "qu"), (9, "uu")):
         m = hp.read_map(rl.PLANCK, field=col, dtype=np.float32)
         for k, (w, s, _, _) in targets.items():
             c = proj(m, w, s)
-            cov.setdefault(k, {})[key] = -c if key == "qu" else c  # U was negated
+            cov.setdefault(k, {})[key] = rl.cosmo_to_iau(c) if key == "qu" else c
         del m
     snr = {}
     stats = {}
@@ -302,7 +300,8 @@ def main():
         fw = float(np.hypot(s_arcmin * FWHM, PLANCK_BEAM))
         stats[k] = dict(sigma_arcmin=round(s_arcmin, 2), fwhm_arcmin=round(fw, 1),
                         frac_gt3=round(float(np.mean(snr[k] >= SNR_MIN)), 3), median=round(float(np.median(snr[k])), 2))
-        save_mask(snr[k], k)
+        if k in MASKS:
+            save_mask(snr[k], k)
         print(k, stats[k], flush=True)
     lm = snr["lmc8"]
     yy, xx = np.mgrid[0 : lm.shape[0], 0 : lm.shape[1]]
@@ -453,10 +452,10 @@ def main():
             f"Q and U smoothed with a {stats[sk]['sigma_arcmin']:.0f}′ sigma Gaussian, FWHM {stats[sk]['fwhm_arcmin']:.0f}′ with the beam.",
             bands=[planck_band()], beams=[field_beam(sk)], snr_key=sk, native=900)
 
-    commit = subprocess.run(["git", "describe", "--always", "--dirty", "--exclude=*"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    out = dict(commit=commit, refs={k: dict(label=v[0], bib=v[1]) for k, v in REFS.items()}, frames=frames, images=images,
+    out = dict(refs={k: dict(label=v[0], bib=v[1]) for k, v in REFS.items()}, frames=frames, images=images,
                snr_stats=stats, snr=snr_json)
-    OUT_JSON.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
+    with rl.atomic(OUT_JSON) as tmp:
+        tmp.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
     print("fits", {k: (v[0], round(v[1] / 1e6, 2)) for k, v in fits_files.items()})
     print("bars", {k: (b["lo"], b["hi"]) for k, b in bars.items()})
     print("wrote", OUT_JSON, OUT_JSON.stat().st_size)

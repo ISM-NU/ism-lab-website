@@ -14,8 +14,8 @@ with a screen blend, so overlapping emission adds light the way it does on a
 detector rather than mixing to grey. Point sources come from a short-wavelength
 band with the extended emission subtracted.
 
-    LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/composites.py [region ...]
-    python3 scripts/composites.py insets   # zoom insets around R136, after lmc
+    LMC_DATA=/path/to/lmc-data python3 scripts/composites.py [region ...]
+    LMC_DATA=/path/to/lmc-data python3 scripts/composites.py insets   # zoom insets around R136, after lmc
 
 HiPS reprojections are cached in .cache/hips/; images go to public/sky/.
 """
@@ -79,7 +79,7 @@ REGIONS = {
         stars=("irac1", "w1"),
     ),
     "galactic_centre": dict(
-        frame="galactic", centre=field("galactic_centre")[:2], fov=field("galactic_centre")[2], n=2048,
+        frame="galactic", centre=field("galactic_centre")[:2], fov=field("galactic_centre")[2], n=2048, ridges=False,  # no page shows its ridge map
         layers=[("irac4", "w3", TEAL, 15, 0.10, 0.75), ("pacs70", None, GOLD, 15, 0.08, 0.85), ("spire250", None, RED, 15, 0.12, 1.0)],
         stars=("irac1", "w1"),
     ),
@@ -92,15 +92,7 @@ REGIONS = {
 
 
 def target_wcs(r):
-    n, fov = r["n"], r["fov"]
-    ctype = ("RA---TAN", "DEC--TAN") if r["frame"] == "icrs" else ("GLON-TAN", "GLAT-TAN")
-    h = fits.Header()
-    h.update(NAXIS=2, NAXIS1=n, NAXIS2=n, CTYPE1=ctype[0], CTYPE2=ctype[1],
-             CRVAL1=r["centre"][0], CRVAL2=r["centre"][1], CRPIX1=n / 2 + 0.5, CRPIX2=n / 2 + 0.5,
-             CDELT1=-fov / n, CDELT2=fov / n)
-    if r["frame"] == "icrs":
-        h.update(RADESYS="FK5", EQUINOX=2000.0)
-    return WCS(h)
+    return rl.tan_wcs(r["frame"], r["centre"], r["n"], r["fov"] / r["n"])
 
 
 def hips_order(pix_deg, max_order):
@@ -178,8 +170,7 @@ def sample_hips(url, order, wcs, n, ss=2):
                 return t, fits.getdata(io.BytesIO(raw)).astype(np.float32)
             except OSError:  # a server error page instead of a tile
                 time.sleep(3)
-        print(f"    tile {t} unreadable, left blank", flush=True)
-        return t, None
+        raise RuntimeError(f"HiPS tile {u} is unreadable after 3 tries")
 
     with ThreadPoolExecutor(4) as ex:  # servers reset connections under more
         data = dict(ex.map(tile, sorted(tiles)))
@@ -201,10 +192,17 @@ def sample_hips(url, order, wcs, n, ss=2):
 
 
 def fetch(name, survey, r, wcs):
-    path = CACHE / f"{name}_{survey}.fits"
-    if path.exists():
-        return fits.getdata(path)
     url, max_order, _ = SURVEYS[survey]
+    path = CACHE / f"{name}_{survey}.fits"
+    # The grid and the survey decide the pixels; a cache from other inputs is refetched.
+    key = rl.input_key(url, max_order, r["frame"], r["centre"], r["fov"], r["n"], wcs.to_header().tostring())
+    if path.exists():
+        try:
+            data, hdr = fits.getdata(path, header=True)
+            if hdr.get("INPUTKEY") == key:
+                return data
+        except OSError:
+            pass
     if max_order is None:
         # SkyView resamples onto its own TAN grid; match centre and size, then
         # reproject to ours. Its native SHASSA pixels are 48", so 1024 px is plenty.
@@ -220,7 +218,10 @@ def fetch(name, survey, r, wcs):
         a = sample_hips(url, order, wcs, r["n"])
     a = a.astype(np.float32)
     CACHE.mkdir(parents=True, exist_ok=True)
-    fits.writeto(path, a, wcs.to_header(), overwrite=True)
+    hdr = wcs.to_header()
+    hdr["INPUTKEY"] = key
+    with rl.atomic(path) as tmp:
+        fits.writeto(tmp, a, hdr, overwrite=True)
     print(f"  {survey} order {order}", flush=True)
     return a
 
@@ -314,7 +315,7 @@ def field_angle(r, wcs, planck):
         _, ang, _ = rl.planck_maps(planck, wcs, (n, n), smooth_px=smooth)
         return ang
     proj = lambda m: reproject_from_healpix((m, "galactic"), wcs, shape_out=(n, n), nested=False)[0]
-    Q, U = proj(planck[1]), -proj(planck[2])
+    Q, U = proj(planck[1]), rl.cosmo_to_iau(proj(planck[2]))
     return 0.5 * np.arctan2(gaussian_filter(np.nan_to_num(U), smooth), gaussian_filter(np.nan_to_num(Q), smooth)) + np.pi / 2
 
 
@@ -339,7 +340,8 @@ def save(rgb, stem, widths=(960, 1920), vignette=False):
             im = im.convert("RGBA")
             im.putalpha(Image.fromarray((np.clip((1 - rad) / 0.35, 0, 1) ** 1.5 * 255).astype(np.uint8)))
             name = f"{stem}-v-{w}.webp"
-        im.save(OUT / name, quality=86, method=6)
+        with rl.atomic(OUT / name) as tmp:
+            im.save(tmp, quality=86, method=6)
 
 
 def ridges(a, sigmas=(1.5, 3, 6)):
@@ -402,17 +404,18 @@ def composite(name, planck):
     save(field, f"comp-{name}-field")
     if name == "lmc":
         save(field, "comp-lmc-field", widths=(1400, 2048), vignette=True)
-    # Ridge map of the cold dust, drawn in signal red on black for the lens.
-    # Fill gaps before filtering so survey borders do not read as ridges, then
-    # mask with the feathered coverage and weight by brightness, which drops
-    # the scan stripes and noise at the map edges.
-    dust = fetch(name, r["layers"][-1][0], r, wcs)
-    valid = np.isfinite(dust) & (dust != 0)
-    filled = np.where(valid, dust, np.percentile(dust[valid], 20))
-    rd = ridges(filled) * feather(dust, r["n"] / 60) * stretch(dust, 0.08, lo=20) ** 0.5
-    v = rd[rd > 0]
-    rd = np.clip(rd / np.percentile(v, 99.5), 0, 1) if v.size else rd
-    save(rd[..., None] * np.array((1.0, 0.24, 0.14)) + 0.25 * rd[..., None] ** 3, f"comp-{name}-ridges", widths=(960, 1920))
+    if r.get("ridges", True):
+        # Ridge map of the cold dust, drawn in signal red on black for the lens.
+        # Fill gaps before filtering so survey borders do not read as ridges, then
+        # mask with the feathered coverage and weight by brightness, which drops
+        # the scan stripes and noise at the map edges.
+        dust = fetch(name, r["layers"][-1][0], r, wcs)
+        valid = np.isfinite(dust) & (dust != 0)
+        filled = np.where(valid, dust, np.percentile(dust[valid], 20))
+        rd = ridges(filled) * feather(dust, r["n"] / 60) * stretch(dust, 0.08, lo=20) ** 0.5
+        v = rd[rd > 0]
+        rd = np.clip(rd / np.percentile(v, 99.5), 0, 1) if v.size else rd
+        save(rd[..., None] * np.array((1.0, 0.24, 0.14)) + 0.25 * rd[..., None] ** 3, f"comp-{name}-ridges", widths=(960, 1920))
     return [SURVEYS[s][2] for s in dict.fromkeys(used)]
 
 
@@ -493,12 +496,14 @@ def insets():
         ramp = ramp * ramp * (3 - 2 * ramp)
         img.putalpha(Image.fromarray((np.outer(ramp, ramp) * 255).astype(np.uint8)))
         for w in (1024, 2048):
-            img.resize((w, w), Image.LANCZOS).save(OUT / f"{stem}-{w}.webp", quality=84, method=6)
+            with rl.atomic(OUT / f"{stem}-{w}.webp") as tmp:
+                img.resize((w, w), Image.LANCZOS).save(tmp, quality=84, method=6)
         # Position in the LMC image (fractions of its width, y down), pixel edges.
         x0 = (cb + (-0.5 - ci[0]) * s + 0.5) / nb
         y1 = (cb + (n - 0.5 - ci[1]) * s + 0.5) / nb
         boxes.append(dict(src=f"/sky/{stem}", x=round(x0, 6), y=round(1 - y1, 6), w=round(n * s / nb, 6)))
-    INSET_JSON.write_text(json.dumps(boxes, indent=1) + "\n")
+    with rl.atomic(INSET_JSON) as tmp:
+        tmp.write_text(json.dumps(boxes, indent=1) + "\n")
 
 
 def main():
@@ -509,7 +514,8 @@ def main():
     credits = json.loads(CREDITS.read_text()) if CREDITS.exists() else {}
     for name in names:
         credits[name] = composite(name, planck) + ["Planck 353 GHz (field)"]
-    CREDITS.write_text(json.dumps(credits, indent=1, ensure_ascii=False) + "\n")
+    with rl.atomic(CREDITS) as tmp:
+        tmp.write_text(json.dumps(credits, indent=1, ensure_ascii=False, sort_keys=True) + "\n")
 
 
 if __name__ == "__main__":
