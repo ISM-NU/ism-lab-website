@@ -12,8 +12,6 @@ const people = defineCollection({
     role: z.string(),
     focus: z.string(),
     order: z.number(),
-    // Placeholder entry: shown with a MOCK tag, never with a real-looking face.
-    mock: z.boolean().default(false),
     // Former member: listed under Alumni on the people page.
     alumni: z.boolean().default(false),
     photo: z.string().optional(),
@@ -78,6 +76,7 @@ const news = defineCollection({
     // Events only.
     where: z.string().optional(),
     registration: z.url().optional(),
+    // Template item: kept in the repo, never listed.
     mock: z.boolean().default(false),
   }),
 });

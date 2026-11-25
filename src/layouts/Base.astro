@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import "lenis/dist/lenis.css";
+import { getNews } from "../lib/news";
 // Preload the condensed headline face: without it the big headings first lay
 // out in the wider fallback font and then reflow, often from three lines to two.
 import archivo from "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url";
@@ -13,12 +14,14 @@ interface Props {
 }
 const { title, description, noindex = false } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+// The News page has nothing on it until there is an item, so it stays out of the menu.
+const hasNews = (await getNews()).length > 0;
 const nav = [
   ["/research", "Research"],
   ["/people", "People"],
   ["/publications", "Publications"],
   ["/data", "Data"],
-  ["/news", "News"],
+  ...(hasNews ? [["/news", "News"]] : []),
   ["/contact", "Contact"],
 ];
 const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title} · ISM group`;
