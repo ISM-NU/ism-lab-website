@@ -106,9 +106,9 @@ def test_atomic_keeps_the_old_file_when_the_write_fails():
 
 
 def test_input_key_follows_the_inputs():
-    a = rl.input_key("spire", 7, [81.2, -68.5], 12.08)
-    assert a == rl.input_key("spire", 7, [81.2, -68.5], 12.08)
-    assert a != rl.input_key("spire", 7, [81.2, -68.5], 12.0)
+    a = rl.input_key("spire", 7, [10.0, -20.0], 5.5)
+    assert a == rl.input_key("spire", 7, [10.0, -20.0], 5.5)
+    assert a != rl.input_key("spire", 7, [10.0, -20.0], 6.5)
 
 
 def test_hips_cache_is_refetched_when_its_inputs_change():

@@ -3,7 +3,7 @@
 // segments over the multi-band composite, the paper's regions, and its Table 1.
 // Data from src/data/mon-ob1.json (scripts/render_mon.py). The segments are
 // redrawn from Planck PR4 for this site; the paper used PR3 at the same 7'.
-import mon from "../data/mon-ob1.json";
+import { monOb1 as mon } from "../lib/data";
 import MapFoot from "./MapFoot.astro";
 import { segPath } from "../lib/field";
 
@@ -38,7 +38,7 @@ const labels = regions.map((r) => {
 });
 
 // Furniture: equatorial compass (the paper's directions are in RA/Dec; the
-// image is Galactic, b up), a 5 pc bar at 723 pc, and the 7' beam.
+// image is Galactic, b up), a scale bar in parsecs at the cluster distance, and the 7' beam.
 const cx = 925, cy = 575, L = 38;
 // Segments under the compass are left out rather than covered by a box.
 const segs = mon.segments.filter((s) => Math.hypot(s.x - cx, s.y - cy) > L + 30);
