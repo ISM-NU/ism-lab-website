@@ -107,6 +107,7 @@ const o = objects[sel];
 </style>
 
 <script>
+  import { $ } from "../scripts/dom";
   import { onFrame, watchVisible, canvasFit, scramble, reduce } from "../scripts/motion";
 
   const ruler = document.getElementById("ruler")!;
@@ -115,7 +116,6 @@ const o = objects[sel];
   const buttons = [...ruler.querySelectorAll<HTMLButtonElement>(".obj")];
   const marks = [...ruler.querySelectorAll<HTMLElement>(".mark")];
   const ticks = [...ruler.querySelectorAll<HTMLElement>(".tick")];
-  const $ = (id: string) => document.getElementById(id)!;
   const LOG0 = -0.6, LOG1 = Math.log10(Number(ruler.dataset.age));
   const frac = (s: number) => (Math.log10(s) - LOG0) / (LOG1 - LOG0);
 
