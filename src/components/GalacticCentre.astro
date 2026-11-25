@@ -3,7 +3,7 @@
 // the mean field orientation PILOT measured there (Mangilli et al. 2019,
 // 2019A&A...630A..74M). Data from src/data/gc-field.json (scripts/render_gc.py).
 // The PILOT maps are not drawn: only the published mean orientation.
-import gc from "../data/gc-field.json";
+import { gcField as gc } from "../lib/data";
 import MapFoot from "./MapFoot.astro";
 import { segPath } from "../lib/field";
 
