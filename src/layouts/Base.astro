@@ -63,7 +63,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
     </script>
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="/webb/tarantula-1920.webp" />
+    <meta property="og:image" content={new URL("/webb/tarantula-1920.webp", Astro.site).href} />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
