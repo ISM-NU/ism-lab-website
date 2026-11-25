@@ -3,7 +3,7 @@ colour bars, distances, a polarized signal-to-noise map and FITS downloads.
 
 Writes
   src/data/maps.json            read by MapFrame.astro, FieldDots.astro
-  public/sky/snr-*.webp         small S/N masks (white: S/N >= 3) and lmc-snr.webp
+  public/sky/snr-*.webp         small S/N masks (white: S/N >= 3) for MASKS, and lmc-snr.webp
   public/data/*.fits            derived LMC maps on the 12 deg grid, 2x binned
 
 Uses the render scripts' own functions (grid, Planck reader, stretches) so the
@@ -211,6 +211,10 @@ def block_grid(a, n=SNR_N):
     return s[::-1]
 
 
+# Archive.astro loads these three; the other grids only feed the numbers in maps.json.
+MASKS = ("lmc10", "gc2", "mon3")
+
+
 def save_mask(snr, name):
     im = Image.fromarray(np.ascontiguousarray(snr[::-1]).astype(np.float32), mode="F").resize((256, 256), Image.BILINEAR)
     s = np.asarray(im)
@@ -293,7 +297,8 @@ def main():
         fw = float(np.hypot(s_arcmin * FWHM, PLANCK_BEAM))
         stats[k] = dict(sigma_arcmin=round(s_arcmin, 2), fwhm_arcmin=round(fw, 1),
                         frac_gt3=round(float(np.mean(snr[k] >= SNR_MIN)), 3), median=round(float(np.median(snr[k])), 2))
-        save_mask(snr[k], k)
+        if k in MASKS:
+            save_mask(snr[k], k)
         print(k, stats[k], flush=True)
     lm = snr["lmc8"]
     yy, xx = np.mgrid[0 : lm.shape[0], 0 : lm.shape[1]]

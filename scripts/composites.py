@@ -78,7 +78,7 @@ REGIONS = {
         stars=("irac1", "w1"),
     ),
     "galactic_centre": dict(
-        frame="galactic", centre=(0.0, 0.0), fov=2.0, n=2048,
+        frame="galactic", centre=(0.0, 0.0), fov=2.0, n=2048, ridges=False,  # no page shows its ridge map
         layers=[("irac4", "w3", TEAL, 15, 0.10, 0.75), ("pacs70", None, GOLD, 15, 0.08, 0.85), ("spire250", None, RED, 15, 0.12, 1.0)],
         stars=("irac1", "w1"),
     ),
@@ -403,17 +403,18 @@ def composite(name, planck):
     save(field, f"comp-{name}-field")
     if name == "lmc":
         save(field, "comp-lmc-field", widths=(1400, 2048), vignette=True)
-    # Ridge map of the cold dust, drawn in signal red on black for the lens.
-    # Fill gaps before filtering so survey borders do not read as ridges, then
-    # mask with the feathered coverage and weight by brightness, which drops
-    # the scan stripes and noise at the map edges.
-    dust = fetch(name, r["layers"][-1][0], r, wcs)
-    valid = np.isfinite(dust) & (dust != 0)
-    filled = np.where(valid, dust, np.percentile(dust[valid], 20))
-    rd = ridges(filled) * feather(dust, r["n"] / 60) * stretch(dust, 0.08, lo=20) ** 0.5
-    v = rd[rd > 0]
-    rd = np.clip(rd / np.percentile(v, 99.5), 0, 1) if v.size else rd
-    save(rd[..., None] * np.array((1.0, 0.24, 0.14)) + 0.25 * rd[..., None] ** 3, f"comp-{name}-ridges", widths=(960, 1920))
+    if r.get("ridges", True):
+        # Ridge map of the cold dust, drawn in signal red on black for the lens.
+        # Fill gaps before filtering so survey borders do not read as ridges, then
+        # mask with the feathered coverage and weight by brightness, which drops
+        # the scan stripes and noise at the map edges.
+        dust = fetch(name, r["layers"][-1][0], r, wcs)
+        valid = np.isfinite(dust) & (dust != 0)
+        filled = np.where(valid, dust, np.percentile(dust[valid], 20))
+        rd = ridges(filled) * feather(dust, r["n"] / 60) * stretch(dust, 0.08, lo=20) ** 0.5
+        v = rd[rd > 0]
+        rd = np.clip(rd / np.percentile(v, 99.5), 0, 1) if v.size else rd
+        save(rd[..., None] * np.array((1.0, 0.24, 0.14)) + 0.25 * rd[..., None] ** 3, f"comp-{name}-ridges", widths=(960, 1920))
     return [SURVEYS[s][2] for s in dict.fromkeys(used)]
 
 
