@@ -1,0 +1,29 @@
+---
+// Beam circle and parsec scale bar along the bottom of a field-segment figure.
+// The parent's `.pic` box must set `container-type: inline-size`: both sizes
+// are fractions of its width. The slot is the beam label.
+import { barFraction } from "../lib/field";
+
+interface Props {
+  /** Beam radius in viewBox units (of 1000). */
+  beamR: number;
+  pc: number;
+  distPc: number;
+  fovDeg: number;
+}
+const { beamR, pc, distPc, fovDeg } = Astro.props;
+---
+
+<div class="mfoot">
+  <span class="beam"><svg viewBox="0 0 10 10" style={`width:calc(100cqw * ${((2 * beamR) / 1000).toFixed(4)})`} aria-hidden="true"><circle cx="5" cy="5" r="4.6" /></svg><slot /></span>
+  <span class="bar"><i style={`width:calc(100cqw * ${barFraction(pc, distPc, fovDeg).toFixed(4)})`}></i>{pc} pc</span>
+</div>
+
+<style>
+  .mfoot { position: absolute; left: 3%; right: 3%; bottom: 3%; display: flex; justify-content: space-between; align-items: end; gap: 12px; pointer-events: none; }
+  .mfoot > span { display: inline-flex; align-items: center; gap: 8px; padding: 4px 8px; background: rgba(0, 0, 0, 0.72); font: 500 12px/1.2 var(--mono); color: var(--ink); }
+  .beam svg { min-width: 8px; aspect-ratio: 1; height: auto; overflow: visible; }
+  .beam circle { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .bar { flex-direction: column; align-items: stretch !important; gap: 4px !important; text-align: right; min-width: 3em; }
+  .bar i { display: block; height: 5px; border: 1px solid var(--ink); border-top: 0; align-self: flex-end; }
+</style>
