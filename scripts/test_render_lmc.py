@@ -2,7 +2,7 @@
 
 They need no survey data and no network: python3 scripts/test_render_lmc.py.
 The site build does not need the pipeline's Python packages, so without them
-this prints a skip notice and exits 0.
+this says so loudly and exits 0. Set REQUIRE_PY_TESTS=1 to make that a failure.
 """
 
 import os
@@ -18,8 +18,13 @@ try:
     import composites as comp
     from astropy.io import fits
 except ModuleNotFoundError as e:
-    print(f"skipped: {e.name} is not installed (pipeline dependency)")
-    sys.exit(0)
+    required = os.environ.get("REQUIRE_PY_TESTS") == "1"
+    print(
+        f"{'FAILED' if required else 'SKIPPED'}: python module '{e.name}' is not installed, "
+        "so test_render_lmc.py did NOT run" + ("" if required else " (REQUIRE_PY_TESTS=1 makes this an error)"),
+        file=sys.stderr,
+    )
+    sys.exit(1 if required else 0)
 
 
 def test_tan_grid_is_north_up_east_left():

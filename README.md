@@ -14,7 +14,9 @@ Needs Node 22.23 or newer.
     npm run dev        # http://localhost:4321 with live reload
     npm run check      # scale, viewport and shared-fact checks, then type and template check
     npm test           # JS tests, plus the Python test of the render helpers
-                       # (it skips with a notice when healpy is not installed)
+                       # (it skips with a loud notice when a pipeline package such as
+                       # healpy or reproject is missing; REQUIRE_PY_TESTS=1 makes the
+                       # skip a failure. deploy.sh does not set it)
     npm run build      # static site in dist/
     npm run preview    # serves dist/ in the background on localhost:4321;
                        # stop it with `npx astro preview stop`
