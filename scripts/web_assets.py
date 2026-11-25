@@ -19,14 +19,16 @@ from astropy.io import fits
 from astropy.wcs import WCS
 from PIL import Image
 
+from facts import FACTS
+
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "assets" / "lmc"
 OUT = ROOT / "public" / "sky"
 DATA = ROOT / "src" / "data" / "sky.json"
 
-FIELD_N = 96  # field-angle grid the dot field samples
+FIELD_N = FACTS["field_grid_n"]  # field-angle grid the dot field samples
 TILT_N = 24  # coarse grid of local north, for the PA readout
-ALLSKY_W = 2400  # must match render_lmc.allsky width
+ALLSKY_W = FACTS["allsky_width_px"]
 TARGETS = {
     "30 Doradus": "05h38m42s -69d06m03s",
     "N11": "04h56m49s -66d24m00s",
@@ -35,7 +37,7 @@ TARGETS = {
     "N79": "04h52m00s -69d22m00s",
 }
 IMAGES = {
-    "allsky_bfield.png": ("allsky.webp", 2400),
+    "allsky_bfield.png": ("allsky.webp", ALLSKY_W),
     "hi_column_color.jpg": ("lmc-hi.webp", 1000),
     "hi_velocity.jpg": ("lmc-vel.webp", 1000),
     "co_clouds.png": ("lmc-co.webp", 1000),

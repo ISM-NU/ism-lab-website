@@ -23,11 +23,12 @@ import astropy.units as u
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import composites as cp  # noqa: E402
 import field_segments as fs  # noqa: E402
+from facts import FACTS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "src" / "data" / "mon-ob1.json"
 FWHM = 7.0  # arcmin, effective
-DIST_PC = 723  # Alina et al. 2022 sec. 1, from Cantat-Gaudin et al. 2018
+DIST_PC = FACTS["mon_ob1"]["cluster_distance_pc"]  # the distance Alina et al. 2022 adopted, sec. 1
 
 # Outlines in J2000 RA, Dec (deg), digitised from the arXiv figures of Alina et
 # al. 2022 (arXiv:2007.15344) against their axis ticks; good to about 1'.
