@@ -5,7 +5,7 @@ summary: "Neural networks that find interstellar filaments in dust maps and meas
 order: 7
 image: "/sky/ml-card-960.webp"
 imageCaption: "G202.3+2.5 · Herschel 250 µm, U-Net filament pixels in red"
-field: { l: 202.3, b: 2.5, width: 0.75 }
+field: filament_net
 instruments: ["Herschel", "Planck", "Neural networks"]
 keyPapers: ["2025AJ....170..207U"]
 papers:

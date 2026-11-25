@@ -4,7 +4,7 @@ code: "POL"
 summary: "Methods used across our work: estimating polarization fraction and angle without bias, and the Planck and PILOT instruments that measure them."
 order: 4
 image: "/sky/comp-galactic_centre-960.webp"
-field: { l: 0.0, b: 0.0, width: 2 }
+field: galactic_centre
 instruments: ["Planck", "PILOT"]
 papers:
   - "2015A&A...576A.104P"
