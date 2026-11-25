@@ -11,7 +11,7 @@
 //    velocity fit of van der Marel and Kallivayalil 2014 (ApJ 781, 121, sect. 4),
 //    through the H I dynamical centre (78.77, -69.01) deg of Kim et al. 1998
 //    as quoted in the same paper
-import meta from "../data/cube.json";
+import { cube as meta } from "../lib/data";
 ---
 
 <div class="cube" id="cube">
@@ -131,8 +131,9 @@ import meta from "../data/cube.json";
 <script>
   import { $ } from "../scripts/dom";
   import { canvasFit, clamp, watchVisible, reduce } from "../scripts/motion";
+  import type { Cube } from "../lib/schemas";
 
-  const meta = JSON.parse(document.getElementById("cvMeta")!.textContent!);
+  const meta: Cube = JSON.parse(document.getElementById("cvMeta")!.textContent!);
   const N: number = meta.n, NV: number = meta.nv, V0: number = meta.v0, DV: number = meta.dv;
   const PIX: number = meta.pix_deg, CRPIX: number = meta.crpix, STEP: number = meta.step;
   const D2R = Math.PI / 180;

@@ -14,17 +14,21 @@
 // compact compass, scale bar and beam only, no drawer
 // box     "block" (fills a sized parent) or "abs" (absolute, inset 0)
 // inset   distance of the bottom row from the edge
-import maps from "../data/maps.json";
+import { maps } from "../lib/data";
+import type { MapImage } from "../lib/schemas";
 import { tiltAt } from "../scripts/mapframe";
 
 interface Props { ids: string[]; active?: string[]; zoom?: number; fill?: boolean; compact?: boolean; box?: "block" | "abs"; inset?: string; drawer?: boolean }
 const { ids, active, zoom = 1, fill = false, compact = false, box = "block", inset = "3%", drawer = !compact } = Astro.props;
 
 const keyOf = (s: string) => s.replace(/^.*\/sky\//, "").replace(/\.webp$/, "").replace(/-(960|1920)$/, "");
-type Img = (typeof maps.images)[keyof typeof maps.images];
-const imgs = ids.map((id) => ({ id: keyOf(id), m: (maps.images as Record<string, Img>)[keyOf(id)] })).filter((x) => x.m);
+// An image with no entry (PageHead passes any header picture) renders bare, with no furniture.
+const imgs = ids.flatMap((id) => {
+  const m: MapImage | undefined = maps.images[keyOf(id)];
+  return m ? [{ id: keyOf(id), m }] : [];
+});
 const on = new Set((active ?? ids).map(keyOf));
-const frame = imgs.length ? (maps.frames as any)[imgs[0].m.frame] : null;
+const frame = imgs.length ? maps.frames[imgs[0].m.frame] : null;
 const uid = Math.random().toString(36).slice(2, 7);
 
 // Scale bar: the largest round angle that fits in about 30% of the width.
@@ -43,7 +47,7 @@ const cu = 0.5 + (fill ? 0.42 : 0.41) / zoom, cv = 0.5 - (fill ? 0.3 : 0.41) / z
 const rot = frame ? tiltAt(frame.tilt, cu, cv) : 0;
 const tiltJson = frame ? JSON.stringify(frame.tilt) : "";
 
-const ref = (k: string) => (maps.refs as any)[k];
+const ref = (k: string) => maps.refs[k];
 const ads = (k: string) => `https://ui.adsabs.harvard.edu/abs/${encodeURIComponent(ref(k).bib)}`;
 const mb = (b: number) => (b / 1e6).toFixed(1) + " MB";
 const beamFrac = (arcmin: number) => arcmin / widthArcmin;
@@ -111,18 +115,18 @@ const fmtBeam = (arcsec: number) => (arcsec >= 60 ? `${+(arcsec / 60).toFixed(1)
         <div class="drawer" id={`d${uid}`} role="region" aria-label="How this image was made" hidden>
           {imgs.map((i) => {
             const m = i.m;
-            const fr = (maps.frames as any)[m.frame];
-            const sn = m.snr ? (maps.snr_stats as any)[m.snr] : null;
+            const fr = maps.frames[m.frame];
+            const sn = m.snr ? maps.snr_stats[m.snr] : null;
             return (
               <section data-for={i.id} hidden={!on.has(i.id)}>
                 <h3>{m.title}</h3>
                 <dl>
-                  {m.bands.length > 0 && <><dt>Data</dt><dd>{m.bands.map((b: any) => <span class="ln">{b.name}, beam {fmtBeam(b.fwhm_arcsec)}{b.note ? ` (${b.note})` : ""} &middot; <a href={ads(b.ref)}>{ref(b.ref).label}</a></span>)}</dd></>}
+                  {m.bands.length > 0 && <><dt>Data</dt><dd>{m.bands.map((b) => <span class="ln">{b.name}, beam {fmtBeam(b.fwhm_arcsec)}{b.note ? ` (${b.note})` : ""} &middot; <a href={ads(b.ref)}>{ref(b.ref).label}</a></span>)}</dd></>}
                   <dt>Stretch</dt><dd>{m.stretch}</dd>
                   {m.smoothing && <><dt>Smoothing</dt><dd>{m.smoothing}</dd></>}
                   {sn && <><dt>Polarized S/N</dt><dd>Above 3 over {Math.round(sn.frac_gt3 * 100)}% of the field (median {sn.median}). Noise from the PR4 covariances, white between pixels; a lower bound.</dd></>}
                   <dt>Scale</dt><dd>{fr.name}, width {+fr.fov_deg.toFixed(1)}° at {fr.dist_text} (<a href={ads(fr.dist_ref)}>{ref(fr.dist_ref).label}</a>)</dd>
-                  {m.fits.length > 0 && <><dt>Download</dt><dd>{m.fits.map((f: any) => <span class="ln"><a href={f.href} download>{f.href.split("/").pop()}</a> {mb(f.bytes)} &middot; {f.what}</span>)}<span class="ln">Credits and licence are in the FITS header.</span></dd></>}
+                  {m.fits.length > 0 && <><dt>Download</dt><dd>{m.fits.map((f) => <span class="ln"><a href={f.href} download>{f.href.split("/").pop()}</a> {mb(f.bytes)} &middot; {f.what}</span>)}<span class="ln">Credits and licence are in the FITS header.</span></dd></>}
                 </dl>
               </section>
             );

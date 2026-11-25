@@ -1,7 +1,7 @@
 import { defineCollection, reference } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
-import publications from "./data/publications.json";
+import { publications } from "./lib/data";
 
 const bibcodes = new Set(publications.papers.map((p) => p.bibcode));
 
@@ -44,9 +44,9 @@ const projects = defineCollection({
     field: z.object({ l: z.number(), b: z.number(), width: z.number() }).optional(),
     instruments: z.array(z.string()),
     // ADS bibcodes of the published papers behind this line of work.
-    papers: z.array(z.string()).default([]),
+    papers: z.array(z.string().refine((b) => bibcodes.has(b), { message: "bibcode not in src/data/publications.json" })).default([]),
     // The papers Dana chose to name on the card ("Alina et al. 2023"). Each must
-    // also be in `papers`, which is checked by the research page build.
+    // also be in `papers`.
     keyPapers: z.array(z.string().refine((b) => bibcodes.has(b), { message: "bibcode not in src/data/publications.json" })).default([]),
     // Published results, each stated as the paper states it. The bibcode must be in
     // publications.json; the source sentence goes in a YAML comment above each item.
@@ -64,6 +64,10 @@ const projects = defineCollection({
       .default([]),
     // Work in progress, shown as COMING SOON until Dana approves it.
     upcoming: z.array(z.object({ title: z.string(), note: z.string() })).default([]),
+  }).superRefine((d, ctx) => {
+    d.keyPapers.forEach((b, i) => {
+      if (!d.papers.includes(b)) ctx.addIssue({ code: "custom", path: ["keyPapers", i], message: "keyPapers entry is not in papers" });
+    });
   }),
 });
 

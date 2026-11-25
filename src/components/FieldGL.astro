@@ -8,12 +8,12 @@
 // wipe    draggable split: observed left, subtracted right (ForegroundWipe)
 // scale   initial smoothing FWHM in arcmin (one of stokes.json scales_arcmin)
 // slot    overlays drawn over the map in a 1000 x 1000 box (e.g. contours)
-import stokes from "../data/stokes.json";
-import sky from "../data/sky.json";
+import { stokes, sky } from "../lib/data";
+import type { StokesMeta } from "../scripts/fieldgl";
 
 interface Props { view?: "observed" | "subtracted"; wipe?: boolean; scale?: number; controls?: boolean; label?: string }
 const { view = "observed", wipe = false, scale = 15, controls = true, label } = Astro.props;
-const meta = {
+const meta: StokesMeta = {
   beam_arcmin: stokes.beam_arcmin,
   scales_arcmin: stokes.scales_arcmin,
   planes: stokes.planes,

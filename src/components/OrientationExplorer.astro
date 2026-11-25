@@ -8,7 +8,7 @@
 // |phi_fil - theta| per pixel, split by background column density and contrast;
 // those quantities are not in the published table (see the note rendered below).
 // Built for a dark section: the colour ramp runs from red (parallel) to paper white.
-import data from "../data/orientations.json";
+import { orientations as data } from "../lib/data";
 import { byBibcode } from "../lib/pubs";
 
 const bib = "2019MNRAS.485.2825A";
@@ -129,9 +129,10 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
 
 <script>
   import { $ } from "../scripts/dom";
-  // Row layout is the "columns" list in orientations.json:
+  import type { OrientationRow } from "../lib/schemas";
+  // Row layout is the "columns" list in orientations.json (checked by its schema):
   // id, l, b, len, wid, pa, nh, nhfil, psi1, psi2, sig
-  type Row = (number | null)[];
+  type Row = OrientationRow;
   const root = document.getElementById("oe")!;
   const rows: Row[] = JSON.parse(root.dataset.rows!);
   const lo = $<HTMLInputElement>("oeLo"), hi = $<HTMLInputElement>("oeHi");
@@ -140,11 +141,11 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
   const hist = $<SVGSVGElement>("oeHist"), dots = $("oeDots"), stats = $("oeStats"), binsEl = $("oeBins");
   const presetBtns = [...root.querySelectorAll<HTMLButtonElement>(".presets button")];
 
-  const nhAll = rows.map((r) => r[6] as number);
+  const nhAll = rows.map((r) => r[6]);
   const lmin = Math.log10(Math.min(...nhAll)), lmax = Math.log10(Math.max(...nhAll));
   const at = (v: number) => 10 ** (lmin + ((lmax - lmin) * v) / 1000);
   const withField = rows.filter((r) => r[8] !== null);
-  const sortedNh = withField.map((r) => r[6] as number).sort((a, b) => a - b);
+  const sortedNh = withField.map((r) => r[6]).sort((a, b) => a - b);
   const median = (sortedNh[(sortedNh.length - 1) >> 1] + sortedNh[sortedNh.length >> 1]) / 2;
   const toSlider = (v: number) => Math.round(((Math.log10(v) - lmin) / (lmax - lmin)) * 1000);
 
@@ -174,7 +175,7 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
   // Dots exist once; later updates only change fill and opacity.
   const NS = "http://www.w3.org/2000/svg";
   const dotEls = rows.map((r) => {
-    const [u, v] = moll(r[1] as number, r[2] as number);
+    const [u, v] = moll(r[1], r[2]);
     const c = document.createElementNS(NS, "circle");
     c.setAttribute("cx", String(u * 2400));
     c.setAttribute("cy", String(v * 1200));
@@ -191,10 +192,11 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
     const sigMax = +sigSel.value;
 
     const rel: (number | null)[] = rows.map((r) => {
-      if (r[est] === null) return null;
-      const nh = r[6] as number;
-      if (nh < nmin || nh > nmax || (r[10] as number) > sigMax) return null;
-      return fold((r[5] as number) - (r[est] as number));
+      const psi = r[est], sig = r[10];
+      if (psi === null || sig === null) return null;
+      const nh = r[6];
+      if (nh < nmin || nh > nmax || sig > sigMax) return null;
+      return fold(r[5] - psi);
     });
     const sel = rel.filter((x): x is number => x !== null);
     const counts = new Array(NB).fill(0);
