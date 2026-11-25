@@ -4,6 +4,7 @@
 // screens, which have no hover, the field layer shows from the start.
 import { composites as compCredits, maps } from "../lib/data";
 import MapFrame from "./MapFrame.astro";
+import facts, { lyLabel, pcToLy } from "../lib/facts";
 
 type Card = { id: keyof typeof compCredits; t: string; sub: string; d: string; href: string; zoom?: number };
 // Instruments come from the bands the pipeline actually used (it falls back,
@@ -18,9 +19,9 @@ const mask = (id: string) => {
   return k && maps.snr_stats[k].frac_gt3 < 0.99 ? `mask-image:url(/sky/snr-${k}.webp);mask-size:100% 100%;mask-mode:luminance;-webkit-mask-image:url(/sky/snr-${k}.webp);-webkit-mask-size:100% 100%;` : "";
 };
 const cards: Card[] = [
-  { id: "lmc", t: "LMC", sub: "Large Magellanic Cloud", d: "162 000 ly", href: "/research/lmc", zoom: 1.45 },
-  { id: "galactic_centre", t: "Gal. Centre", sub: "Central molecular zone", d: "27 000 ly", href: "/research/dust-polarization" },
-  { id: "monoceros_ob1", t: "Mon OB1", sub: "Star-forming cloud", d: "2 400 ly", href: "/research/star-formation" },
+  { id: "lmc", t: "LMC", sub: "Large Magellanic Cloud", d: `${lyLabel(pcToLy(facts.lmc.distance_pc), 3)} ly`, href: "/research/lmc", zoom: 1.45 },
+  { id: "galactic_centre", t: "Gal. Centre", sub: "Central molecular zone", d: `${lyLabel(pcToLy(facts.galactic_centre.distance_pc), 2)} ly`, href: "/research/dust-polarization" },
+  { id: "monoceros_ob1", t: "Mon OB1", sub: "Star-forming cloud", d: `${lyLabel(pcToLy(facts.mon_ob1.cloud_distance_pc), 2)} ly`, href: "/research/star-formation" },
 ];
 ---
 

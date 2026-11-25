@@ -28,12 +28,13 @@ import astropy.units as u
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import composites as cp  # noqa: E402
 import field_segments as fs  # noqa: E402
+from facts import FACTS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "src" / "data" / "gc-field.json"
 KERNEL = 1.7  # arcmin
 PILOT_TILT = 22.0  # deg clockwise from the Galactic plane (Mangilli et al. 2019)
-DIST_PC = 8178  # GRAVITY Collaboration 2019, as in src/data/maps.json frame gc2
+DIST_PC = FACTS["galactic_centre"]["distance_pc"]
 
 
 def build(m):

@@ -6,6 +6,7 @@
 // the paper's maps. Numbers below come from src/data/stokes.json.
 import { stokes } from "../lib/data";
 import FieldGL from "./FieldGL.astro";
+import { byBibcode, link, shortCite } from "../lib/pubs";
 
 const fg = stokes.foreground;
 const hi = stokes.hi_contours;
@@ -23,7 +24,8 @@ const bGrid = (fg.psi_fg_grid_deg + 90 + 180) % 180;
 const lattice: string[] = [];
 for (let y = 1; y < 8; y++) for (let x = 1; x < 8; x++) lattice.push(seg(x / 8, y / 8, bGrid, 34));
 const pct = (x: number, d = 1) => (x * 100).toFixed(d);
-const ads = "https://ui.adsabs.harvard.edu/abs/2023MNRAS.518.4466A";
+const alina2023 = byBibcode.get("2023MNRAS.518.4466A");
+if (!alina2023) throw new Error("ForegroundWipe: 2023MNRAS.518.4466A is not in publications.json");
 ---
 
 <div class="fw">
@@ -35,7 +37,7 @@ const ads = "https://ui.adsabs.harvard.edu/abs/2023MNRAS.518.4466A";
     </FieldGL>
     <label class="toggle"><input type="checkbox" data-hi-toggle /><span>H I column contours</span></label>
     <p class="cap">
-      Planck PR4 (NPIPE) 353 GHz; the paper used the PR3 release at 16′. Streaks show the plane-of-sky field (polarization angle plus 90°) over dust emission. After subtraction they are drawn only where the observed 353 GHz intensity is above its median over the map, as in the paper; outside, what remains is Milky Way structure that a uniform foreground does not model. Contours: GASS H I at LMC velocities (182 to 366 km/s), {hi.levels_K_kms.join(", ")} K km/s, the levels of the paper's figures. The foreground was re-derived for this site following <a href={ads}>Alina et al. 2023</a>; it is not the paper's published map.
+      Planck PR4 (NPIPE) 353 GHz; the paper used the PR3 release at 16′. Streaks show the plane-of-sky field (polarization angle plus 90°) over dust emission. After subtraction they are drawn only where the observed 353 GHz intensity is above its median over the map, as in the paper; outside, what remains is Milky Way structure that a uniform foreground does not model. Contours: GASS H I at LMC velocities (182 to 366 km/s), {hi.levels_K_kms.join(", ")} K km/s, the levels of the paper's figures. The foreground was re-derived for this site following <a href={link(alina2023)}>{shortCite(alina2023)}</a>; it is not the paper's published map.
     </p>
   </div>
 

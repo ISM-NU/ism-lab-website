@@ -164,7 +164,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
 <script>
   import { onFrame, scramble } from "../scripts/motion";
   import { $ } from "../scripts/dom";
-  import { LMC, altitudeAtLst, lstHours } from "../lib/sky";
+  import { ASTANA, LMC, altitudeAtLst, lstHours } from "../lib/sky";
 
   // Headings marked data-scramble resolve from glyphs once, when first seen.
   const so = new IntersectionObserver((es) => {
@@ -172,8 +172,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   }, { threshold: 0.6 });
   document.querySelectorAll("[data-scramble]").forEach((el) => so.observe(el));
 
-  // Console readout position: Nazarbayev University campus, as on the contact page (src/lib/sky.ts).
-  const LON = 71.3982, LAT = 51.0906;
+  const { lon: LON, lat: LAT } = ASTANA;
   const pad = (n: number) => String(n).padStart(2, "0");
   function tick() {
     const now = new Date();

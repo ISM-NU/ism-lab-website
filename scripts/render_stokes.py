@@ -47,6 +47,7 @@ from scipy.ndimage import gaussian_filter, map_coordinates
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import render_lmc as rl  # noqa: E402
+from facts import FACTS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = rl.DATA
@@ -60,8 +61,8 @@ GASS_LMC = DATA / "exp_raw" / "gass_279_-33_LMC_range_1444812272.fits"
 # Planck 2018 results III (2020A&A...641A...3P), table of colour corrections
 # and unit conversions: 353 GHz, 287.5 MJy/sr per K_CMB (nu I_nu = const).
 K2MJY = 287.5
-# Same paper, effective beam FWHM at 353 GHz (solid-angle equivalent): 4.94'.
-BEAM = 4.94
+# Same paper, effective beam FWHM at 353 GHz (solid-angle equivalent).
+BEAM = FACTS["planck"]["beam_arcmin"]
 # HEALPix pixel solid angle of the nside 2048 Planck maps.
 OMEGA_PIX = 4 * np.pi / (12 * 2048**2)
 # Smoothing scales offered on the site (total FWHM, arcmin).
@@ -78,14 +79,14 @@ STAR_DMIN, STAR_SPA = 500.0, 20.0
 # GASS H I contour levels of the paper's figures (K km/s, its Fig. 1).
 HI_LEVELS = [1000, 1400, 2400, 2800]
 
-N_WORK = 724  # work grid, ~1.0' pixels over the 12.08 deg site grid
+N_WORK = 724  # work grid, ~1.0' pixels over the site grid
 N_TEX = 256  # Q, U, sigma planes
 N_TEX_I = 512  # dust intensity underlay
 N_TEX_FG = 128  # smooth foreground intensity planes
 
 
 def site_grid(n):
-    """The site's 12.08 deg grid (render_lmc.GRID) resampled to n pixels with
+    """The site's grid (render_lmc.GRID) resampled to n pixels with
     the same outer edges, so textures line up with the existing images."""
     g = dict(rl.GRID)
     k = g["NAXIS1"] / n
@@ -300,7 +301,7 @@ def stats(x):
 
 
 def validate(fg, aft):
-    """Numbers to compare with the paper, on the 12.08 deg grid at 16.2'."""
+    """Numbers to compare with the paper, on the site grid at 16.2'."""
     sm, I0 = fg["sm"], fg["I0"]
     I_med = float(np.median(I0))
     _, _, p_obs, snr_obs = pol(sm["Q"], sm["U"], I0, sm["QQ"], sm["UU"], sm["QU"])
@@ -452,7 +453,7 @@ def main():
                   * (FG_FWHM**2 - BEAM**2) / (T**2 - BEAM**2) for T in SCALES}
 
     meta = {
-        "about": "Planck PR4 (NPIPE) 353 GHz Stokes I, Q, U on the 12.08 deg LMC grid, MJy/sr. "
+        "about": f"Planck PR4 (NPIPE) 353 GHz Stokes I, Q, U on the {rl.GRID_DEG:.2f} deg LMC grid, MJy/sr. "
                  "Q, U in the IAU convention, referenced to the grid vertical (psi from up towards east/left). "
                  "Planes are 16-bit greyscale PNG, value = lo + (hi - lo) * v / 65535, row 0 = north edge. "
                  "Foreground re-derived for this site following Alina et al. 2023 (2023MNRAS.518.4466A). "

@@ -1,21 +1,25 @@
 ---
-// Scroll-driven zoom out: the Tarantula (264 ly) -> the whole LMC -> the whole
+// Scroll-driven zoom out: the Tarantula -> the whole LMC -> the whole
 // sky. World units are LMC widths; sizes and positions are real.
 import { sky } from "../lib/data";
+import { GRID_DEG, LY_PER_GRID, lyLabel } from "../lib/facts";
+// Width of the Tarantula frame on the sky, from the fit described in the script.
+const TAR_ARCSEC = 337;
+const tarLy = Math.round((LY_PER_GRID * TAR_ARCSEC) / 3600 / GRID_DEG);
 // Only these fields reach the browser. Importing sky.json in the script would
 // load all of it (the field grid is about 50 KB) before the page is usable.
-const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsky, lmc_rot_deg: sky.lmc_rot_deg };
+const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsky, lmc_rot_deg: sky.lmc_rot_deg, tar_arcsec: TAR_ARCSEC };
 ---
 
 <section class="pull" id="pull" aria-labelledby="pull-cap" data-console>
   <script type="application/json" id="pullData" set:html={JSON.stringify(pullData)} />
   <div class="stage" id="pullStage">
     <canvas id="pullCanvas" aria-hidden="true"></canvas>
-    <div class="frame red" id="fT"><span>NGC 2070 &middot; JWST field &middot; 264 ly</span></div>
-    <div class="frame" id="fL"><span class="long">LMC field &middot; 12&deg; &asymp; 34 000 ly</span><span class="short">LMC</span></div>
+    <div class="frame red" id="fT"><span>NGC 2070 &middot; JWST field &middot; {tarLy} ly</span></div>
+    <div class="frame" id="fL"><span class="long">LMC field &middot; {Math.round(GRID_DEG)}&deg; &asymp; {lyLabel(LY_PER_GRID, 2)} ly</span><span class="short">LMC</span></div>
     <div id="tgts" aria-hidden="true"></div>
     <div class="hud">
-      <div class="readout" aria-hidden="true"><span class="label red" id="rLabel">Field width</span><span class="dot" id="rVal">264 LY</span><span class="label" id="rSub">across the screen</span></div>
+      <div class="readout" aria-hidden="true"><span class="label red" id="rLabel">Field width</span><span class="dot" id="rVal">{tarLy} LY</span><span class="label" id="rSub">across the screen</span></div>
       <p class="cap" id="pull-cap" aria-live="polite">JWST NIRCam image of 30 Doradus (NGC 2070) and its central cluster, R136.</p>
     </div>
   </div>
@@ -66,8 +70,9 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
 </style>
 
 <script>
-  const { lmc_targets, lmc_in_allsky, lmc_rot_deg } = JSON.parse(document.getElementById("pullData")!.textContent!) as {
-    lmc_targets: Record<string, [number, number]>; lmc_in_allsky: [number, number]; lmc_rot_deg: number };
+  const { lmc_targets, lmc_in_allsky, lmc_rot_deg, tar_arcsec } = JSON.parse(document.getElementById("pullData")!.textContent!) as {
+    lmc_targets: Record<string, [number, number]>; lmc_in_allsky: [number, number]; lmc_rot_deg: number; tar_arcsec: number };
+  import { GRID_DEG, LY_PER_GRID } from "../lib/facts";
   import det from "../data/detections.json";
   import insets from "../data/zoom-insets.json";
   import { onFrame, canvasFit, clamp, seg, ease, fmt, reduce, watchVisible, tarantulaSrc, loadBitmap } from "../scripts/motion";
@@ -79,16 +84,14 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
   const rVal = document.getElementById("rVal")!, rLabel = document.getElementById("rLabel")!, rSub = document.getElementById("rSub")!;
   const cap = document.getElementById("pull-cap")!;
 
-  // World unit: the width of the 12.08 deg LMC map grid at 49.6 kpc
-  // (Pietrzynski et al. 2019), about 34 100 ly.
-  const LY_PER_L = 34100, GRID_DEG = 12.08;
+  // World unit: the width of the LMC map grid.
   // The site shows ESA's centred 4:3 crop of the weic2212a NIRCam mosaic:
   // 11 224 of its 14 557 px. Fitting the mosaic to Spitzer IRAC 3.6 um gives
   // 0.0300"/px and north 13.5 deg left of vertical (294 Gaia DR3 stars agree
-  // to 0.1 deg and 0.24"), so the crop spans 337" =
-  // 264 ly at 49.6 kpc (ESA's "340 light-years" is the full mosaic). The
-  // image turns to north-up as the view zooms out (TROT, about R136).
-  const TW = 264 / LY_PER_L, TH = TW * 0.75; // Tarantula frame, 4:3
+  // to 0.1 deg and 0.24"), so the crop spans tar_arcsec (ESA's "340
+  // light-years" is the full mosaic). The image turns to north-up as the view
+  // zooms out (TROT, about R136).
+  const TW = tar_arcsec / 3600 / GRID_DEG, TH = TW * 0.75; // Tarantula frame as a share of the grid, 4:3
   const TROT = (13.5 * Math.PI) / 180;
   const FL = 0.0373; // LMC width as a fraction of the all-sky map width
   const T_C = lmc_targets["30 Doradus"];
@@ -282,7 +285,7 @@ const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsk
     });
 
     const widthL = W / k;
-    if (p < 0.6) { rLabel.textContent = "Field width"; rVal.textContent = fmt(widthL * LY_PER_L) + " LY"; rSub.textContent = "across the screen"; }
+    if (p < 0.6) { rLabel.textContent = "Field width"; rVal.textContent = fmt(widthL * LY_PER_GRID) + " LY"; rSub.textContent = "across the screen"; }
     else {
       const deg = widthL * GRID_DEG;
       rLabel.textContent = "Field of view";

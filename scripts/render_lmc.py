@@ -30,16 +30,21 @@ from PIL import Image
 from reproject import reproject_from_healpix, reproject_interp
 from scipy.ndimage import gaussian_filter, map_coordinates
 
+from facts import FACTS, field
+
 DATA = Path(os.environ.get("LMC_DATA", "~/Projects/LMC/lmc-data")).expanduser()
 OUT = Path(os.environ.get("OUT", Path(__file__).resolve().parent.parent / "assets" / "lmc"))
 N_CHANNEL_FRAMES = 48
 
-# Fixed output grid. Do not change it without re-running web_assets.py: the
-# site's target positions and field grid are computed on it.
-GRID = {"NAXIS": 2, "NAXIS1": 1087, "NAXIS2": 1087, "CTYPE1": "RA---TAN", "CTYPE2": "DEC--TAN",
-        "CRVAL1": 81.1893661273, "CRVAL2": -68.5259351087, "CRPIX1": 543.75, "CRPIX2": 543.75,
-        "CDELT1": -0.0111111, "CDELT2": 0.0111111, "RADESYS": "FK5", "EQUINOX": 2000.0}
+# Fixed output grid, defined in src/data/facts.json. Do not change it without
+# re-running web_assets.py: the site's target positions and field grid are
+# computed on it.
+_G = FACTS["grid"]
+GRID = {"NAXIS": 2, "NAXIS1": _G["naxis"], "NAXIS2": _G["naxis"], "CTYPE1": "RA---TAN", "CTYPE2": "DEC--TAN",
+        "CRVAL1": _G["crval_deg"][0], "CRVAL2": _G["crval_deg"][1], "CRPIX1": _G["crpix"], "CRPIX2": _G["crpix"],
+        "CDELT1": -_G["cdelt_deg"], "CDELT2": _G["cdelt_deg"], "RADESYS": "FK5", "EQUINOX": 2000.0}
 SHAPE = (GRID["NAXIS2"], GRID["NAXIS1"])
+GRID_DEG = GRID["NAXIS1"] * abs(GRID["CDELT1"])  # width on the sky
 
 HI_CUBE = Path(os.environ.get("HI_CUBE", DATA / "exp_raw/eq_subcube_182to339_gass_279_-33_1444812272.fits"))
 CO_CUBE = DATA / "exp_raw/lmc_v11.co.vradlsr.base.fits"
@@ -197,7 +202,7 @@ def mollweide_field_angle(proj, theta, d=0.05):
     return out
 
 
-def allsky(planck, nside=512, width=2400, fwhm_arcmin=30):
+def allsky(planck, nside=512, width=FACTS["allsky_width_px"], fwhm_arcmin=30):
     """Full-sky Mollweide: dust intensity textured by the field orientation.
 
     I, Q, U are smoothed together on the sphere (spin-2 aware) to 30', then
@@ -300,7 +305,7 @@ def lic(angle, length=30, seed=1):
 
 # Clouds the group has published on, as Galactic centre and field width (deg).
 REGIONS = {
-    "orion": (209.0, -19.0, 24.0),
+    "orion": field("orion"),
     "monoceros_ob1": (202.5, 2.0, 8.0),
     "galactic_centre": (0.0, 0.0, 12.0),
     "taurus": (172.0, -14.5, 22.0),

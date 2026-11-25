@@ -40,7 +40,7 @@ import astropy.units as u
 from astropy.wcs import WCS
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from render_lmc import PLANCK, read_planck  # noqa: E402
+from render_lmc import GRID, PLANCK, read_planck  # noqa: E402
 
 OUT = Path(__file__).resolve().parent.parent / "src" / "data" / "bench_patch.json"
 FWHM_ARCMIN = 10.0
@@ -121,15 +121,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--survey", action="store_true", help="print P/sigma statistics over the LMC and stop")
     ap.add_argument("--check", action="store_true", help="Monte Carlo check of the covariance propagation")
-    ap.add_argument("--ra", type=float, default=81.189)
-    ap.add_argument("--dec", type=float, default=-68.526)
+    ap.add_argument("--ra", type=float, default=round(GRID["CRVAL1"], 3))
+    ap.add_argument("--dec", type=float, default=round(GRID["CRVAL2"], 3))
     ap.add_argument("--size", type=float, default=3.0)
     ap.add_argument("--pix", type=float, default=3.0)
     a = ap.parse_args()
 
     maps, cov, nside = load()
     if a.survey:
-        wcs, n = tan_grid(81.189, -68.526, 10.0, 6.0)
+        wcs, n = tan_grid(a.ra, a.dec, 10.0, 6.0)
         s = smooth_patch(maps, cov, nside, wcs, n, FWHM_ARCMIN)
         P = np.hypot(s["q"], s["u"])
         snr = P / np.sqrt(0.5 * (s["qq"] + s["uu"]))

@@ -43,6 +43,7 @@ from scipy.ndimage import convolve1d, gaussian_filter, median_filter, zoom
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import render_lmc as rl  # noqa: E402  (Planck reader, LIC, LMC grid)
+from facts import field  # noqa: E402
 
 warnings.filterwarnings("ignore", module="astropy")
 ROOT = Path(__file__).resolve().parent.parent
@@ -78,12 +79,12 @@ REGIONS = {
         stars=("irac1", "w1"),
     ),
     "galactic_centre": dict(
-        frame="galactic", centre=(0.0, 0.0), fov=2.0, n=2048,
+        frame="galactic", centre=field("galactic_centre")[:2], fov=field("galactic_centre")[2], n=2048,
         layers=[("irac4", "w3", TEAL, 15, 0.10, 0.75), ("pacs70", None, GOLD, 15, 0.08, 0.85), ("spire250", None, RED, 15, 0.12, 1.0)],
         stars=("irac1", "w1"),
     ),
     "monoceros_ob1": dict(
-        frame="galactic", centre=(202.9, 1.9), fov=3.0, n=2048,
+        frame="galactic", centre=field("monoceros_ob1")[:2], fov=field("monoceros_ob1")[2], n=2048,
         layers=[("halpha", None, BLUE, 50, 0.15, 0.55), ("w3", None, TEAL, 45, 0.08, 0.75), ("spire250", None, RED, 20, 0.08, 1.0)],
         stars=("w1", None),
     ),
