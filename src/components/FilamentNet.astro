@@ -10,10 +10,11 @@
 //   public/sky/unet-data.png       R: U-Net class (1..180 = position angle, 0 = none),
 //                                  G: Planck field angle on the grid, B: ridge strength
 //   src/data/unet.json             grid, parameters, field samples, filament pieces
-import u from "../data/unet.json";
+import { unet as u } from "../lib/data";
 import { byBibcode, link } from "../lib/pubs";
 
-const { preview = false } = Astro.props as { preview?: boolean };
+interface Props { preview?: boolean }
+const { preview = false } = Astro.props;
 const paper = byBibcode.get("2025AJ....170..207U");
 const alina = byBibcode.get("2022A&A...658A..90A");
 if (!paper || !alina) throw new Error("FilamentNet: a cited bibcode is missing from publications.json");

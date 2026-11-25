@@ -2,8 +2,7 @@
 // The group's multi-band composites (scripts/composites.py). Hover, focus or
 // tap weaves the Planck field-orientation texture into the image; on touch
 // screens, which have no hover, the field layer shows from the start.
-import compCredits from "../data/composites.json";
-import maps from "../data/maps.json";
+import { composites as compCredits, maps } from "../lib/data";
 import MapFrame from "./MapFrame.astro";
 
 type Card = { id: keyof typeof compCredits; t: string; sub: string; d: string; href: string; zoom?: number };
@@ -15,8 +14,8 @@ const instruments = (id: keyof typeof compCredits) => [...new Set(compCredits[id
 // 12 degree analysis grid; the card crops in, and the scale bar accounts for it.
 // The field layer is faded where the polarized S/N is below 3 (mask from map_meta.py).
 const mask = (id: string) => {
-  const k = (maps.images as any)[`comp-${id}-field`]?.snr as string | undefined;
-  return k && (maps.snr_stats as any)[k].frac_gt3 < 0.99 ? `mask-image:url(/sky/snr-${k}.webp);mask-size:100% 100%;mask-mode:luminance;-webkit-mask-image:url(/sky/snr-${k}.webp);-webkit-mask-size:100% 100%;` : "";
+  const k = maps.images[`comp-${id}-field`]?.snr;
+  return k && maps.snr_stats[k].frac_gt3 < 0.99 ? `mask-image:url(/sky/snr-${k}.webp);mask-size:100% 100%;mask-mode:luminance;-webkit-mask-image:url(/sky/snr-${k}.webp);-webkit-mask-size:100% 100%;` : "";
 };
 const cards: Card[] = [
   { id: "lmc", t: "LMC", sub: "Large Magellanic Cloud", d: "162 000 ly", href: "/research/lmc", zoom: 1.45 },

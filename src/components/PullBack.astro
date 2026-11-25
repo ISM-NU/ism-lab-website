@@ -1,7 +1,7 @@
 ---
 // Scroll-driven zoom out: the Tarantula (264 ly) -> the whole LMC -> the whole
 // sky. World units are LMC widths; sizes and positions are real.
-import sky from "../data/sky.json";
+import { sky } from "../lib/data";
 // Only these fields reach the browser. Importing sky.json in the script would
 // load all of it (the field grid is about 50 KB) before the page is usable.
 const pullData = { lmc_targets: sky.lmc_targets, lmc_in_allsky: sky.lmc_in_allsky, lmc_rot_deg: sky.lmc_rot_deg };

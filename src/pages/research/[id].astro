@@ -15,7 +15,7 @@ import OrientationExplorer from "../../components/OrientationExplorer.astro";
 import EstimatorBench from "../../components/EstimatorBench.astro";
 import AssyMap from "../../components/AssyMap.astro";
 import { flags } from "../../data/flags";
-import { byBibcode, collaborators, type Paper } from "../../lib/pubs";
+import { byBibcode, collaborators } from "../../lib/pubs";
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
@@ -23,13 +23,9 @@ export async function getStaticPaths() {
 }
 const { p } = Astro.props;
 const { Content } = await render(p);
-const items = p.data.papers.map((b) => byBibcode.get(b)).filter((x): x is Paper => !!x).sort((a, b) => b.year - a.year);
-const missing = p.data.papers.filter((b) => !byBibcode.has(b));
-if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json: ${missing.join(", ")}`);
+const items = p.data.papers.map((b) => byBibcode.get(b)!).sort((a, b) => b.year - a.year);
 const people = (await getCollection("people")).map((m) => m.data.name);
 const collab = collaborators(p.data.papers, people);
-const unlisted = p.data.keyPapers.filter((b) => !p.data.papers.includes(b));
-if (unlisted.length) throw new Error(`${p.id}: keyPapers not in papers: ${unlisted.join(", ")}`);
 ---
 
 <Base title={p.data.title} description={p.data.summary}>

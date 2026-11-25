@@ -4,7 +4,8 @@ import { byBibcode, shortCite } from "../lib/pubs";
 // Signed, one decimal, true minus sign: "−33.0°".
 const deg = (x: number) => `${x < 0 ? "−" : ""}${Math.abs(x).toFixed(1)}°`;
 // `ids` limits the cards to these research lines (a person's page); default all.
-const { ids } = Astro.props as { ids?: string[] };
+interface Props { ids?: string[] }
+const { ids } = Astro.props;
 const projects = (await getCollection("projects")).filter((p) => !ids || ids.includes(p.id)).sort((a, b) => a.data.order - b.data.order);
 ---
 

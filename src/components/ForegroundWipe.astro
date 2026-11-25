@@ -4,7 +4,7 @@
 // this site by scripts/render_stokes.py (Planck PR4, HI4PI, GASS; a uniform
 // foreground angle where the paper used velocity gradients), not taken from
 // the paper's maps. Numbers below come from src/data/stokes.json.
-import stokes from "../data/stokes.json";
+import { stokes } from "../lib/data";
 import FieldGL from "./FieldGL.astro";
 
 const fg = stokes.foreground;
@@ -30,7 +30,7 @@ const ads = "https://ui.adsabs.harvard.edu/abs/2023MNRAS.518.4466A";
   <div class="main">
     <FieldGL wipe scale={15} label="LMC magnetic field: Planck as observed (left of the handle) and after Milky Way foreground subtraction (right)">
       <g class="hi" data-hi>
-        {hi.levels_K_kms.map((lev, i) => hi.paths[String(lev) as keyof typeof hi.paths].map((d) => <path d={d} style={`opacity:${op[i]}`} />))}
+        {hi.levels_K_kms.map((lev, i) => hi.paths[String(lev)].map((d) => <path d={d} style={`opacity:${op[i]}`} />))}
       </g>
     </FieldGL>
     <label class="toggle"><input type="checkbox" data-hi-toggle /><span>H I column contours</span></label>
