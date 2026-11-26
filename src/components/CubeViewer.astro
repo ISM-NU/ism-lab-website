@@ -1,17 +1,18 @@
 ---
 // H I cube viewer for the LMC field. The cube is GASS III (Parkes, 16' beam;
 // McClure-Griffiths et al. 2009, Kalberla and Haud 2015) resampled by
-// scripts/render_cube.py onto the site's 12.08 deg TAN grid at 0.08 deg
+// scripts/render_cube.py onto the site's TAN grid at 0.08 deg
 // pixels. Everything below runs in the browser from one 2.8 MB packed file.
 //
 // Sources for the numbers shown:
 //  - N(H I) = 1.823e18 cm^-2 * integral Tb dv, optically thin (Dickey and Lockman 1990)
-//  - distance 49.59 kpc (Pietrzynski et al. 2019)
+//  - the site's LMC distance (src/data/facts.json)
 //  - default cut: line of nodes Theta = 139.1 +- 4.1 deg from the PM + line-of-sight
 //    velocity fit of van der Marel and Kallivayalil 2014 (ApJ 781, 121, sect. 4),
 //    through the H I dynamical centre (78.77, -69.01) deg of Kim et al. 1998
 //    as quoted in the same paper
-import meta from "../data/cube.json";
+import { cube as meta } from "../lib/data";
+import facts from "../lib/facts";
 ---
 
 <div class="cube" id="cube">
@@ -70,7 +71,7 @@ import meta from "../data/cube.json";
 
   <p class="foot-note">
     GASS III H I (Parkes, 16′ beam; McClure-Griffiths et al. 2009, Kalberla and Haud 2015), LSR radio velocities, resampled to 0.08° pixels on the 12° field. The cube begins at 182 km/s, so Milky Way gas near 0 km/s is not in it. The spectrum axis shows only what is there; above 340 km/s the channels hold noise and are dropped, and at 182 km/s the cube cuts into Magellanic Bridge gas.
-    N(H I) = 1.823×10¹⁸ ∫T<sub>b</sub> dv assumes optically thin 21 cm emission; dense gas is underestimated. Masses use 49.59 kpc (Pietrzyński et al. 2019) and hydrogen only. The cut starts along the line of nodes, Θ = 139° (van der Marel and Kallivayalil 2014), through the H I dynamical centre (Kim et al. 1998). Colour scale follows the window.
+    N(H I) = 1.823×10¹⁸ ∫T<sub>b</sub> dv assumes optically thin 21 cm emission; dense gas is underestimated. Masses use {meta.d_kpc} kpc ({facts.lmc.distance_ref}) and hydrogen only. The cut starts along the line of nodes, Θ = 139° (van der Marel and Kallivayalil 2014), through the H I dynamical centre (Kim et al. 1998). Colour scale follows the window.
   </p>
 </div>
 <script type="application/json" id="cvMeta" set:html={JSON.stringify(meta)}></script>
@@ -129,9 +130,11 @@ import meta from "../data/cube.json";
 </style>
 
 <script>
+  import { $ } from "../scripts/dom";
   import { canvasFit, clamp, watchVisible, reduce } from "../scripts/motion";
+  import type { Cube } from "../lib/schemas";
 
-  const meta = JSON.parse(document.getElementById("cvMeta")!.textContent!);
+  const meta: Cube = JSON.parse(document.getElementById("cvMeta")!.textContent!);
   const N: number = meta.n, NV: number = meta.nv, V0: number = meta.v0, DV: number = meta.dv;
   const PIX: number = meta.pix_deg, CRPIX: number = meta.crpix, STEP: number = meta.step;
   const D2R = Math.PI / 180;
@@ -142,7 +145,6 @@ import meta from "../data/cube.json";
   const KPC_PER_DEG = meta.d_kpc * D2R;
   const vOf = (k: number) => V0 + k * DV;
 
-  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const root = $("cube"), wrap = $("cvMapWrap");
   const mapC = $<HTMLCanvasElement>("cvMap"), barC = $<HTMLCanvasElement>("cvBar");
   const specC = $<HTMLCanvasElement>("cvSpec"), pvC = $<HTMLCanvasElement>("cvPV");
@@ -511,7 +513,7 @@ import meta from "../data/cube.json";
     $("cvBo").textContent = `${b.toFixed(0)} km/s`;
     sA.setAttribute("aria-valuetext", `${a.toFixed(0)} kilometres per second`);
     sB.setAttribute("aria-valuetext", `${b.toFixed(0)} kilometres per second`);
-    $("cvMass").textContent = `Window ${a.toFixed(0)} to ${b.toFixed(0)} km/s: M(H I) in the field ${sci(mass)} M☉ (hydrogen only, 49.59 kpc)`;
+    $("cvMass").textContent = `Window ${a.toFixed(0)} to ${b.toFixed(0)} km/s: M(H I) in the field ${sci(mass)} M☉ (hydrogen only, ${meta.d_kpc} kpc)`;
     if (pix) {
       const [ra, de] = pixToSky(pix[0], pix[1]), [l, bb] = toGal(ra, de);
       $("cvRd").textContent = `${hms(ra)} ${dms(de)}`;

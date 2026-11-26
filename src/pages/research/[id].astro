@@ -3,33 +3,21 @@ import { getCollection, render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import PageHead from "../../components/PageHead.astro";
 import PaperList from "../../components/PaperList.astro";
-import LayerLens from "../../components/LayerLens.astro";
 import Findings from "../../components/Findings.astro";
-import MonOB1 from "../../components/MonOB1.astro";
-import GalacticCentre from "../../components/GalacticCentre.astro";
-import CubeViewer from "../../components/CubeViewer.astro";
-import FieldGL from "../../components/FieldGL.astro";
-import ForegroundWipe from "../../components/ForegroundWipe.astro";
-import FilamentNet from "../../components/FilamentNet.astro";
-import OrientationExplorer from "../../components/OrientationExplorer.astro";
-import EstimatorBench from "../../components/EstimatorBench.astro";
-import AssyMap from "../../components/AssyMap.astro";
-import { flags } from "../../data/flags";
-import { byBibcode, collaborators, type Paper } from "../../lib/pubs";
+import { researchSections } from "../../data/research-sections";
+import { byBibcode, collaborators } from "../../lib/pubs";
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
+  const stray = Object.keys(researchSections).filter((id) => !projects.some((p) => p.id === id));
+  if (stray.length) throw new Error(`research-sections.ts: no project with id ${stray.join(", ")}`);
   return projects.map((p) => ({ params: { id: p.id }, props: { p } }));
 }
 const { p } = Astro.props;
 const { Content } = await render(p);
-const items = p.data.papers.map((b) => byBibcode.get(b)).filter((x): x is Paper => !!x).sort((a, b) => b.year - a.year);
-const missing = p.data.papers.filter((b) => !byBibcode.has(b));
-if (missing.length) throw new Error(`${p.id}: bibcodes not in publications.json: ${missing.join(", ")}`);
+const items = p.data.papers.map((b) => byBibcode.get(b)!).sort((a, b) => b.year - a.year);
 const people = (await getCollection("people")).map((m) => m.data.name);
 const collab = collaborators(p.data.papers, people);
-const unlisted = p.data.keyPapers.filter((b) => !p.data.papers.includes(b));
-if (unlisted.length) throw new Error(`${p.id}: keyPapers not in papers: ${unlisted.join(", ")}`);
 ---
 
 <Base title={p.data.title} description={p.data.summary}>
@@ -52,129 +40,17 @@ if (unlisted.length) throw new Error(`${p.id}: keyPapers not in papers: ${unlist
     </section>
   )}
 
-  {/* Extra sections for one research line go below, one block per project id,
-      each a <section class="sec tight"> with a .head. Keep them after Results
-      and before "In progress". */}
-
-  {p.id === "optical-polarimetry" && (
-    <section class="sec tight" aria-labelledby="assy-h">
+  {(researchSections[p.id] ?? []).filter((s) => s.enabled ?? true).map(({ id, title, intro, Body, props, bodyStyle }) => (
+    <section class="sec tight" aria-labelledby={`${id}-h`}>
       <div class="gut max">
         <div class="head">
-          <h2 class="brut" id="assy-h" data-scramble>Assy-Turgen Observatory</h2>
-          <p>The observatory is about 1000 km south-east of Nazarbayev University in Astana.</p>
+          <h2 class="brut" id={`${id}-h`} data-scramble>{title}</h2>
+          <p>{intro}</p>
         </div>
-        <AssyMap />
+        {bodyStyle ? <div style={bodyStyle}><Body {...props} /></div> : <Body {...props} />}
       </div>
     </section>
-  )}
-
-  {p.id === "lmc" && (
-    <section class="sec tight" aria-labelledby="lens-h">
-      <div class="gut max">
-        <div class="head">
-          <h2 class="brut" id="lens-h" data-scramble>Survey layers of the LMC</h2>
-          <p>Every layer below is public survey data on one 12° grid.</p>
-        </div>
-        <LayerLens />
-      </div>
-    </section>
-  )}
-
-  {p.id === "lmc" && (
-    <section class="sec tight" aria-labelledby="cube-h">
-      <div class="gut max">
-        <div class="head">
-          <h2 class="brut" id="cube-h" data-scramble>H I spectra across the LMC</h2>
-          <p>Move over the map to see the 21 cm spectrum there. Drag on the spectrum to choose a velocity window. Move the red cut to see the rotation of the disc.</p>
-        </div>
-        <CubeViewer />
-      </div>
-    </section>
-  )}
-
-  {p.id === "lmc" && (
-    <section class="sec tight" aria-labelledby="res-h">
-      <div class="gut max">
-        <div class="head">
-          <h2 class="brut" id="res-h" data-scramble>Resolution and noise</h2>
-          <p>The field drawn live from Planck Q and U.</p>
-        </div>
-        <div style="max-width:760px;margin-top: 32px"><FieldGL view="observed" scale={15} /></div>
-      </div>
-    </section>
-  )}
-
-  {p.id === "lmc" && flags.foregroundWipe && (
-    <section class="sec tight" aria-labelledby="fg-h">
-      <div class="gut max">
-        <div class="head">
-          <h2 class="brut" id="fg-h" data-scramble>Milky Way foreground subtraction</h2>
-          <p>Left of the handle, the Planck field as observed. Right of it, the same data after subtracting the Milky Way foreground.</p>
-        </div>
-        <ForegroundWipe />
-      </div>
-    </section>
-  )}
-
-  {p.id === "filaments" && (
-    <section class="sec tight" aria-labelledby="fn-h">
-      <div class="gut max">
-        <div class="head">
-          <h2 class="brut" id="fn-h" data-scramble>U-Net filament detection in Mon OB1</h2>
-          <p>Our network run on Herschel 250 µm in Mon OB1, with the Planck field for comparison.</p>
-        </div>
-        <FilamentNet preview />
-      </div>
-    </section>
-  )}
-
-  {p.id === "filaments" && (
-    <section class="sec tight" aria-labelledby="or-h">
-      <div class="gut max">
-        <div class="head">
-          <h2 class="brut" id="or-h" data-scramble>Filament orientation relative to the field</h2>
-          <p>The public catalogue of Alina et al. 2019: 138 Planck filaments, 93 with a field angle.</p>
-        </div>
-        <OrientationExplorer />
-      </div>
-    </section>
-  )}
-
-  {p.id === "dust-polarization" && (
-    <section class="sec tight" aria-labelledby="bench-h">
-      <div class="gut max">
-        <div class="head">
-          <h2 class="brut" id="bench-h" data-scramble>Bias at low signal to noise</h2>
-          <p>Noise biases the polarization fraction and the angle dispersion function. Compare the estimators we have studied.</p>
-        </div>
-        <EstimatorBench />
-      </div>
-    </section>
-  )}
-
-  {p.id === "star-formation" && (
-    <section class="sec tight" aria-labelledby="mon-h">
-      <div class="gut max">
-        <div class="head">
-          <h2 class="brut" id="mon-h" data-scramble>Monoceros OB1 East</h2>
-          <p>The Planck field over the cloud and the regions where Alina et al. 2022 measured its strength and traced the gas motions.</p>
-        </div>
-        <MonOB1 />
-      </div>
-    </section>
-  )}
-
-  {p.id === "dust-polarization" && (
-    <section class="sec tight" aria-labelledby="gc-h">
-      <div class="gut max">
-        <div class="head">
-          <h2 class="brut" id="gc-h" data-scramble>The Galactic centre</h2>
-          <p>Planck at 5′ against the mean orientation from PILOT at 2.2′.</p>
-        </div>
-        <GalacticCentre />
-      </div>
-    </section>
-  )}
+  ))}
 
   {p.data.upcoming.length > 0 && (
     <section class="sec tight" aria-labelledby="soon-h">

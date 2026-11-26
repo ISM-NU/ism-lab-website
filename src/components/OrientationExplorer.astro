@@ -8,11 +8,13 @@
 // |phi_fil - theta| per pixel, split by background column density and contrast;
 // those quantities are not in the published table (see the note rendered below).
 // Built for a dark section: the colour ramp runs from red (parallel) to paper white.
-import data from "../data/orientations.json";
-import { byBibcode } from "../lib/pubs";
+import { orientations as data } from "../lib/data";
+import { byBibcode, link } from "../lib/pubs";
+import { ALLSKY_W, ALLSKY_H } from "../lib/facts";
 
 const bib = "2019MNRAS.485.2825A";
-if (!byBibcode.has(bib)) throw new Error(`OrientationExplorer: ${bib} is not in publications.json`);
+const paper = byBibcode.get(bib);
+if (!paper) throw new Error(`OrientationExplorer: ${bib} is not in publications.json`);
 const total = data.rows.length;
 const withField = data.rows.filter((r) => r[8] !== null).length;
 ---
@@ -56,9 +58,9 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
       <figcaption id="oeStats" class="stats" aria-live="polite"></figcaption>
     </figure>
     <figure class="map">
-      <svg id="oeMap" viewBox="0 0 2400 1200" role="img" aria-labelledby="oeMapT">
+      <svg id="oeMap" viewBox={`0 0 ${ALLSKY_W} ${ALLSKY_H}`} role="img" aria-labelledby="oeMapT">
         <title id="oeMapT">Selected filaments on a Mollweide map of Planck 353 GHz dust in Galactic coordinates</title>
-        <image href="/sky/allsky.webp" width="2400" height="1200" />
+        <image href="/sky/allsky.webp" width={ALLSKY_W} height={ALLSKY_H} />
         <g id="oeDots"></g>
       </svg>
       <figcaption class="mapcap">Galactic coordinates, centre at the Galactic centre, longitude increasing to the left. Filled circles are the selected filaments, coloured by angle as in the histogram. Open grey circles are filaments outside the selection or without a field angle.</figcaption>
@@ -70,7 +72,7 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
   <div class="notes">
     <p>The angle is the difference between the filament position angle from the SupRHT detection and the mean Planck 353 GHz field angle inside the filament, folded to 0 to 90°. Zero is a field along the filament, 90° is a field across it. The table lists {total} filaments; {withField} have a field angle. The spread is the dispersion of the field angle in the filament, from circular statistics.</p>
     <p>The published table does not carry what the paper binned: the field angle in the background, the column density of the environment, or the contrast. Its background column density column repeats the filament column density, so neither the environment split at 1.2 × 10<sup>21</sup> cm<sup>-2</sup> nor the contrast split at 4 × 10<sup>20</sup> cm<sup>-2</sup> can be rebuilt from it, and the paper's histograms count pixels, not filaments. This view is therefore a per-filament look at the field inside filaments, not a reproduction of Figures 5 to 8.</p>
-    <p>Data: Alina, D., Ristorcelli, I., Montier, L., et al. 2019, <a href={`https://ui.adsabs.harvard.edu/abs/${bib}`} rel="noopener">MNRAS 485, 2825</a>, <a href="https://arxiv.org/abs/1712.09325" rel="noopener">arXiv:1712.09325</a>, table A1 via <a href="https://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/MNRAS/485/2825" rel="noopener">VizieR J/MNRAS/485/2825</a>.</p>
+    <p>Data: Alina, D., Ristorcelli, I., Montier, L., et al. 2019, <a href={link(paper)} rel="noopener">MNRAS 485, 2825</a>, <a href="https://arxiv.org/abs/1712.09325" rel="noopener">arXiv:1712.09325</a>, table A1 via <a href="https://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/MNRAS/485/2825" rel="noopener">VizieR J/MNRAS/485/2825</a>.</p>
   </div>
 </div>
 
@@ -128,23 +130,25 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
 </style>
 
 <script>
-  // Row layout is the "columns" list in orientations.json:
+  import { $ } from "../scripts/dom";
+  import type { OrientationRow } from "../lib/schemas";
+  import { ALLSKY_W, ALLSKY_H } from "../lib/facts";
+  // Row layout is the "columns" list in orientations.json (checked by its schema):
   // id, l, b, len, wid, pa, nh, nhfil, psi1, psi2, sig
-  type Row = (number | null)[];
+  type Row = OrientationRow;
   const root = document.getElementById("oe")!;
   const rows: Row[] = JSON.parse(root.dataset.rows!);
-  const $ = <T extends Element>(id: string) => document.getElementById(id) as unknown as T;
   const lo = $<HTMLInputElement>("oeLo"), hi = $<HTMLInputElement>("oeHi");
   const loV = $("oeLoV"), hiV = $("oeHiV");
   const sigSel = $<HTMLSelectElement>("oeSig");
   const hist = $<SVGSVGElement>("oeHist"), dots = $("oeDots"), stats = $("oeStats"), binsEl = $("oeBins");
   const presetBtns = [...root.querySelectorAll<HTMLButtonElement>(".presets button")];
 
-  const nhAll = rows.map((r) => r[6] as number);
+  const nhAll = rows.map((r) => r[6]);
   const lmin = Math.log10(Math.min(...nhAll)), lmax = Math.log10(Math.max(...nhAll));
   const at = (v: number) => 10 ** (lmin + ((lmax - lmin) * v) / 1000);
   const withField = rows.filter((r) => r[8] !== null);
-  const sortedNh = withField.map((r) => r[6] as number).sort((a, b) => a - b);
+  const sortedNh = withField.map((r) => r[6]).sort((a, b) => a - b);
   const median = (sortedNh[(sortedNh.length - 1) >> 1] + sortedNh[sortedNh.length >> 1]) / 2;
   const toSlider = (v: number) => Math.round(((Math.log10(v) - lmin) / (lmax - lmin)) * 1000);
 
@@ -174,10 +178,10 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
   // Dots exist once; later updates only change fill and opacity.
   const NS = "http://www.w3.org/2000/svg";
   const dotEls = rows.map((r) => {
-    const [u, v] = moll(r[1] as number, r[2] as number);
+    const [u, v] = moll(r[1], r[2]);
     const c = document.createElementNS(NS, "circle");
-    c.setAttribute("cx", String(u * 2400));
-    c.setAttribute("cy", String(v * 1200));
+    c.setAttribute("cx", String(u * ALLSKY_W));
+    c.setAttribute("cy", String(v * ALLSKY_H));
     dots.appendChild(c);
     return c;
   });
@@ -191,10 +195,11 @@ const withField = data.rows.filter((r) => r[8] !== null).length;
     const sigMax = +sigSel.value;
 
     const rel: (number | null)[] = rows.map((r) => {
-      if (r[est] === null) return null;
-      const nh = r[6] as number;
-      if (nh < nmin || nh > nmax || (r[10] as number) > sigMax) return null;
-      return fold((r[5] as number) - (r[est] as number));
+      const psi = r[est], sig = r[10];
+      if (psi === null || sig === null) return null;
+      const nh = r[6];
+      if (nh < nmin || nh > nmax || sig > sigMax) return null;
+      return fold(r[5] - psi);
     });
     const sel = rel.filter((x): x is number => x !== null);
     const counts = new Array(NB).fill(0);

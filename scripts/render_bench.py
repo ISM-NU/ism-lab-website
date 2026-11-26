@@ -37,10 +37,9 @@ import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 import astropy.units as u
-from astropy.wcs import WCS
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from render_lmc import PLANCK, read_planck  # noqa: E402
+from render_lmc import GRID, PLANCK, cosmo_to_iau, read_planck, tan_wcs  # noqa: E402
 
 OUT = Path(__file__).resolve().parent.parent / "src" / "data" / "bench_patch.json"
 FWHM_ARCMIN = 10.0
@@ -49,12 +48,7 @@ BEAM_ARCMIN = 5.0  # native 353 GHz resolution, "~5 arcmin" (Alina et al. 2023, 
 
 def tan_grid(ra, dec, size_deg, pix_arcmin):
     n = int(round(size_deg * 60 / pix_arcmin))
-    w = WCS(naxis=2)
-    w.wcs.ctype = ["RA---TAN", "DEC--TAN"]
-    w.wcs.crval = [ra, dec]
-    w.wcs.crpix = [(n + 1) / 2, (n + 1) / 2]
-    w.wcs.cdelt = [-pix_arcmin / 60, pix_arcmin / 60]
-    return w, n
+    return tan_wcs("icrs", (ra, dec), n, pix_arcmin / 60, radesys=None), n
 
 
 def smooth_patch(maps, cov_cols, nside, wcs, n, fwhm_arcmin):
@@ -82,12 +76,11 @@ def smooth_patch(maps, cov_cols, nside, wcs, n, fwhm_arcmin):
 def load():
     I, Q, U = read_planck()
     del I
-    # COSMO to IAU: U changes sign, and so does every covariance with one U factor.
-    maps = {"q": Q, "u": -U}
+    maps = {"q": Q, "u": cosmo_to_iau(U)}
     h = fits.open(PLANCK, memmap=True)
     d = h[1].data
     cov = {"qq": np.asarray(d["QQ_COV"]).ravel(), "uu": np.asarray(d["UU_COV"]).ravel(),
-           "qu": -np.asarray(d["QU_COV"]).ravel()}
+           "qu": cosmo_to_iau(np.asarray(d["QU_COV"]).ravel())}
     assert h[1].header["ORDERING"].strip() == "NESTED"
     return maps, cov, hp.get_nside(Q)
 
@@ -121,15 +114,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--survey", action="store_true", help="print P/sigma statistics over the LMC and stop")
     ap.add_argument("--check", action="store_true", help="Monte Carlo check of the covariance propagation")
-    ap.add_argument("--ra", type=float, default=81.189)
-    ap.add_argument("--dec", type=float, default=-68.526)
+    ap.add_argument("--ra", type=float, default=round(GRID["CRVAL1"], 3))
+    ap.add_argument("--dec", type=float, default=round(GRID["CRVAL2"], 3))
     ap.add_argument("--size", type=float, default=3.0)
     ap.add_argument("--pix", type=float, default=3.0)
     a = ap.parse_args()
 
     maps, cov, nside = load()
     if a.survey:
-        wcs, n = tan_grid(81.189, -68.526, 10.0, 6.0)
+        wcs, n = tan_grid(a.ra, a.dec, 10.0, 6.0)
         s = smooth_patch(maps, cov, nside, wcs, n, FWHM_ARCMIN)
         P = np.hypot(s["q"], s["u"])
         snr = P / np.sqrt(0.5 * (s["qq"] + s["uu"]))

@@ -3,18 +3,16 @@
 // the mean field orientation PILOT measured there (Mangilli et al. 2019,
 // 2019A&A...630A..74M). Data from src/data/gc-field.json (scripts/render_gc.py).
 // The PILOT maps are not drawn: only the published mean orientation.
-import gc from "../data/gc-field.json";
+import { gcField as gc } from "../lib/data";
+import MapFoot from "./MapFoot.astro";
+import { segPath } from "../lib/field";
 
 const ads = "https://ui.adsabs.harvard.edu/abs/2019A%26A...630A..74M";
 const half = (gc.seg_len / 2) * 0.8;
-const seg = (x: number, y: number, deg: number, h: number) => {
-  const r = (deg * Math.PI) / 180, dx = -Math.sin(r) * h, dy = -Math.cos(r) * h;
-  return `M${(x - dx).toFixed(1)},${(y - dy).toFixed(1)}L${(x + dx).toFixed(1)},${(y + dy).toFixed(1)}`;
-};
 const [px, py] = gc.pilot.centre;
 // PILOT line across the frame; label chips sit off the line, and segments
 // under a chip are left out so no line runs through text.
-const pilotPath = seg(px, py, gc.pilot.a, 430);
+const pilotPath = segPath(px, py, gc.pilot.a, 430);
 const arcR = 230;
 const ar = (gc.pilot.a * Math.PI) / 180;
 // Arc from the plane (pointing to +l, left) to the PILOT direction (up-left).
@@ -25,10 +23,6 @@ const chips = [
 ];
 const free = (s: { x: number; y: number }) => !chips.some((c) => s.x > c.x - 20 && s.x < c.x + c.w + 20 && s.y > c.y - 20 && s.y < c.y + c.h + 20);
 const segs = gc.segments.filter(free);
-
-const fovArcmin = gc.fov_deg * 60;
-const pcBar = 50;
-const barLen = ((pcBar / gc.dist_pc) * (180 / Math.PI) * 60 / fovArcmin) * 1000;
 ---
 
 <div class="gcf">
@@ -36,7 +30,7 @@ const barLen = ((pcBar / gc.dist_pc) * (180 / Math.PI) * 60 / fovArcmin) * 1000;
     <div class="pic">
       <img src={gc.image_small} srcset={`${gc.image_small} 960w, ${gc.image} 1920w`} sizes="(min-width: 1100px) 820px, 100vw" alt="Multi-band image of the central two degrees of the Milky Way: Herschel 250 and 70 µm dust and Spitzer 8 µm" loading="lazy" decoding="async" />
       <svg viewBox="0 0 1000 1000" role="img" aria-label={`Planck field segments over the central molecular zone, and the PILOT mean field orientation, ${gc.pilot.tilt} degrees clockwise from the Galactic plane`}>
-        <g class="segs">{segs.map((s) => <path d={seg(s.x, s.y, s.a, half)} />)}</g>
+        <g class="segs">{segs.map((s) => <path d={segPath(s.x, s.y, s.a, half)} />)}</g>
         <path class="plane" d={`M0,${py}H1000`} />
         <path class="pilot" d={pilotPath} />
         <path class="arc" d={arc} />
@@ -45,10 +39,7 @@ const barLen = ((pcBar / gc.dist_pc) * (180 / Math.PI) * 60 / fovArcmin) * 1000;
       </svg>
       <span class="lab red" style={`left:${chips[0].x / 10}%;top:${chips[0].y / 10}%`}>PILOT 240 µm mean field</span>
       <span class="lab plab" style="right:3%;top:calc(50% + 10px)">b = 0</span>
-      <div class="mfoot">
-        <span class="beam"><svg viewBox="0 0 10 10" style={`width:calc(100cqw * ${((2 * gc.beam_r) / 1000).toFixed(4)})`} aria-hidden="true"><circle cx="5" cy="5" r="4.6" /></svg>Planck {gc.fwhm_arcmin.toFixed(1)}′</span>
-        <span class="bar"><i style={`width:calc(100cqw * ${(barLen / 1000).toFixed(4)})`}></i>{pcBar} pc</span>
-      </div>
+      <MapFoot beamR={gc.beam_r} pc={50} distPc={gc.dist_pc} fovDeg={gc.fov_deg}>Planck {gc.fwhm_arcmin.toFixed(1)}′</MapFoot>
     </div>
     <figcaption class="cap">
       The central 2° of the Milky Way in Galactic coordinates, l increasing to the left. White segments: plane-of-sky field from Planck PR4 353 GHz at its own resolution (about {gc.fwhm_arcmin.toFixed(0)}′), one per beam, where the angle uncertainty is below 10°. Planck integrates the whole line of sight through the disc, so these segments mix the central molecular zone with everything in front of it and behind it. Red line: the mean field orientation PILOT measured at 240 µm and 2.2′ over the full zone, {gc.pilot.tilt}° clockwise from the Galactic plane (<a href={ads}>Mangilli et al. 2019</a>); the PILOT maps themselves are not drawn here. Averaging the Planck Q and U over this frame gives {gc.planck_mean_tilt}°, in line with the paper's finding that the two agree globally.
@@ -91,12 +82,6 @@ const barLen = ((pcBar / gc.dist_pc) * (180 / Math.PI) * 60 / fovArcmin) * 1000;
   .ang { fill: var(--signal); font: 600 32px var(--mono); text-anchor: middle; }
   .lab { position: absolute; padding: 4px 8px; background: rgba(0, 0, 0, 0.78); font: 600 12px/1.2 var(--mono); letter-spacing: 0.06em; color: var(--ink); white-space: nowrap; pointer-events: none; }
   .lab.red { color: var(--signal); }
-  .mfoot { position: absolute; left: 3%; right: 3%; bottom: 3%; display: flex; justify-content: space-between; align-items: end; gap: 12px; pointer-events: none; }
-  .mfoot > span { display: inline-flex; align-items: center; gap: 8px; padding: 4px 8px; background: rgba(0, 0, 0, 0.72); font: 500 12px/1.2 var(--mono); color: var(--ink); }
-  .beam svg { min-width: 8px; aspect-ratio: 1; height: auto; overflow: visible; }
-  .beam circle { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
-  .bar { flex-direction: column; align-items: stretch !important; gap: 4px !important; text-align: right; min-width: 3em; }
-  .bar i { display: block; height: 5px; border: 1px solid var(--ink); border-top: 0; align-self: flex-end; }
   .cap { font-size: 14px; color: var(--grey); max-width: 70ch; margin: 0; }
   .panel { display: grid; gap: 16px; border: 1px solid var(--hair); padding: 16px; }
   .ph { margin: 0; font: 700 18px/1.1 var(--brut); }
@@ -115,6 +100,6 @@ const barLen = ((pcBar / gc.dist_pc) * (180 / Math.PI) * 60 / fovArcmin) * 1000;
     .gcf { grid-template-columns: minmax(0, 1fr); }
   }
   @media (max-width: 480px) {
-    .lab, .mfoot > span { font-size: 12px; }
+    .lab { font-size: 12px; }
   }
 </style>

@@ -3,13 +3,13 @@ colour bars, distances, a polarized signal-to-noise map and FITS downloads.
 
 Writes
   src/data/maps.json            read by MapFrame.astro, FieldDots.astro
-  public/sky/snr-*.webp         small S/N masks (white: S/N >= 3) and lmc-snr.webp
+  public/sky/snr-*.webp         small S/N masks (white: S/N >= 3) for the MASKS that need one, and lmc-snr.webp
   public/data/*.fits            derived LMC maps on the 12 deg grid, 2x binned
 
 Uses the render scripts' own functions (grid, Planck reader, stretches) so the
 numbers describe the images as drawn. Needs the full-sky Planck map in memory:
 
-    flock /tmp/ism-planck.lock env LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/map_meta.py
+    flock /tmp/ism-planck.lock env LMC_DATA=/path/to/lmc-data python3 scripts/map_meta.py
 
 Signal to noise. P = sqrt(Qs^2 + Us^2) with Qs, Us the Gaussian-smoothed maps
 the field drawings use. The noise comes from the PR4 per-pixel covariances
@@ -27,9 +27,7 @@ lower bound on the noise. The signal includes Milky Way foreground.
 """
 
 import json
-import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import healpy as hp
@@ -44,6 +42,7 @@ from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import composites as comp  # noqa: E402
 import render_lmc as rl  # noqa: E402
+from facts import FACTS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_JSON = ROOT / "src" / "data" / "maps.json"
@@ -51,9 +50,9 @@ SKY = ROOT / "public" / "sky"
 DATA_DIR = ROOT / "public" / "data"
 COMPOSITES = json.loads((ROOT / "src" / "data" / "composites.json").read_text())
 
-PLANCK_BEAM = 4.94  # arcmin, 353 GHz effective beam FWHM, Planck 2018 III table 12
+PLANCK_BEAM = FACTS["planck"]["beam_arcmin"]  # arcmin, 353 GHz effective beam FWHM, Planck 2018 III table 12
 FWHM = 2 * np.sqrt(2 * np.log(2))
-SNR_N = 96  # same block layout as web_assets.FIELD_N
+SNR_N = FACTS["field_grid_n"]
 SNR_MIN = 3.0
 HI_COLUMN = 1.823e18  # cm^-2 per K km/s, optically thin (Dickey & Lockman 1990)
 FITS_BIN = 2
@@ -88,15 +87,17 @@ BANDS = {
 # Frames: sky footprint, centre, distance. Distances are the average Gaia DR2
 # based values of Zucker et al. 2019 table 2 (Orion A, Taurus, Mon OB1) and
 # table 3 (the MBM 12 sightline); Orion B is 423 pc in the same table.
+_LMC, _GC, _MON = FACTS["lmc"], FACTS["galactic_centre"], FACTS["mon_ob1"]
+_MON_ERR = f"{_MON['cloud_distance_pc']} ± {_MON['cloud_distance_err_pc']} pc (Mon OB1 box {_MON['cloud_box']})"
 FRAMES = {
-    "lmc": dict(frame="icrs", dist=49590, ref="lmcdist", name="LMC", err="49.59 ± 0.09 (stat) ± 0.54 (sys) kpc"),
-    "gc2": dict(frame="galactic", dist=8178, ref="gcdist", name="Galactic centre", err="8.178 ± 0.013 ± 0.022 kpc"),
-    "gc12": dict(frame="galactic", dist=8178, ref="gcdist", name="Galactic centre", err="8.178 ± 0.013 ± 0.022 kpc"),
-    "mon3": dict(frame="galactic", dist=745, ref="zucker", name="Mon OB1", err="745 ± 37 pc (Mon OB1 box l 199-204, b 0-3)"),
-    "mon8": dict(frame="galactic", dist=745, ref="zucker", name="Mon OB1", err="745 ± 37 pc (Mon OB1 box l 199-204, b 0-3)"),
+    "lmc": dict(frame="icrs", dist=_LMC["distance_pc"], ref="lmcdist", name="LMC", err=_LMC["distance_text"]),
+    "gc2": dict(frame="galactic", dist=_GC["distance_pc"], ref="gcdist", name="Galactic centre", err=_GC["distance_text"]),
+    "gc12": dict(frame="galactic", dist=_GC["distance_pc"], ref="gcdist", name="Galactic centre", err=_GC["distance_text"]),
+    "mon3": dict(frame="galactic", dist=_MON["cloud_distance_pc"], ref="zucker", name="Mon OB1", err=_MON_ERR),
+    "mon8": dict(frame="galactic", dist=_MON["cloud_distance_pc"], ref="zucker", name="Mon OB1", err=_MON_ERR),
     "orion": dict(frame="galactic", dist=432, ref="zucker", name="Orion", err="432 ± 22 pc (Orion A; Orion B 423 pc)"),
     "taurus": dict(frame="galactic", dist=141, ref="zucker", name="Taurus", err="141 ± 7 pc"),
-    "mbm12": dict(frame="galactic", dist=252, ref="zucker", name="MBM 12", err="252 (+4 -6) ± 12 pc (sightline l 159.4, b -34.3)"),
+    "mbm12": dict(frame="galactic", dist=FACTS["mbm12"]["distance_pc"], ref="zucker", name="MBM 12", err=f"{FACTS['mbm12']['distance_pc']} (+4 -6) ± 12 pc (sightline l 159.4, b -34.3)"),
 }
 
 
@@ -112,11 +113,7 @@ def frame_wcs(fid, n=None):
     key = {"gc12": "galactic_centre", "mon8": "monoceros_ob1"}.get(fid, fid)
     l, b, width = rl.REGIONS[key]
     size = n or 900
-    hdr = fits.Header()
-    hdr.update(NAXIS=2, NAXIS1=size, NAXIS2=size, CTYPE1="GLON-TAN", CTYPE2="GLAT-TAN",
-               CRVAL1=l, CRVAL2=b, CRPIX1=size / 2 + 0.5, CRPIX2=size / 2 + 0.5,
-               CDELT1=-width / size, CDELT2=width / size)
-    return WCS(hdr), size, width, (l, b)
+    return rl.tan_wcs("galactic", (l, b), size, width / size), size, width, (l, b)
 
 
 def tilt_samples(wcs, n, k=9):
@@ -217,11 +214,19 @@ def block_grid(a, n=SNR_N):
     return s[::-1]
 
 
+# Archive.astro loads a mask only where frac_gt3 < MASK_BELOW (same number in that file);
+# where S/N >= 3 almost everywhere (gc2, mon3 today) no mask is written.
+# The other grids only feed the numbers in maps.json.
+MASKS = ("lmc10", "gc2", "mon3")
+MASK_BELOW = 0.99
+
+
 def save_mask(snr, name):
     im = Image.fromarray(np.ascontiguousarray(snr[::-1]).astype(np.float32), mode="F").resize((256, 256), Image.BILINEAR)
     s = np.asarray(im)
     m = 0.12 + 0.88 * np.clip((s - 1.0) / (SNR_MIN - 1.0), 0, 1)
-    Image.fromarray((m * 255).astype(np.uint8)).save(SKY / f"snr-{name}.webp", quality=80, method=6)
+    with rl.atomic(SKY / f"snr-{name}.webp") as tmp:
+        Image.fromarray((m * 255).astype(np.uint8)).save(tmp, quality=80, method=6)
 
 
 def save_snr_layer(snr):
@@ -232,7 +237,8 @@ def save_snr_layer(snr):
     rgb[edge] = (1.0, 0.24, 0.14)
     im = Image.fromarray((rgb * 255).astype(np.uint8)).transpose(Image.FLIP_TOP_BOTTOM)
     im.thumbnail((1000, 1000))
-    im.save(SKY / "lmc-snr.webp", quality=85, method=6)
+    with rl.atomic(SKY / "lmc-snr.webp") as tmp:
+        im.save(tmp, quality=85, method=6)
 
 
 def binned(a, f=FITS_BIN, circular=False):
@@ -249,26 +255,24 @@ def write_fits(name, data, bunit, what, extra=()):
     d = data.astype(np.float32)
     m = d.shape[0]
     f = FITS_BIN
-    h = fits.Header()
-    h.update(NAXIS=2, CTYPE1="RA---TAN", CTYPE2="DEC--TAN", CRVAL1=rl.GRID["CRVAL1"], CRVAL2=rl.GRID["CRVAL2"],
-             CRPIX1=(rl.GRID["CRPIX1"] - 0.5) / f + 0.5, CRPIX2=(rl.GRID["CRPIX2"] - 0.5) / f + 0.5,
-             CDELT1=rl.GRID["CDELT1"] * f, CDELT2=rl.GRID["CDELT2"] * f, RADESYS="FK5", EQUINOX=2000.0)
+    c = rl.GRID
+    h = rl.tan_header("icrs", (c["CRVAL1"], c["CRVAL2"]), m, c["CDELT2"] * f, crpix=(c["CRPIX1"] - 0.5) / f + 0.5)
     hdu = fits.PrimaryHDU(d, header=h)
     hh = hdu.header
     hh["BUNIT"] = bunit
     hh["OBJECT"] = "LMC"
     hh["ORIGIN"] = "ISM group, Nazarbayev University"
     hh["CREATOR"] = "scripts/map_meta.py"
-    hh["DATE"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     hh["COMMENT"] = what
     for line in extra:
         hh["COMMENT"] = line
     hh["COMMENT"] = "Data: Planck HFI 353 GHz PR4 (NPIPE), Planck Collaboration Int. LVII 2020, A&A 643, A42 (2020A&A...643A..42P)."
     hh["COMMENT"] = "Planck data are public (ESA Planck Legacy Archive); please credit the Planck Collaboration and ESA."
     hh["COMMENT"] = "Please credit this derived product to the ISM group, Nazarbayev University, and cite Alina et al. 2023, MNRAS 518, 4466."
-    hh["COMMENT"] = "Grid: 12.08 deg TAN, 2x2 binned from the site's 40 arcsec analysis grid. Includes Milky Way foreground."
+    hh["COMMENT"] = f"Grid: {rl.GRID_DEG:.2f} deg TAN, 2x2 binned from the site's {abs(rl.GRID['CDELT1']) * 3600:.0f} arcsec analysis grid. Includes Milky Way foreground."
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    hdu.writeto(DATA_DIR / name, overwrite=True)
+    with rl.atomic(DATA_DIR / name) as tmp:
+        hdu.writeto(tmp, overwrite=True)
     return f"/data/{name}", (DATA_DIR / name).stat().st_size
 
 
@@ -281,14 +285,14 @@ def main():
     planck = rl.read_planck()
     I_lmc, b_eq, _ = rl.planck_maps(planck, wcs, rl.SHAPE)
     proj = lambda m, w, s: reproject_from_healpix((m, "galactic"), w, shape_out=s, nested=False)[0]
-    QU = {k: (proj(planck[1], w, s), -proj(planck[2], w, s)) for k, (w, s, _, _) in targets.items()}
+    QU = {k: (proj(planck[1], w, s), rl.cosmo_to_iau(proj(planck[2], w, s))) for k, (w, s, _, _) in targets.items()}
     del planck
     cov = {}
     for col, key in ((7, "qq"), (8, "qu"), (9, "uu")):
         m = hp.read_map(rl.PLANCK, field=col, dtype=np.float32)
         for k, (w, s, _, _) in targets.items():
             c = proj(m, w, s)
-            cov.setdefault(k, {})[key] = -c if key == "qu" else c  # U was negated
+            cov.setdefault(k, {})[key] = rl.cosmo_to_iau(c) if key == "qu" else c
         del m
     snr = {}
     stats = {}
@@ -299,7 +303,8 @@ def main():
         fw = float(np.hypot(s_arcmin * FWHM, PLANCK_BEAM))
         stats[k] = dict(sigma_arcmin=round(s_arcmin, 2), fwhm_arcmin=round(fw, 1),
                         frac_gt3=round(float(np.mean(snr[k] >= SNR_MIN)), 3), median=round(float(np.median(snr[k])), 2))
-        save_mask(snr[k], k)
+        if k in MASKS and stats[k]["frac_gt3"] < MASK_BELOW:
+            save_mask(snr[k], k)
         print(k, stats[k], flush=True)
     lm = snr["lmc8"]
     yy, xx = np.mgrid[0 : lm.shape[0], 0 : lm.shape[1]]
@@ -345,7 +350,7 @@ def main():
                              "Angle is axial (0 to 180 deg). Unit: degrees. Script: scripts/render_lmc.py planck_maps().")),
         "intensity": write_fits("lmc_planck353_I.fits", binned(I_lmc.astype(np.float32)), "K_CMB",
                                 "Planck 353 GHz total intensity, solar dipole fitted at |b| > 30 deg and removed, monopole left in.",
-                                ("Not smoothed: native Planck resolution (effective beam FWHM 4.94 arcmin). Script: scripts/render_lmc.py read_planck().",)),
+                                (f"Not smoothed: native Planck resolution (effective beam FWHM {PLANCK_BEAM} arcmin). Script: scripts/render_lmc.py read_planck().",)),
         "snr": write_fits("lmc_field_snr.fits", binned(lm), "",
                           "Signal to noise of Planck 353 GHz polarized intensity after the 8 arcmin Gaussian smoothing used for the field angle.",
                           ("Noise from the PR4 Q, U covariances, white between HEALPix pixels; large-scale correlated noise not included.",
@@ -379,7 +384,7 @@ def main():
     def fmt_beam(arcsec):
         return f"{arcsec / 60:.1f}′" if arcsec >= 60 else f"{arcsec:.0f}″" if arcsec >= 10 else f"{arcsec:.1f}″"
 
-    planck_band = lambda note="": dict(name="Planck 353 GHz (PR4)", fwhm_arcsec=PLANCK_BEAM * 60, ref="planck", note=note or "effective beam FWHM 4.94'")
+    planck_band = lambda note="": dict(name="Planck 353 GHz (PR4)", fwhm_arcsec=PLANCK_BEAM * 60, ref="planck", note=note or f"effective beam FWHM {PLANCK_BEAM}'")
 
     def field_beam(sn):
         return dict(label=f"Planck field {stats[sn]['fwhm_arcmin']:.0f}′", arcmin=stats[sn]["fwhm_arcmin"], layer="field")
@@ -394,7 +399,7 @@ def main():
                            snr=snr_key, native_px=native, note=note)
 
     FITS_WHAT = {"angle": "Field position angle, east of north (deg)", "intensity": "Planck 353 GHz intensity (K_CMB)", "snr": "Polarized S/N at the field smoothing"}
-    lmc_native = 1087
+    lmc_native = rl.GRID["NAXIS1"]
     for name, fid, key, sn in (("lmc", "lmc", "lmc", "lmc10"), ("galactic_centre", "gc2", "galactic_centre", "gc2"), ("monoceros_ob1", "mon3", "monoceros_ob1", "mon3")):
         bd = bands_of(key)
         pb = planck_band()
@@ -411,7 +416,7 @@ def main():
     lmc_planck = dict(bands=[planck_band()])
     add("lmc-dust", "lmc", "Planck 353 GHz intensity", "scripts/render_lmc.py read_planck(), render main()",
         f"asinh (softening 0.2) between the 2nd and 99.8th percentile ({dust_lo * 1e3:.3f} to {dust_hi * 1e3:.3f} mK_CMB), copper palette.",
-        "Unsmoothed; the solar dipole is fitted away from the plane and removed.", beams=[dict(label="Planck 4.9′", arcmin=PLANCK_BEAM, layer="band")],
+        "Unsmoothed; the solar dipole is fitted away from the plane and removed.", beams=[dict(label=f"Planck {PLANCK_BEAM:.1f}′", arcmin=PLANCK_BEAM, layer="band")],
         bar=bars["dust"], files=("intensity",), native=lmc_native, **lmc_planck)
     add("lmc-bfield", "lmc", "Planck dust with the field texture", "scripts/render_lmc.py planck_maps(), lic()",
         "Dust stretch as the intensity image; the line integral convolution texture is added to the value before the colour map (amount 0.4).",
@@ -450,10 +455,10 @@ def main():
             f"Q and U smoothed with a {stats[sk]['sigma_arcmin']:.0f}′ sigma Gaussian, FWHM {stats[sk]['fwhm_arcmin']:.0f}′ with the beam.",
             bands=[planck_band()], beams=[field_beam(sk)], snr_key=sk, native=900)
 
-    commit = subprocess.run(["git", "describe", "--always", "--dirty", "--exclude=*"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    out = dict(commit=commit, refs={k: dict(label=v[0], bib=v[1]) for k, v in REFS.items()}, frames=frames, images=images,
+    out = dict(refs={k: dict(label=v[0], bib=v[1]) for k, v in REFS.items()}, frames=frames, images=images,
                snr_stats=stats, snr=snr_json)
-    OUT_JSON.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
+    with rl.atomic(OUT_JSON) as tmp:
+        tmp.write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
     print("fits", {k: (v[0], round(v[1] / 1e6, 2)) for k, v in fits_files.items()})
     print("bars", {k: (b["lo"], b["hi"]) for k, b in bars.items()})
     print("wrote", OUT_JSON, OUT_JSON.stat().st_size)

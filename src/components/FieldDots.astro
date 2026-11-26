@@ -2,7 +2,7 @@
 // Dot grid over the LMC. Near the pointer each dot becomes a dash along the
 // plane-of-sky field orientation inferred from Planck 353 GHz polarization
 // (angle + 90 deg, about 20' effective resolution, foreground included).
-import maps from "../data/maps.json";
+import { maps } from "../lib/data";
 import MapFrame from "./MapFrame.astro";
 const snr = maps.snr;
 const lmc = maps.snr_stats.lmc8;

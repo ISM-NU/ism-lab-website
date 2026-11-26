@@ -1,10 +1,10 @@
 ---
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
 import Base from "../layouts/Base.astro";
 import PageHead from "../components/PageHead.astro";
+import { getNews } from "../lib/news";
 
-// Placeholder items (mock: true) are kept as templates but not shown.
-const items = (await getCollection("news", (n) => !n.data.mock)).sort((a, b) => +b.data.date - +a.data.date);
+const items = await getNews();
 const rendered = await Promise.all(items.map(async (n) => ({ n, Content: (await render(n)).Content })));
 const today = new Date();
 const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
@@ -30,7 +30,6 @@ const fmt = (d: Date) => d.toISOString().slice(0, 10).replaceAll("-", ".");
                 {n.data.where && <span class="label">{n.data.where}</span>}
                 <div class="prose"><Content /></div>
                 {n.data.registration && upcoming && <a class="tag fill reg" href={n.data.registration}>Register &rarr;</a>}
-                {n.data.mock && <span class="tag soon">Placeholder</span>}
               </div>
             </li>
           );

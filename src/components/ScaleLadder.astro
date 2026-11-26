@@ -5,7 +5,7 @@
 // beside the bar, phones put the name above the bar and the values below it,
 // so nothing is ever drawn through a label. Selecting a row lists its numbers
 // and papers. Bibcodes are checked against publications.json at build time.
-import { bars, type Bar } from "../data/scales";
+import { bars, AS_PER_RAD, type Bar } from "../data/scales";
 import { byBibcode, titleHtml, authorLine, venue, link } from "../lib/pubs";
 
 interface Props { open?: string }
@@ -14,7 +14,6 @@ const { open = "" } = Astro.props;
 for (const b of bars) for (const p of b.papers) if (!byBibcode.has(p)) throw new Error(`ScaleLadder: bibcode ${p} (${b.id}) is not in publications.json`);
 if (open && !bars.some((b) => b.id === open)) throw new Error(`ScaleLadder: unknown bar ${open}`);
 
-const AS_PER_RAD = 206264.806;
 const LO = 1e-3, HI = 2e4; // pc
 const pos = (pc: number) => (Math.log10(pc / LO) / Math.log10(HI / LO)) * 100;
 

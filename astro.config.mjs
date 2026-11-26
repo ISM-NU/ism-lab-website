@@ -2,7 +2,9 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  // Set when the domain is known; used for canonical URLs and the sitemap.
+  // Placeholder until the domain's DNS record exists. Set it to the public URL
+  // then: Base.astro emits an absolute og:image only when this is not localhost,
+  // so a build with the placeholder never publishes a localhost link.
   site: "http://localhost:4321",
   trailingSlash: "ignore",
   prefetch: { prefetchAll: true },

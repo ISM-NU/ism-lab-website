@@ -12,11 +12,13 @@ pixels), so the layers line up pixel for pixel and can be stacked or
 cross-faded in the browser. Outputs go to OUT as 8-bit images plus a small JSON
 with the grid. scripts/web_assets.py turns them into the site's files.
 
-Run: LMC_DATA=~/Projects/LMC/lmc-data python3 scripts/render_lmc.py
+Run: LMC_DATA=/path/to/lmc-data python3 scripts/render_lmc.py
 """
 
+import hashlib
 import json
 import os
+from contextlib import contextmanager
 from pathlib import Path
 
 import healpy as hp
@@ -30,16 +32,36 @@ from PIL import Image
 from reproject import reproject_from_healpix, reproject_interp
 from scipy.ndimage import gaussian_filter, map_coordinates
 
-DATA = Path(os.environ.get("LMC_DATA", "~/Projects/LMC/lmc-data")).expanduser()
+from facts import FACTS, field
+
+
+def env_path(name, what):
+    """Path named by an environment variable; exit with a clear message when unset."""
+    value = os.environ.get(name)
+    if not value:
+        raise SystemExit(f"{name} is not set: point it at {what}.")
+    return Path(value).expanduser()
+
+
+def require_files(*paths):
+    missing = [str(p) for p in paths if not p.exists()]
+    if missing:
+        raise SystemExit("missing input files:\n  " + "\n  ".join(missing))
+
+
+DATA = env_path("LMC_DATA", "the LMC data folder (it holds exp_raw/ and external/)")
 OUT = Path(os.environ.get("OUT", Path(__file__).resolve().parent.parent / "assets" / "lmc"))
 N_CHANNEL_FRAMES = 48
 
-# Fixed output grid. Do not change it without re-running web_assets.py: the
-# site's target positions and field grid are computed on it.
-GRID = {"NAXIS": 2, "NAXIS1": 1087, "NAXIS2": 1087, "CTYPE1": "RA---TAN", "CTYPE2": "DEC--TAN",
-        "CRVAL1": 81.1893661273, "CRVAL2": -68.5259351087, "CRPIX1": 543.75, "CRPIX2": 543.75,
-        "CDELT1": -0.0111111, "CDELT2": 0.0111111, "RADESYS": "FK5", "EQUINOX": 2000.0}
+# Fixed output grid, defined in src/data/facts.json. Do not change it without
+# re-running web_assets.py: the site's target positions and field grid are
+# computed on it.
+_G = FACTS["grid"]
+GRID = {"NAXIS": 2, "NAXIS1": _G["naxis"], "NAXIS2": _G["naxis"], "CTYPE1": "RA---TAN", "CTYPE2": "DEC--TAN",
+        "CRVAL1": _G["crval_deg"][0], "CRVAL2": _G["crval_deg"][1], "CRPIX1": _G["crpix"], "CRPIX2": _G["crpix"],
+        "CDELT1": -_G["cdelt_deg"], "CDELT2": _G["cdelt_deg"], "RADESYS": "FK5", "EQUINOX": 2000.0}
 SHAPE = (GRID["NAXIS2"], GRID["NAXIS1"])
+GRID_DEG = GRID["NAXIS1"] * abs(GRID["CDELT1"])  # width on the sky
 
 HI_CUBE = Path(os.environ.get("HI_CUBE", DATA / "exp_raw/eq_subcube_182to339_gass_279_-33_1444812272.fits"))
 CO_CUBE = DATA / "exp_raw/lmc_v11.co.vradlsr.base.fits"
@@ -51,6 +73,57 @@ def grid_wcs():
     h = fits.Header()
     h.update(GRID)
     return WCS(h)
+
+
+def tan_header(frame, centre, n, pix_deg, crpix=None, radesys="FK5"):
+    """Header of an n x n gnomonic grid with north up and east to the left.
+
+    frame is "icrs" (RA/Dec) or "galactic"; centre is the tangent point in
+    degrees. crpix defaults to the middle of the image. RA/Dec grids are FK5
+    J2000 like GRID; radesys=None leaves the system unset, which WCS reads as
+    ICRS."""
+    if frame == "icrs":
+        ctype = ("RA---TAN", "DEC--TAN")
+        extra = dict(RADESYS=radesys, EQUINOX=2000.0) if radesys else {}
+    elif frame == "galactic":
+        ctype, extra = ("GLON-TAN", "GLAT-TAN"), {}
+    else:
+        raise ValueError(f"unknown frame {frame!r}")
+    ref = n / 2 + 0.5 if crpix is None else crpix
+    h = fits.Header()
+    h.update(NAXIS=2, NAXIS1=n, NAXIS2=n, CTYPE1=ctype[0], CTYPE2=ctype[1],
+             CRVAL1=centre[0], CRVAL2=centre[1], CRPIX1=ref, CRPIX2=ref, CDELT1=-pix_deg, CDELT2=pix_deg, **extra)
+    return h
+
+
+def tan_wcs(frame, centre, n, pix_deg, crpix=None, radesys="FK5"):
+    return WCS(tan_header(frame, centre, n, pix_deg, crpix, radesys))
+
+
+def cosmo_to_iau(x):
+    """Planck maps use the COSMO polarization convention, the field angles here
+    use IAU. They differ by the sign of U, so U and every covariance with one U
+    factor (IU, QU) change sign; Q, I, QQ, UU, II, IQ do not."""
+    return -x
+
+
+@contextmanager
+def atomic(path):
+    """Yield a temp path next to path (same suffix, so writers keep the format)
+    and rename it over path when the block succeeds, so an interrupted run
+    never leaves a half-written output."""
+    path = Path(path)
+    tmp = path.with_name(f"{path.stem}.tmp{path.suffix}")
+    try:
+        yield tmp
+        os.replace(tmp, path)
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
+def input_key(*parts):
+    """Short hash of everything a cached product was computed from."""
+    return hashlib.sha256(json.dumps(parts, sort_keys=True, default=str).encode()).hexdigest()[:16]
 
 
 def stretch(a, lo_pct=1.0, hi_pct=99.7, asinh=None):
@@ -197,7 +270,7 @@ def mollweide_field_angle(proj, theta, d=0.05):
     return out
 
 
-def allsky(planck, nside=512, width=2400, fwhm_arcmin=30):
+def allsky(planck, nside=512, width=FACTS["allsky_width_px"], fwhm_arcmin=30):
     """Full-sky Mollweide: dust intensity textured by the field orientation.
 
     I, Q, U are smoothed together on the sphere (spin-2 aware) to 30', then
@@ -206,7 +279,7 @@ def allsky(planck, nside=512, width=2400, fwhm_arcmin=30):
     """
     low = [hp.ud_grade(m, nside) for m in planck]
     i_map, q_map, u_map = hp.smoothing(low, fwhm=np.radians(fwhm_arcmin / 60), pol=True)
-    u_map = -u_map  # COSMO -> IAU
+    u_map = cosmo_to_iau(u_map)
     proj = hp.projector.MollweideProj(xsize=width)
     f = lambda m: proj.projmap(m, lambda x, y, z: hp.vec2pix(nside, x, y, z))
     I, Q, U = f(i_map), f(q_map), f(u_map)
@@ -227,13 +300,13 @@ def allsky(planck, nside=512, width=2400, fwhm_arcmin=30):
 def planck_maps(planck, target_wcs, shape, smooth_px=12):
     """Dust intensity and plane-of-sky magnetic field angle from Planck 353 GHz.
 
-    Planck maps use the COSMO convention, so U is negated to get IAU angles.
+    Planck maps use the COSMO convention, see cosmo_to_iau().
     The field is the polarization angle + 90 deg, measured from Galactic north;
     it is rotated to celestial north with the local angle between the frames.
     """
     i_map, q_map, u_map = planck
     proj = lambda m: reproject_from_healpix((m, "galactic"), target_wcs, shape_out=shape, nested=False)[0]
-    I, Q, U = proj(i_map), proj(q_map), -proj(u_map)
+    I, Q, U = proj(i_map), proj(q_map), cosmo_to_iau(proj(u_map))
     Qs, Us = gaussian_filter(np.nan_to_num(Q), smooth_px), gaussian_filter(np.nan_to_num(U), smooth_px)
     psi_gal = 0.5 * np.arctan2(Us, Qs)
     b_gal = psi_gal + np.pi / 2
@@ -300,7 +373,7 @@ def lic(angle, length=30, seed=1):
 
 # Clouds the group has published on, as Galactic centre and field width (deg).
 REGIONS = {
-    "orion": (209.0, -19.0, 24.0),
+    "orion": field("orion"),
     "monoceros_ob1": (202.5, 2.0, 8.0),
     "galactic_centre": (0.0, 0.0, 12.0),
     "taurus": (172.0, -14.5, 22.0),
@@ -311,13 +384,9 @@ REGIONS = {
 def regions(planck, size=900):
     """Planck dust + field-line cutouts of other regions the group studies."""
     for name, (l, b, width) in REGIONS.items():
-        hdr = fits.Header()
-        hdr.update(NAXIS=2, NAXIS1=size, NAXIS2=size, CTYPE1="GLON-TAN", CTYPE2="GLAT-TAN",
-                   CRVAL1=l, CRVAL2=b, CRPIX1=size / 2 + 0.5, CRPIX2=size / 2 + 0.5,
-                   CDELT1=-width / size, CDELT2=width / size)
-        wcs = WCS(hdr)
+        wcs = tan_wcs("galactic", (l, b), size, width / size)
         proj = lambda m: reproject_from_healpix((m, "galactic"), wcs, shape_out=(size, size), nested=False)[0]
-        I, Q, U = proj(planck[0]), proj(planck[1]), -proj(planck[2])
+        I, Q, U = proj(planck[0]), proj(planck[1]), cosmo_to_iau(proj(planck[2]))
         sm = max(2.0, 10 * (8.0 / width) ** -0.3)
         ang = 0.5 * np.arctan2(gaussian_filter(np.nan_to_num(U), sm), gaussian_filter(np.nan_to_num(Q), sm)) + np.pi / 2
         tex = lic(grid_angle(wcs, (size, size), ang), length=28)
@@ -327,6 +396,7 @@ def regions(planck, size=900):
 
 
 def main():
+    require_files(HI_CUBE, CO_CUBE, CO_RMS, PLANCK)
     OUT.mkdir(parents=True, exist_ok=True)
     print("H I cube", HI_CUBE.name, "...", flush=True)
     wcs = grid_wcs()
@@ -382,6 +452,7 @@ if __name__ == "__main__":
     import sys
 
     if "--regions" in sys.argv:
+        require_files(PLANCK)
         OUT.mkdir(parents=True, exist_ok=True)
         regions(read_planck())
     else:

@@ -7,7 +7,7 @@
 //   3. naive and MAS polarized intensity on a Planck PR4 patch (scripts/render_bench.py)
 // Built for a dark section. Copper appears only in the map colour scale.
 import { byBibcode, link } from "../lib/pubs";
-import patchMeta from "../data/bench_patch.json";
+import { benchPatch as patchMeta } from "../lib/data";
 
 const bibs = { pma1: "2015A&A...574A.135M", pma2: "2015A&A...574A.136M", pma3: "2016A&A...595A..57A", pir19: "2015A&A...576A.104P" } as const;
 for (const b of Object.values(bibs)) if (!byBibcode.has(b)) throw new Error(`EstimatorBench: ${b} is not in publications.json`);
@@ -134,11 +134,12 @@ const m = patchMeta;
 </style>
 
 <script>
+  import { $ } from "../scripts/dom";
+  import type { BenchPatch } from "../lib/schemas";
   import * as E from "../lib/estimators";
   import { canvasFit } from "../scripts/motion";
 
   const DEG = Math.PI / 180;
-  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const css = getComputedStyle(document.documentElement);
   const C = {
     ink: css.getPropertyValue("--ink").trim() || "#f3f3ef",
@@ -460,7 +461,7 @@ const m = patchMeta;
   ssIn.addEventListener("input", () => simS(false));
 
   // ------------------------------------------------------------ panel 3: Planck patch
-  type Patch = { n: number; q: number[]; u: number[]; qq: number[]; uu: number[]; qu: number[]; unit: string };
+  type Patch = Pick<BenchPatch, "n" | "q" | "u" | "qq" | "uu" | "qu" | "unit">;
   // render_lmc.DUST_STOPS, the site's dust palette
   const STOPS: [number, number[]][] = [[0, [0, 0, 0]], [0.18, [0x1c, 0x0a, 0x06]], [0.38, [0x5a, 0x1e, 0x0e]], [0.58, [0xa8, 0x46, 0x1a]], [0.76, [0xe0, 0x8a, 0x3c]], [0.9, [0xf6, 0xc9, 0x8a]], [1, [0xff, 0xf6, 0xe6]]];
   const dust = (v: number) => {
@@ -538,7 +539,7 @@ const m = patchMeta;
   const io = new IntersectionObserver(async (es) => {
     if (!es.some((e) => e.isIntersecting)) return;
     io.disconnect();
-    const d = (await import("../data/bench_patch.json")).default as unknown as Patch;
+    const d: Patch = (await import("../data/bench_patch.json")).default;
     prepPatch(d);
     drawPatch();
   }, { rootMargin: "400px" });

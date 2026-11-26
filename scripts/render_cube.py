@@ -1,7 +1,7 @@
 """Pack the GASS H I cube of the LMC for the browser cube viewer.
 
 Reads the 301x301 GASS III cube (Galactic CAR grid, 224 channels, 182-366 km/s
-LSR), resamples it bilinearly onto the site's 12.08 deg equatorial TAN field at
+LSR), resamples it bilinearly onto the site's equatorial TAN field at
 the cube's own pixel size (151x151 px of 0.08 deg, so no resolution is lost),
 drops the channels above 340 km/s (noise only), quantises Tb to Int16 and writes
   public/sky/cube/hi.i16.gz   byte-shuffled Int16 (high bytes, then low bytes),
@@ -11,7 +11,7 @@ Run: python3 scripts/render_cube.py
 """
 import gzip
 import json
-import os
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -19,23 +19,24 @@ from astropy.io import fits
 from astropy.wcs import WCS
 from scipy.ndimage import map_coordinates
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import render_lmc as rl  # noqa: E402
+from facts import FACTS  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-DATA = Path(os.environ.get("LMC_DATA", "~/Projects/LMC/lmc-data")).expanduser()
+DATA = rl.DATA
 CUBE = DATA / "exp_raw/gass_279_-33_LMC_range_1444812272.fits"
 VMAX = 340.0          # above this the GASS channels are noise
 STEP = 0.04           # K per Int16 count, about one noise sigma (0.04 K)
 N = 151
-FIELD = 1087 * 0.0111111   # deg, the sky.json grid width
-D_KPC = 49.59              # Pietrzynski et al. 2019
-CRVAL = (81.1893661273, -68.5259351087)
+GRID = FACTS["grid"]
+FIELD = GRID["naxis"] * GRID["cdelt_deg"]   # deg, the site grid width
+D_KPC = FACTS["lmc"]["distance_pc"] / 1000
+CRVAL = tuple(GRID["crval_deg"])
 
 pix = FIELD / N
-tan = WCS(naxis=2)
-tan.wcs.ctype = ["RA---TAN", "DEC--TAN"]
-tan.wcs.crval = CRVAL
-tan.wcs.cdelt = [-pix, pix]
-# the site grid has CRVAL 0.25 px (of 0.0111 deg) left of the field centre
-tan.wcs.crpix = [(N + 1) / 2 - 0.25 * 0.0111111 / pix] * 2
+# CRVAL sits off the field centre by the grid's own CRPIX offset
+tan = rl.tan_wcs("icrs", CRVAL, N, pix, crpix=(N + 1) / 2 - ((GRID["naxis"] + 1) / 2 - GRID["crpix"]) * GRID["cdelt_deg"] / pix, radesys=None)
 
 with fits.open(CUBE) as h:
     hdr, cube = h[0].header, np.asarray(h[0].data, dtype=np.float32)
@@ -55,7 +56,7 @@ out = np.stack([map_coordinates(np.nan_to_num(c), coords, order=1).reshape(N, N)
 q = np.clip(np.round(out / STEP), -32768, 32767).astype("<i2")
 raw = q.view(np.uint8).reshape(-1, 2)
 packed = np.concatenate([raw[:, 1], raw[:, 0]]).tobytes()
-gz = gzip.compress(packed, 9)
+gz = gzip.compress(packed, 9, mtime=0)  # the default stamps the current time in the header
 (ROOT / "public/sky/cube").mkdir(parents=True, exist_ok=True)
 (ROOT / "public/sky/cube/hi.i16.gz").write_bytes(gz)
 

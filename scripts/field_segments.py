@@ -23,10 +23,10 @@ import astropy.units as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import render_lmc as rl  # noqa: E402
+from facts import FACTS  # noqa: E402
 
-# Planck 2018 results III (2020A&A...641A...3P): effective beam FWHM at
-# 353 GHz, 4.94' (same value as scripts/render_stokes.py).
-PLANCK_BEAM = 4.94
+# Planck 2018 results III (2020A&A...641A...3P): effective beam FWHM at 353 GHz.
+PLANCK_BEAM = FACTS["planck"]["beam_arcmin"]
 
 
 def load():
@@ -52,10 +52,10 @@ def sample(m, lon, lat, kernel_fwhm_arcmin):
         w = np.exp(-0.5 * (d / sig) ** 2)
         w /= w.sum()
         Q = w @ m["Q"][pix]
-        U = -(w @ m["U"][pix])
+        U = rl.cosmo_to_iau(w @ m["U"][pix])
         cqq = (w * w) @ m["QQ"][pix]
         cuu = (w * w) @ m["UU"][pix]
-        cqu = -((w * w) @ m["QU"][pix])
+        cqu = rl.cosmo_to_iau((w * w) @ m["QU"][pix])
         out[k] = Q, U, cqq, cuu, cqu
     return out
 

@@ -16,6 +16,7 @@
 // prefers-reduced-motion the noise is still and the view is drawn once.
 // Without WebGL2 a Canvas 2D fallback draws beam-spaced segments.
 import { reduce, watchVisible, onFrame } from "./motion";
+import { GRID_ARCMIN } from "../lib/facts";
 
 export type Plane = { file: string; n: number; lo: number; hi: number };
 export type StokesMeta = {
@@ -28,8 +29,6 @@ export type StokesMeta = {
   mask_I: number;
 };
 
-// Grid width in arcmin (render_lmc.GRID: 1087 px of 0.0111111 deg).
-export const GRID_ARCMIN = 1087 * 0.0111111 * 60;
 // Copper dust palette, render_lmc.DUST_STOPS.
 const DUST_STOPS: [number, string][] = [[0, "#000000"], [0.18, "#1c0a06"], [0.38, "#5a1e0e"], [0.58, "#a8461a"], [0.76, "#e08a3c"], [0.9, "#f6c98a"], [1, "#fff6e6"]];
 // Q, U, sigma and I_fg are uploaded in units of 1e-3 MJy/sr to sit well inside half-float range.
@@ -125,27 +124,29 @@ export type ScaleData = { q: Float32Array; u: Float32Array; s: Float32Array; f: 
 
 /** Loads and caches planes. One instance per page. */
 export class StokesStore {
-  private cache = new Map<string, Promise<any>>();
+  private planes = new Map<string, Promise<Float32Array>>();
+  private scales = new Map<number, Promise<ScaleData>>();
+  private dusts?: Promise<{ obs: Float32Array; aft: Float32Array; n: number }>;
   constructor(public meta: StokesMeta) {}
   plane(key: string) {
-    if (!this.cache.has(key)) this.cache.set(key, loadPlane(this.meta.planes[key]));
-    return this.cache.get(key)! as Promise<Float32Array>;
+    let p = this.planes.get(key);
+    if (!p) this.planes.set(key, (p = loadPlane(this.meta.planes[key])));
+    return p;
   }
   scale(T: number): Promise<ScaleData> {
     const k = String(T).padStart(2, "0");
-    const id = "scale" + k;
-    if (!this.cache.has(id)) {
-      this.cache.set(id, Promise.all([this.plane("q" + k), this.plane("u" + k), this.plane("s" + k), this.plane("f" + k)]).then(([q, u, s, f]) => {
+    if (!this.scales.has(T)) {
+      this.scales.set(T, Promise.all([this.plane("q" + k), this.plane("u" + k), this.plane("s" + k), this.plane("f" + k)]).then(([q, u, s, f]) => {
         const n = this.meta.planes["q" + k].n;
         return { q, u, s, f: resample(f, this.meta.planes["f" + k].n, n), n };
       }));
     }
-    return this.cache.get(id)!;
+    return this.scales.get(T)!;
   }
   /** Dust intensity observed and after subtraction of I_fg (16' plane), both stretched 0..1. */
   dust(): Promise<{ obs: Float32Array; aft: Float32Array; n: number }> {
-    if (!this.cache.has("dust")) {
-      this.cache.set("dust", Promise.all([this.plane("I"), this.plane("f15")]).then(([I, f]) => {
+    if (!this.dusts) {
+      this.dusts = Promise.all([this.plane("I"), this.plane("f15")]).then(([I, f]) => {
         const n = this.meta.planes.I.n;
         const fu = resample(f, this.meta.planes.f15.n, n);
         const obs = new Float32Array(n * n), aft = new Float32Array(n * n);
@@ -154,9 +155,9 @@ export class StokesStore {
           aft[i] = stretchI(I[i] - fu[i], this.meta.i_stretch);
         }
         return { obs, aft, n };
-      }));
+      });
     }
-    return this.cache.get("dust")!;
+    return this.dusts;
   }
 }
 

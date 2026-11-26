@@ -12,7 +12,11 @@ Needs Node 22.23 or newer.
 
     npm install
     npm run dev        # http://localhost:4321 with live reload
-    npm run check      # spacing/type scale check, then type and template check
+    npm run check      # scale, viewport and shared-fact checks, then type and template check
+    npm test           # JS tests, plus the Python test of the render helpers
+                       # (it skips with a loud notice when a pipeline package such as
+                       # healpy or reproject is missing; REQUIRE_PY_TESTS=1 makes the
+                       # skip a failure. deploy.sh does not set it)
     npm run build      # static site in dist/
     npm run preview    # serves dist/ in the background on localhost:4321;
                        # stop it with `npx astro preview stop`
@@ -21,14 +25,15 @@ Needs Node 22.23 or newer.
 
 Text lives in Markdown with typed front matter (`src/content.config.ts`):
 
-- `src/content/people/` has one file per member. `mock: true` marks a
-  placeholder, shown with a Mock tag and dot-matrix initials.
+- `src/content/people/` has one file per member.
 - `src/content/projects/` has the research lines. `papers` lists ADS bibcodes
   that must exist in `src/data/publications.json`, or the build fails.
   `upcoming` items are work in progress and show as Coming soon until Dana
   approves them.
 - `src/content/news/` has news and events. An event dated in the future shows
-  its `registration` link.
+  its `registration` link. Items with `mock: true` are templates and are not
+  listed. The News menu entry and the home page block appear once one real
+  item exists.
 
 Only published or otherwise public material goes on the site.
 
@@ -47,6 +52,15 @@ build needs none of this. Rerun the scripts when a source changes.
 | `scripts/assy_map.py` | Natural Earth 1:50m countries GeoJSON (path as argument) | `src/data/assy-map.json` |
 | `scripts/ml_card.py` | `public/sky/unet-herschel.webp`, `public/sky/unet-data.png` | `public/sky/ml-card-960.webp` |
 | `scripts/people_photos.py` | member photos as sent, in `assets/people-src/` (not tracked) | `public/people/*.webp` (crop, sRGB, exposure, vibrance) |
+| `scripts/fetch_catalogues.py` | VizieR table of Alina et al. 2019 (CfA mirror) | `src/data/orientations.json` |
+| `scripts/map_meta.py` | the render scripts' grids and the Planck map | `src/data/maps.json`, `public/sky/snr-*.webp`, `public/data/*.fits` |
+| `scripts/render_stokes.py` | Planck PR4 Q and U, HI4PI, starlight polarization | `public/sky/stokes/*.png`, `src/data/stokes.json` |
+| `scripts/render_cube.py` | GASS H I cube of the LMC | `public/sky/cube/hi.i16.gz`, `src/data/cube.json` |
+| `scripts/render_bench.py` | Planck PR4 Q, U and covariances on a small LMC patch | `src/data/bench_patch.json` |
+| `scripts/render_gc.py` | Planck PR4 Q and U at the Galactic centre | `src/data/gc-field.json` |
+| `scripts/render_mon.py` | Planck PR4 Q and U at Mon OB1 East | `src/data/mon-ob1.json` |
+| `scripts/field_segments.py` | not run directly: the segment code shared by `render_gc.py` and `render_mon.py` | |
+| `scripts/unet_filaments.py` | Herschel cutout from `.cache/hips/`, the group's U-Net weights in `.cache/unet/`, Planck | `public/sky/unet-*`, `src/data/unet.json` |
 
     python3 scripts/fetch_publications.py
     python3 scripts/webb_images.py
@@ -56,11 +70,32 @@ build needs none of this. Rerun the scripts when a source changes.
     LMC_DATA=/path/to/lmc-data python3 scripts/composites.py [lmc galactic_centre monoceros_ob1]
     python3 scripts/composites.py insets      # after lmc; reuses its levels
 
+The scripts that read survey files from the LMC workspace (`render_lmc.py` and
+every script that imports it) need `LMC_DATA`, the folder holding `exp_raw/`
+and `external/`. `render_stokes.py` also needs `STARLIGHT_DIR`, the folder with
+the `*_j2000.txt` starlight catalogues. Neither has a default: when one is
+unset the script exits and names it.
+
 `render_lmc.py` reads the H I cube named by `HI_CUBE` (default: the GASS LMC
 subcube). The combined GASKAP + Parkes LMC cube the group works with is
 internal to the collaboration. Single GASKAP fields are public in CASDA, but
 the site uses GASS until Dana and the collaboration agree to show GASKAP
 images.
+
+### Checked shapes and shared facts
+
+The generated JSON is read through `src/lib/data.ts`, which parses each file
+against its schema in `src/lib/schemas.ts`. A script that writes a changed
+shape fails the build with the file and field named. Client scripts import the
+JSON file itself and take only the types from the schemas, so zod stays out of
+the browser bundle.
+
+Numbers that both the site and the scripts use (the 12 deg grid and its
+centre, the LMC, Galactic centre and Mon OB1 distances, the Planck beam, the
+sky fields on the cards) are typed once, in `src/data/facts.json`.
+`src/lib/facts.ts` and `scripts/facts.py` read it. `scripts/check_facts.py`
+runs in `npm run check` and fails when a source file types one of those values
+again.
 
 ## Brand kit
 

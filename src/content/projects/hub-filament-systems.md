@@ -5,7 +5,7 @@ summary: "How interstellar gas gathers into filaments and hubs where massive sta
 order: 6
 image: "/sky/comp-monoceros_ob1-ridges-960.webp"
 imageCaption: "Mon OB1 · filament ridges in Herschel 250 µm (Hessian filter)"
-field: { l: 202.9, b: 1.9, width: 3 }
+field: monoceros_ob1
 instruments: ["MHD simulations", "JWST", "ALMA"]
 keyPapers: ["2026arXiv260800441M"]
 papers:

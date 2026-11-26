@@ -2,8 +2,12 @@
 import Base from "../layouts/Base.astro";
 import PageHead from "../components/PageHead.astro";
 import LmcSky from "../components/LmcSky.astro";
-// Coordinates of Nazarbayev University, Astana.
-const LAT = 51.0906, LON = 71.3982;
+import { ASTANA, LMC, SITES, maxAltitude, minAltitude } from "../lib/sky";
+import { GRID_DEG } from "../lib/facts";
+const { lat: LAT, lon: LON } = ASTANA;
+const site = (id: string) => SITES.find((s) => s.id === id)!;
+const peak = (id: string) => maxAltitude(site(id).lat, LMC.dec);
+const alma = site("alma");
 ---
 
 <Base title="Contact" description="How to reach the ISM group at Nazarbayev University, Astana.">
@@ -31,8 +35,8 @@ const LAT = 51.0906, LON = 71.3982;
         <p>Where the Large Magellanic Cloud is in the sky of Astana and of the telescopes behind our data.</p>
       </div>
       <div class="why">
-        <p>At 51° N the LMC never rises. Its centre is at declination −70°, so from Astana it peaks about 31° below the horizon, and the whole 12° field we map stays down with it. </p>
-        <p>We work from public data instead. Planck mapped the whole sky from space. GASS, the Parkes H I survey, and the ASKAP survey GASKAP-HI observe the LMC from the south and are available through public archives. At Parkes, ASKAP and ALMA the LMC is circumpolar: it never sets, though at ALMA it sinks to 3° at its lowest and peaks at 43°. JCMT on Maunakea never gets it above 0.4°, so that telescope serves our Galactic cloud work instead.</p>
+        <p>At {Math.round(LAT)}° N the LMC never rises. Its centre is at declination −{Math.round(-LMC.dec)}°, so from Astana it peaks about {Math.round(-peak("astana"))}° below the horizon, and the whole {Math.round(GRID_DEG)}° field we map stays down with it.</p>
+        <p>We work from public data instead. Planck mapped the whole sky from space. GASS, the Parkes H I survey, and the ASKAP survey GASKAP-HI observe the LMC from the south and are available through public archives. At Parkes, ASKAP and ALMA the LMC is circumpolar: it never sets, though at ALMA it sinks to {minAltitude(alma.lat, LMC.dec).toFixed(0)}° at its lowest and peaks at {peak("alma").toFixed(0)}°. JCMT on Maunakea never gets it above {peak("jcmt").toFixed(1)}°, so that telescope serves our Galactic cloud work instead.</p>
       </div>
       <div class="panel"><LmcSky /></div>
     </div>

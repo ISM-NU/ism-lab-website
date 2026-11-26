@@ -26,6 +26,8 @@ from pathlib import Path
 
 import numpy as np
 
+from facts import field
+
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / ".cache" / "unet"
 HIPS = ROOT / ".cache" / "hips" / "monoceros_ob1_spire250.fits"
@@ -38,13 +40,13 @@ JSON_OUT = ROOT / "src" / "data" / "unet.json"
 # SPIRE HiPS cache is on a Galactic TAN grid at 5.27 arcsec per pixel; a 512 px
 # cutout is 0.75 deg, about 14 pc at 1.1 kpc, close to the 10 x 3 pc region plus
 # its surroundings. 512 is a multiple of 16, which the network needs.
-CENTRE = (202.3, 2.5)
+CENTRE = field("filament_net")[:2]
 SIZE = 512
 # Structuring element of the top-hat. The paper gives no size for Herschel; the
 # example notebook uses 7x7 for Planck. See the report in docs for the choice.
 TOPHAT = 15
 PLANCK_BEAM_ARCMIN = 5.0
-PLANCK_FWHM_SMOOTH_ARCMIN = 5.0  # added on top of the 4.8' beam
+PLANCK_FWHM_SMOOTH_ARCMIN = 5.0  # FWHM of the extra Gaussian smoothing, on top of the Planck beam
 
 
 def cutout():
@@ -185,7 +187,7 @@ def run_field():
 
     planck = rl.read_planck()
     proj = lambda m: reproject_from_healpix((m, "galactic"), wcs, shape_out=shape, nested=False)[0]
-    Q, U = proj(planck[1]), -proj(planck[2])  # COSMO to IAU
+    Q, U = proj(planck[1]), rl.cosmo_to_iau(proj(planck[2]))
     del planck
     sig = PLANCK_FWHM_SMOOTH_ARCMIN / 2.3548 / pix_arcmin
     Qs, Us = gaussian_filter(np.nan_to_num(Q), sig), gaussian_filter(np.nan_to_num(U), sig)

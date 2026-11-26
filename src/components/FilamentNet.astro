@@ -10,10 +10,12 @@
 //   public/sky/unet-data.png       R: U-Net class (1..180 = position angle, 0 = none),
 //                                  G: Planck field angle on the grid, B: ridge strength
 //   src/data/unet.json             grid, parameters, field samples, filament pieces
-import u from "../data/unet.json";
+import { unet as u } from "../lib/data";
+import facts from "../lib/facts";
 import { byBibcode, link } from "../lib/pubs";
 
-const { preview = false } = Astro.props as { preview?: boolean };
+interface Props { preview?: boolean }
+const { preview = false } = Astro.props;
 const paper = byBibcode.get("2025AJ....170..207U");
 const alina = byBibcode.get("2022A&A...658A..90A");
 if (!paper || !alina) throw new Error("FilamentNet: a cited bibcode is missing from publications.json");
@@ -77,7 +79,7 @@ const wheel = [0, 30, 60, 90, 120, 150];
       The element size is our choice. Angles are measured from north through east, like the Planck field.
     </p>
     <p>
-      The field is Planck PR4 353 GHz, Q and U smoothed with a {u.smooth_fwhm_arcmin}' Gaussian on top of the 4.8' beam, drawn every {u.beam_arcmin}'.
+      The field is Planck PR4 353 GHz, Q and U smoothed with a {u.smooth_fwhm_arcmin}' Gaussian on top of the {facts.planck.beam_arcmin}' beam, drawn every {u.beam_arcmin}'.
       The region is G202.3+2.5 in Monoceros OB 1; <a href={link(alina)}>Alina et al. (2022)</a> mapped the large-scale field of the cloud with Planck.
       Ridge filter: multiscale Hessian of the log intensity. Histogram bins are 5°, counted in pixels, which are not independent: a long piece counts as many times as it has pixels.
     </p>

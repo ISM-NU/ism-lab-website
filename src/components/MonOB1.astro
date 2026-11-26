@@ -3,14 +3,12 @@
 // segments over the multi-band composite, the paper's regions, and its Table 1.
 // Data from src/data/mon-ob1.json (scripts/render_mon.py). The segments are
 // redrawn from Planck PR4 for this site; the paper used PR3 at the same 7'.
-import mon from "../data/mon-ob1.json";
+import { monOb1 as mon } from "../lib/data";
+import MapFoot from "./MapFoot.astro";
+import { segPath } from "../lib/field";
 
 const ads = "https://ui.adsabs.harvard.edu/abs/2022A%26A...658A..90A";
 const half = (mon.seg_len / 2) * 0.8; // segments shorter than the cell so the grid reads as samples
-const seg = (s: { x: number; y: number; a: number }) => {
-  const r = (s.a * Math.PI) / 180, dx = -Math.sin(r) * half, dy = -Math.cos(r) * half;
-  return `M${(s.x - dx).toFixed(1)},${(s.y - dy).toFixed(1)}L${(s.x + dx).toFixed(1)},${(s.y + dy).toFixed(1)}`;
-};
 type R = (typeof mon.regions)[number] & { b?: string; lam?: string; ratio?: string };
 const regions = mon.regions as R[];
 const byId = Object.fromEntries(regions.map((r) => [r.id, r]));
@@ -40,10 +38,7 @@ const labels = regions.map((r) => {
 });
 
 // Furniture: equatorial compass (the paper's directions are in RA/Dec; the
-// image is Galactic, b up), a 5 pc bar at 723 pc, and the 7' beam.
-const fovArcmin = mon.fov_deg * 60;
-const pcBar = 5;
-const barLen = ((pcBar / mon.dist_pc) * (180 / Math.PI) * 60 / fovArcmin) * 1000;
+// image is Galactic, b up), a scale bar in parsecs at the cluster distance, and the 7' beam.
 const cx = 925, cy = 575, L = 38;
 // Segments under the compass are left out rather than covered by a box.
 const segs = mon.segments.filter((s) => Math.hypot(s.x - cx, s.y - cy) > L + 30);
@@ -57,7 +52,7 @@ const N = mon.compass.N, E = mon.compass.E;
       <svg viewBox="0 0 1000 1000" role="img" aria-label="Planck magnetic field segments, the regions studied by Alina et al. 2022, and the cluster NGC 2264">
         <defs><clipPath id="mon-clip"><rect width="1000" height="1000" /></clipPath></defs>
         <g clip-path="url(#mon-clip)">
-          <g class="segs">{segs.map((s) => <path d={seg(s)} />)}</g>
+          <g class="segs">{segs.map((s) => <path d={segPath(s.x, s.y, s.a, half)} />)}</g>
           <g class="rect">{rects.map((r) => <path d={path(r.points)} />)}</g>
           <g class="vcs">{vcs.map((r) => <path d={path(r.points)} />)}</g>
           <path class="shock" d={path(shock.points)} />
@@ -71,10 +66,7 @@ const N = mon.compass.N, E = mon.compass.E;
       <span class="lab cmp" style={`left:${(cx + N[0] * (L + 16)) / 10}%;top:${(cy + N[1] * (L + 16)) / 10}%`}>N</span>
       <span class="lab cmp" style={`left:${(cx + E[0] * (L + 16)) / 10}%;top:${(cy + E[1] * (L + 16)) / 10}%`}>E</span>
       <span class="lab ngcl" style={`left:${mon.ngc2264[0] / 10 + 2.6}%;top:${mon.ngc2264[1] / 10 + 2.2}%`}>NGC 2264</span>
-      <div class="mfoot">
-        <span class="beam"><svg viewBox="0 0 10 10" style={`width:calc(100cqw * ${((2 * mon.beam_r) / 1000).toFixed(4)})`} aria-hidden="true"><circle cx="5" cy="5" r="4.6" /></svg>{mon.fwhm_arcmin}′ beam</span>
-        <span class="bar"><i style={`width:calc(100cqw * ${(barLen / 1000).toFixed(4)})`}></i>{pcBar} pc</span>
-      </div>
+      <MapFoot beamR={mon.beam_r} pc={5} distPc={mon.dist_pc} fovDeg={mon.fov_deg}>{mon.fwhm_arcmin}′ beam</MapFoot>
     </div>
     <figcaption class="cap">
       Galactic coordinates, b up and l increasing to the left, 3° wide around l = 202.9°, b = 1.9°; the compass shows equatorial north and east, which the paper's region names follow. White segments: plane-of-sky field from Planck PR4 353 GHz, smoothed to 7′ as in the paper and drawn one per beam where the angle uncertainty is below 10°, one of the paper's two cuts (it also required a polarization signal to noise of at least 2). Outlines are traced from the paper's figures to about 1′: white, the velocity-coherent structures of the northern filaments (Fig. 6); red, the candidate shock between them (Fig. 9b); grey, rectangles A and B in the south (Fig. 12). The paper used Planck PR3; these segments are recomputed here.
@@ -117,12 +109,6 @@ const N = mon.compass.N, E = mon.compass.E;
   .lab.red { color: var(--signal); }
   .lab.ngcl { transform: none; font-weight: 500; }
   .lab.cmp { background: none; padding: 0; }
-  .mfoot { position: absolute; left: 3%; right: 3%; bottom: 3%; display: flex; justify-content: space-between; align-items: end; gap: 12px; pointer-events: none; }
-  .mfoot > span { display: inline-flex; align-items: center; gap: 8px; padding: 4px 8px; background: rgba(0, 0, 0, 0.72); font: 500 12px/1.2 var(--mono); color: var(--ink); }
-  .beam svg { min-width: 8px; aspect-ratio: 1; height: auto; overflow: visible; }
-  .beam circle { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
-  .bar { flex-direction: column; align-items: stretch !important; gap: 4px !important; text-align: right; min-width: 3em; }
-  .bar i { display: block; height: 5px; border: 1px solid var(--ink); border-top: 0; align-self: flex-end; }
   .cap { font-size: 14px; color: var(--grey); max-width: 70ch; margin: 0; }
   .panel { display: grid; gap: 16px; border: 1px solid var(--hair); padding: 16px; }
   .ph { margin: 0; font: 700 18px/1.1 var(--brut); }
@@ -144,6 +130,5 @@ const N = mon.compass.N, E = mon.compass.E;
   }
   @media (max-width: 480px) {
     .lab { font-size: 12px; padding: 1px 4px; }
-    .mfoot > span { font-size: 12px; }
   }
 </style>

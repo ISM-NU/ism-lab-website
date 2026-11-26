@@ -1,10 +1,11 @@
-import data from "../data/publications.json";
+import { publications } from "./data";
+import type { Paper } from "./schemas";
 
-export type Paper = (typeof data.papers)[number];
-export const papers: Paper[] = data.papers;
-export const groups: string[] = data.groups;
+export type { Paper };
+export const papers: Paper[] = publications.papers;
+export const groups: string[] = publications.groups;
 /** The ADS query the list came from (every member's name; see fetch_publications.py). */
-export const query: string = data.query;
+export const query: string = publications.query;
 export const byBibcode = new Map(papers.map((p) => [p.bibcode, p]));
 
 /** ADS titles carry a little HTML (<SUP>, <SUB>, entities). Keep only those. */
@@ -47,15 +48,6 @@ export function venue(p: Paper): string {
 
 /** Large collaboration: an author list of 100 or more (the three Planck intermediate results, SCOPE, TOP-SCOPE). */
 export const BIG_COLLAB = 100;
-export type Role = "first" | "led" | "collab";
-
-/**
- * Role of the group in a paper. `led` comes from scripts/fetch_publications.py:
- * a group member (the PI, or an author ADS places at Nazarbayev University)
- * is first or last author ("first": member in first position, "led": member
- * last). Everything else is a collaboration paper, wherever Alina sits in the list.
- */
-export const role = (p: Paper): Role => p.role as Role;
 export const isBig = (p: Paper) => !p.led && p.authors.length >= BIG_COLLAB;
 
 /** Research lines: the projects' `papers` lists, passed in by the page. */
@@ -91,7 +83,7 @@ const plain = (s: string) => s.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim
  * verbatim piece of the paper's ADS abstract; the build fails if it is not.
  */
 export function resultOf(p: Paper): string | null {
-  const r = (results as Record<string, string>)[p.bibcode];
+  const r = results[p.bibcode];
   if (!r) return null;
   const core = r.replace(/^…|…$/g, "");
   if (!plain(p.abstract).includes(core)) throw new Error(`results.ts: line for ${p.bibcode} is not in its abstract`);

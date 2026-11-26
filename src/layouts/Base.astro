@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import "lenis/dist/lenis.css";
+import { getNews } from "../lib/news";
 // Preload the condensed headline face: without it the big headings first lay
 // out in the wider fallback font and then reflow, often from three lines to two.
 import archivo from "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url";
@@ -13,12 +14,20 @@ interface Props {
 }
 const { title, description, noindex = false } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+// The News page has nothing on it until there is an item, so it stays out of the menu.
+const hasNews = (await getNews()).length > 0;
+// Link previews need an absolute URL. While `site` is still the localhost
+// placeholder (astro.config.mjs) an absolute one points nowhere, so keep the relative path.
+const ogImage =
+  Astro.site && !["localhost", "127.0.0.1"].includes(Astro.site.hostname)
+    ? new URL("/webb/tarantula-1920.webp", Astro.site).href
+    : "/webb/tarantula-1920.webp";
 const nav = [
   ["/research", "Research"],
   ["/people", "People"],
   ["/publications", "Publications"],
   ["/data", "Data"],
-  ["/news", "News"],
+  ...(hasNews ? [["/news", "News"]] : []),
   ["/contact", "Contact"],
 ];
 const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title} · ISM group`;
@@ -60,7 +69,7 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
     </script>
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="/webb/tarantula-1920.webp" />
+    <meta property="og:image" content={ogImage} />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -160,7 +169,8 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
 
 <script>
   import { onFrame, scramble } from "../scripts/motion";
-  import { LMC, altitudeAtLst, lstHours } from "../lib/sky";
+  import { $ } from "../scripts/dom";
+  import { ASTANA, LMC, altitudeAtLst, lstHours } from "../lib/sky";
 
   // Headings marked data-scramble resolve from glyphs once, when first seen.
   const so = new IntersectionObserver((es) => {
@@ -168,10 +178,8 @@ const fullTitle = path === "/" ? "ISM group · Nazarbayev University" : `${title
   }, { threshold: 0.6 });
   document.querySelectorAll("[data-scramble]").forEach((el) => so.observe(el));
 
-  // Console readout position: Nazarbayev University campus, as on the contact page (src/lib/sky.ts).
-  const LON = 71.3982, LAT = 51.0906;
+  const { lon: LON, lat: LAT } = ASTANA;
   const pad = (n: number) => String(n).padStart(2, "0");
-  const $ = (id: string) => document.getElementById(id)!;
   function tick() {
     const now = new Date();
     $("clock").textContent = `UTC ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;

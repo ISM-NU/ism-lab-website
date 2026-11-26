@@ -45,5 +45,8 @@ export const SITES = [
   { id: "jcmt", name: "JCMT", note: "Maunakea, Hawaii", lat: 19.822861, lon: -155.477053 },
 ] as const;
 
+/** The group's own site, for the contact page and the console readout. */
+export const ASTANA = SITES[0];
+
 /** Lowest altitude a point reaches (lower culmination), degrees. Positive means it never sets. */
 export const minAltitude = (latDeg: number, decDeg: number) => Math.abs(latDeg + decDeg) - 90;
